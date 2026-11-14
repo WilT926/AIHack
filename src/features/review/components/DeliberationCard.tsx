@@ -63,3 +63,31 @@ export function DeliberationCard({
     </Card>
   );
 }
+
+/** When the board deliberated and nobody split: say so, rather than showing nothing. */
+export function ConsensusCard({
+  seconds,
+  agreements,
+  fixCount,
+  onShowFixes,
+}: {
+  seconds: number;
+  agreements: string[];
+  fixCount: number;
+  onShowFixes: () => void;
+}) {
+  return (
+    <Card variant="dark" className="p-6">
+      <Label tone="accent">The board deliberated · {seconds} sec</Label>
+      <h2 className="mt-2 text-title font-bold tracking-heading">No splits: the board agrees.</h2>
+      {agreements[0] && <p className="mt-3 text-body text-rule">{agreements[0]}</p>}
+      {fixCount > 0 && (
+        <div className="mt-4">
+          <Pill variant="outline-inverse" onClick={onShowFixes}>
+            See the fix list · {fixCount}
+          </Pill>
+        </div>
+      )}
+    </Card>
+  );
+}

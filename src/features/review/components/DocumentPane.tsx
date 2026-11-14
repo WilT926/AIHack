@@ -39,8 +39,16 @@ export function DocumentPane({
     <article className="mx-auto min-h-full w-full max-w-sheet rounded-t-lg border border-b-0 border-rule bg-surface px-16 pt-12 pb-24">
       {doc.chapter && <Label tone="accent">{doc.chapter}</Label>}
       <h1 className="mt-1.5 text-3xl font-extrabold tracking-heading text-ink">{doc.title}</h1>
-      <div className="mt-3 border-b border-rule pb-3">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-3">
         <Label>{meta}</Label>
+        <span className="flex items-center gap-3" aria-label="Highlight key">
+          {(["critique", "question", "praise"] as const).map((k) => (
+            <span key={k} className="flex items-center gap-1.5">
+              <span className={cn("h-3 w-1 rounded-full", { critique: "bg-accent", question: "bg-ink", praise: "bg-graphite" }[k])} />
+              <Label>{k}</Label>
+            </span>
+          ))}
+        </span>
       </div>
 
       {doc.paragraphs.length === 0 ? (

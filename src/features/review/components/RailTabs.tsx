@@ -127,27 +127,29 @@ export function QuestionsTab({
   const ids = [...groups.keys()].sort((a, b) => rank(a) - rank(b));
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
       {ids.map((id) => {
         const a = assessors.get(id);
         const list = groups.get(id) ?? [];
         return (
-          <Card key={id}>
-            <div className="flex items-center gap-3">
-              <Avatar avatar={a?.avatar ?? ""} name={a?.name ?? "Unknown assessor"} size="lg" />
-              <div className="flex flex-col gap-0.5">
-                <span className="font-semibold text-ink">{a?.name ?? "Unknown assessor"}</span>
-                {a && <Label tone="accent">{a.role}</Label>}
-              </div>
+          <div key={id} className="flex items-start gap-3">
+            <div className="flex w-28 shrink-0 flex-col items-center gap-1 text-center">
+              <Avatar avatar={a?.avatar ?? ""} name={a?.name ?? "Unknown assessor"} size="xl" ring="none" />
+              <span className="text-xs font-bold text-ink">{a?.name ?? "Unknown assessor"}</span>
+              {a && <Label tone="accent">{a.role}</Label>}
             </div>
-            <ul className="mt-4 flex flex-col gap-2">
+            {/* What they are likely to ask, as speech bubbles. */}
+            <ul className="flex min-w-0 flex-1 flex-col items-start gap-2 pt-2">
               {list.map((text, i) => (
-                <li key={i} className="text-body text-ink">
-                  “{text}”
+                <li key={i} className="relative">
+                  {i === 0 && (
+                    <span className="absolute top-4 -left-3 size-2.5 rounded-full border-2 border-ink bg-surface" aria-hidden="true" />
+                  )}
+                  <p className="rounded-lg border-2 border-ink bg-surface px-4 py-2.5 text-body text-ink">{text}</p>
                 </li>
               ))}
             </ul>
-          </Card>
+          </div>
         );
       })}
     </div>

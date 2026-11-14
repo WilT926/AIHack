@@ -1,9 +1,10 @@
 import type { Assessor } from "../types";
 import { Card } from "../ui/Card";
-import { Avatar, AvatarStack } from "../ui/Avatar";
+import { Avatar } from "../ui/Avatar";
 import { Label } from "../ui/Label";
 import { SkeletonLine } from "../ui/SkeletonLine";
 import { Button } from "../ui/Button";
+import { cn } from "../ui/cn";
 
 /** Live state: an assessor is still reading. Step 2.3 drives this. */
 export function ArrivingCard({ assessor, paragraphLabel }: { assessor: Assessor; paragraphLabel?: string }) {
@@ -57,22 +58,58 @@ export function FailedCard({
   );
 }
 
-/** Everyone has read; the board is comparing notes. */
-export function DeliberatingCard({ people }: { people: Assessor[] }) {
+/**
+ * The one orange card on the screen while a review is live: the board peeking
+ * over the top edge, each face marked done, reading or failed.
+ */
+export function BoardLiveCard({
+  board,
+  status,
+  doneIds,
+  failedIds,
+}: {
+  board: Assessor[];
+  status: "reviewing" | "deliberating";
+  doneIds: string[];
+  failedIds: string[];
+}) {
+  const reading = board.filter((a) => !doneIds.includes(a.id) && !failedIds.includes(a.id));
+  const title = status === "reviewing" ? "Your board is reading" : "The board is comparing notes";
+  const line =
+    status === "deliberating"
+      ? "Agreements, splits, the fix list and likely questions are on their way."
+      : reading.length === 1
+        ? `${reading[0].name} is still reading.`
+        : `${reading.length} assessors are still reading. Comments appear as each one finishes.`;
+
   return (
-    <Card variant="arriving">
-      <div className="flex items-start gap-3" aria-live="polite">
-        <AvatarStack people={people} size="md" ringFor={() => "accent"} />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="font-semibold text-ink">The board is comparing notes…</span>
-          <Label>Deliberation · fix list and questions arriving</Label>
-          <div className="mt-3 flex flex-col gap-2">
-            <SkeletonLine width="long" />
-            <SkeletonLine width="short" />
-          </div>
-        </div>
+    <div className="mt-8 rounded-lg bg-accent px-6 pt-1 pb-6 text-accent-contrast" aria-live="polite">
+      <div className="-mt-9 flex items-end gap-2">
+        {board.map((a) => {
+          const state = doneIds.includes(a.id) ? "done" : failedIds.includes(a.id) ? "failed" : "reading";
+          return (
+            <span key={a.id} className="flex flex-col items-center gap-1">
+              <Avatar avatar={a.avatar} name={a.name} size="xl" ring="none" className={state === "failed" ? "opacity-50 grayscale" : undefined} />
+              <span
+                className={cn(
+                  "rounded-full px-1.5 font-mono text-label uppercase tracking-label",
+                  state === "done" && "bg-ink text-surface",
+                  state === "reading" && "animate-pulse bg-surface text-accent",
+                  state === "failed" && "bg-surface text-ink",
+                )}
+              >
+                {state === "done" ? "✓ read" : state === "reading" ? "reading" : "failed"}
+              </span>
+            </span>
+          );
+        })}
       </div>
-    </Card>
+      <Label tone="inverse" className="mt-4 block">
+        ● {status === "reviewing" ? `Reviewing · ${doneIds.length} of ${board.length} read` : "Deliberating"}
+      </Label>
+      <h2 className="mt-1 text-2xl font-extrabold tracking-heading">{title}</h2>
+      <p className="mt-1 text-body">{line}</p>
+    </div>
   );
 }
 

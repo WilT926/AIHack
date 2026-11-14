@@ -9,6 +9,7 @@ export function SelectCard({
   checked,
   onSelect,
   dashed,
+  direction = "col",
   className,
   children,
 }: {
@@ -17,6 +18,7 @@ export function SelectCard({
   onSelect: () => void;
   /** Quiet dashed style, e.g. "Start blank". */
   dashed?: boolean;
+  direction?: "row" | "col";
   className?: string;
   children: React.ReactNode;
 }) {
@@ -27,7 +29,8 @@ export function SelectCard({
       aria-checked={checked}
       onClick={onSelect}
       className={cn(
-        "flex flex-col rounded-lg border-2 text-left transition-colors",
+        "flex rounded-lg border-2 text-left transition-colors",
+        direction === "row" ? "flex-row" : "flex-col",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         checked ? "border-accent" : dashed ? "border-dashed border-rule hover:border-graphite" : "border-ink hover:bg-paper",
         className,

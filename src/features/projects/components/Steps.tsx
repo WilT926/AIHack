@@ -13,6 +13,7 @@ import { Avatar, AvatarStack } from "../../review/ui/Avatar";
 import { Card } from "../../review/ui/Card";
 import { SelectCard } from "../../review/ui/SelectCard";
 import { TemplateIcon } from "./TemplateIcon";
+import { RoundTable } from "./RoundTable";
 
 function pick(ids: string[], assessors: Map<string, Assessor>): Assessor[] {
   return ids.map((id) => assessors.get(id)).filter((a): a is Assessor => Boolean(a));
@@ -198,36 +199,47 @@ export function BoardStep({
   onChange: (d: ProjectDraft) => void;
 }) {
   const suggested = getTemplate(draft.template).boardIds;
+  const byId = new Map(presets.map((a) => [a.id, a]));
   const toggle = (id: string) =>
     onChange({ ...draft, boardIds: draft.boardIds.includes(id) ? draft.boardIds.filter((x) => x !== id) : [...draft.boardIds, id] });
 
   return (
-    <div className="grid grid-cols-3 gap-5">
-      {presets.map((a) => {
-        const seated = draft.boardIds.includes(a.id);
-        return (
-          <SelectCard key={a.id} role="checkbox" checked={seated} onSelect={() => toggle(a.id)} dashed={false} className="gap-3 p-5">
-            <div className="flex items-start gap-3">
-              <Avatar avatar={a.avatar} name={a.name} size="lg" ring={seated ? "accent" : "ink"} />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="font-semibold text-ink">{a.name}</span>
-                <Label tone="accent">{a.role}</Label>
-              </div>
-              {seated ? <Pill variant="accent">Seated</Pill> : <Pill variant="outline">+ Seat</Pill>}
-            </div>
-            <p className="text-body text-text-muted">{a.field}</p>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1" aria-label={`Harshness ${a.harshness} of 5`}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <span key={n} className={cn("size-2 rounded-full", n <= a.harshness ? "bg-ink" : "bg-rule")} />
-                ))}
-                <Label className="ml-2">Harshness</Label>
-              </span>
-              {suggested.includes(a.id) && <Label>Suggested</Label>}
-            </div>
-          </SelectCard>
-        );
-      })}
+    <div className="grid grid-cols-table-aside items-start gap-10">
+      <RoundTable label={draft.name} seated={pick(draft.boardIds, byId)} onRemove={toggle} />
+
+      <div className="flex flex-col gap-3.5">
+        <div className="flex items-center gap-3">
+          <Label tone="ink">Add assessors</Label>
+          <Label>{presets.length} presets · click to seat or remove</Label>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {presets.map((a) => {
+            const seated = draft.boardIds.includes(a.id);
+            return (
+              <SelectCard key={a.id} role="checkbox" checked={seated} onSelect={() => toggle(a.id)} className="gap-3 p-4.5">
+                <span className="flex items-center gap-3">
+                  <Avatar avatar={a.avatar} name={a.name} size="xl" ring="none" />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="font-bold text-ink">{a.name}</span>
+                    <Label tone="accent">{a.role}</Label>
+                  </span>
+                  {seated ? <Pill variant="accent">Seated</Pill> : <Pill variant="outline">+ Seat</Pill>}
+                </span>
+                <span className="text-sm text-text-muted">{a.personality ?? a.field}</span>
+                <span className="flex items-center justify-between">
+                  <span className="flex items-center gap-1" aria-label={`Harshness ${a.harshness} of 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span key={n} className={cn("size-2 shrink-0 rounded-full", n <= a.harshness ? "bg-ink" : "bg-rule")} />
+                    ))}
+                    <Label className="ml-1.5">Harshness</Label>
+                  </span>
+                  {suggested.includes(a.id) && <Label tone="ink">Suggested</Label>}
+                </span>
+              </SelectCard>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -248,7 +260,7 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
   ];
 
   return (
-    <div className="grid grid-cols-summary-aside gap-10">
+    <div className="grid grid-cols-summary-aside items-start gap-10">
       <Card className="p-7">
         <dl className="flex flex-col divide-y divide-rule">
           {rows.map(([k, v]) => (
@@ -261,21 +273,12 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
           ))}
         </dl>
       </Card>
-      <Card variant="dark" className="self-start p-7">
-        <Label tone="accent">Your board · {board.length} seated</Label>
-        <ul className="mt-4 flex flex-col gap-3">
-          {board.map((a) => (
-            <li key={a.id} className="flex items-center gap-3">
-              <Avatar avatar={a.avatar} name={a.name} size="md" />
-              <div className="flex flex-col">
-                <span className="font-semibold">{a.name}</span>
-                <Label tone="accent">{a.role}</Label>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-5 text-body text-rule">Next: upload your document. Each assessor reads it on their own, then the board deliberates.</p>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <RoundTable label={draft.name} seated={board} compact />
+        <p className="text-body text-text-muted">
+          Next: upload your document. Each assessor reads it on their own, then the board deliberates.
+        </p>
+      </div>
     </div>
   );
 }

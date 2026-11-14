@@ -30,12 +30,18 @@ export function FileDrop({
         if (file) onFile(file);
       }}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-6 py-14 text-center transition-colors",
+        "flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus",
         dragging ? "border-accent bg-critique-tint" : "border-rule hover:border-ink",
       )}
     >
-      <span className="font-semibold text-ink">{title}</span>
+      <span
+        aria-hidden="true"
+        className="mb-2 flex size-14 items-center justify-center rounded-full bg-accent text-3xl font-light text-accent-contrast"
+      >
+        +
+      </span>
+      <span className="text-title font-bold tracking-heading text-ink">{title}</span>
       {hint}
       <input
         type="file"

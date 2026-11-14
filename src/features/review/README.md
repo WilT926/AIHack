@@ -46,9 +46,14 @@ The engine sits behind `reviewAsAssessor` and `deliberate` in `engine/run.ts`, s
 | `src/app/review/layout.tsx`, `src/app/projects/layout.tsx` act as root layouts | Lane 1's `src/app/layout.tsx`; then drop `<html>`/`<body>` from these |
 | `src/features/review/styles` (style variables, fonts, named grid layouts) | Lane 3's `src/styles` (same variable names) |
 | `src/features/review/ui` (Button, Pill, Card, Avatar, Tabs, …) | `src/components/ui` |
+| `src/features/review/ui/avatars/*.svg`: the six illustrated presets from the Figma file. Four are Figma exports; Marcus Reid and Dr Nina Volkova would not export and were redrawn in the same template | Lane 3's `public/avatars` |
 | `src/features/review/types.ts`, `engine/schemas.ts`, `projects/types.ts` (brief's data shapes) | `src/lib/schemas` |
 | `src/features/review/engine/config.ts` | `src/config` |
 | Preset assessors in `fixtures/review-sample.ts` | Seeded assessors via `src/lib/data` |
+
+## Design
+
+Built against the Figma frames "Lane 2 · Review screen", "Setup 1 · Template", "Setup 2 · Brief + weak spots" and "Setup 3 · Board", in the style of the round-table / orbit explorations: illustrated people, one orange live card, round tables with name pills, dotted canvas, speech-bubble questions.
 
 ## Not done yet
 

@@ -8,8 +8,8 @@ import { Tabs, type TabItem } from "./ui/Tabs";
 import { TopBar } from "./components/TopBar";
 import { DocumentPane } from "./components/DocumentPane";
 import { CommentCard } from "./components/CommentCard";
-import { DeliberationCard } from "./components/DeliberationCard";
-import { ArrivingCard, DeliberatingCard, EmptyState, FailedCard } from "./components/StatusCards";
+import { ConsensusCard, DeliberationCard } from "./components/DeliberationCard";
+import { ArrivingCard, BoardLiveCard, EmptyState, FailedCard } from "./components/StatusCards";
 import { DeliberationTab, FixListTab, QuestionsTab } from "./components/RailTabs";
 import { CommentFilters } from "./components/CommentFilters";
 
@@ -144,7 +144,7 @@ export function ReviewScreen({
     .filter((f): f is typeof f & { assessor: Assessor } => Boolean(f.assessor));
 
   return (
-    <div className="flex h-dvh flex-col bg-bg">
+    <div className="flex h-dvh flex-col bg-dots">
       <TopBar
         view={view}
         boardMembers={boardMembers}
@@ -171,6 +171,15 @@ export function ReviewScreen({
           <div className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
             {tab === "comments" && (
               <div className="flex flex-col gap-3">
+                {live && (live.status === "reviewing" || (live.status === "deliberating" && !live.deliberationError)) && (
+                  <BoardLiveCard
+                    board={boardMembers}
+                    status={live.status}
+                    doneIds={live.doneAssessorIds}
+                    failedIds={(live.failed ?? []).map((f) => f.assessorId)}
+                  />
+                )}
+
                 {headlineSplit && (
                   <div className="mb-1">
                     <DeliberationCard
@@ -180,6 +189,15 @@ export function ReviewScreen({
                       assessors={assessors}
                     />
                   </div>
+                )}
+
+                {run.deliberation && !headlineSplit && (
+                  <ConsensusCard
+                    seconds={run.deliberation.seconds}
+                    agreements={run.deliberation.agreements}
+                    fixCount={run.fixList.length}
+                    onShowFixes={() => setTab("fixes")}
+                  />
                 )}
 
                 {failed.map((f) => (
@@ -236,9 +254,6 @@ export function ReviewScreen({
                   />
                 ))}
 
-                {live?.status === "deliberating" && !live.deliberationError && (
-                  <DeliberatingCard people={boardMembers.filter((a) => live.doneAssessorIds.includes(a.id))} />
-                )}
 
                 {live?.deliberationError && (
                   <FailedCard

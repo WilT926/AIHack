@@ -78,7 +78,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
+    <div className="flex min-h-dvh flex-col bg-dots">
       <header className="flex h-topbar shrink-0 items-center gap-6 border-b border-rule bg-surface px-7">
         <Logo name="Panel" />
         <div className="h-7 w-px bg-rule" />
@@ -116,7 +116,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
               <FileDrop
                 accept="application/pdf,.pdf"
                 onFile={(file) => void readPdf(file)}
-                title="Drop a PDF here, or click to choose one"
+                title="Drop a PDF, or click to choose one"
                 hint={<Label>PDF · up to 25 MB · text, not scans</Label>}
               />
             ) : (
