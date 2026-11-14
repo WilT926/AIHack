@@ -1,0 +1,18 @@
+/* Global styles for the whole app. Tokens first, then base components. */
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./ui.css";
+@import "./home.css";
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
