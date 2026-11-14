@@ -9,13 +9,23 @@ import { TopBar } from "./components/TopBar";
 import { DocumentPane } from "./components/DocumentPane";
 import { CommentCard } from "./components/CommentCard";
 import { DeliberationCard } from "./components/DeliberationCard";
-import { ArrivingCard, EmptyState, FailedCard } from "./components/StatusCards";
+import { ArrivingCard, DeliberatingCard, EmptyState, FailedCard } from "./components/StatusCards";
 import { DeliberationTab, FixListTab, QuestionsTab } from "./components/RailTabs";
 
 type RailTab = "comments" | "deliberation" | "fixes" | "questions";
 type ScrollRequest = { kind: "paragraph" | "comment"; id: string; nonce: number };
 
-export function ReviewScreen({ view, onUpload }: { view: ReviewView; onUpload?: () => void }) {
+export function ReviewScreen({
+  view,
+  onUpload,
+  onRetryAssessor,
+  onRetryDeliberation,
+}: {
+  view: ReviewView;
+  onUpload?: () => void;
+  onRetryAssessor?: (assessorId: string) => void;
+  onRetryDeliberation?: () => void;
+}) {
   const router = useRouter();
   const { run, board, live } = view;
   const doc = run.document;
@@ -109,7 +119,9 @@ export function ReviewScreen({ view, onUpload }: { view: ReviewView; onUpload?: 
   ];
 
   const headlineSplit = run.deliberation?.splits[0];
-  const reader = live?.reading ? assessors.get(live.reading.assessorId) : undefined;
+  const readers = (live?.reading ?? [])
+    .map((r) => ({ ...r, assessor: assessors.get(r.assessorId) }))
+    .filter((r): r is typeof r & { assessor: Assessor } => Boolean(r.assessor));
   const failed = (live?.failed ?? [])
     .map((f) => ({ ...f, assessor: assessors.get(f.assessorId) }))
     .filter((f): f is typeof f & { assessor: Assessor } => Boolean(f.assessor));
@@ -154,7 +166,12 @@ export function ReviewScreen({ view, onUpload }: { view: ReviewView; onUpload?: 
                 )}
 
                 {failed.map((f) => (
-                  <FailedCard key={f.assessorId} assessor={f.assessor} message={f.message} />
+                  <FailedCard
+                    key={f.assessorId}
+                    assessor={f.assessor}
+                    message={f.message}
+                    onRetry={onRetryAssessor ? () => onRetryAssessor(f.assessorId) : undefined}
+                  />
                 ))}
 
                 {openComments.map((c) => (
@@ -173,14 +190,27 @@ export function ReviewScreen({ view, onUpload }: { view: ReviewView; onUpload?: 
                   />
                 ))}
 
-                {reader && (
+                {readers.map((r) => (
                   <ArrivingCard
-                    assessor={reader}
-                    paragraphLabel={live?.reading?.paragraphId ? paragraphLabel(doc, live.reading.paragraphId) : undefined}
+                    key={r.assessorId}
+                    assessor={r.assessor}
+                    paragraphLabel={r.paragraphId ? paragraphLabel(doc, r.paragraphId) : undefined}
+                  />
+                ))}
+
+                {live?.status === "deliberating" && !live.deliberationError && (
+                  <DeliberatingCard people={boardMembers.filter((a) => live.doneAssessorIds.includes(a.id))} />
+                )}
+
+                {live?.deliberationError && (
+                  <FailedCard
+                    title="The board couldn't deliberate"
+                    message={live.deliberationError}
+                    onRetry={onRetryDeliberation}
                   />
                 )}
 
-                {openComments.length === 0 && !reader && (
+                {openComments.length === 0 && readers.length === 0 && failed.length === 0 && (
                   <EmptyState
                     title={run.comments.length > 0 ? "Everything is resolved" : "No comments yet"}
                     body={

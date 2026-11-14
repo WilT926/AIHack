@@ -74,12 +74,15 @@ export type Run = {
   sinceLastTime?: { improved: string[]; stillWeak: string[]; ignored: string[] };
 };
 
-/** Live progress of a run. Step 2.3 drives this from ReviewEvents. */
+/** Live progress of a run, driven by useLiveReview (step 2.3). */
 export type LiveState = {
   status: "reviewing" | "deliberating" | "done";
   doneAssessorIds: string[];
-  reading?: { assessorId: string; paragraphId?: string };
+  /** Assessors still reading; paragraphId when the engine reports where they are. */
+  reading?: { assessorId: string; paragraphId?: string }[];
   failed?: { assessorId: string; message: string }[];
+  /** Set when the deliberation call failed. */
+  deliberationError?: string;
 };
 
 /** Everything the review screen needs, in one object. */

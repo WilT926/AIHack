@@ -193,6 +193,6 @@ export const sampleReview: ReviewView = {
   live: {
     status: "reviewing",
     doneAssessorIds: ["module-lead", "methodologist", "literature-hawk", "outsider"],
-    reading: { assessorId: "sceptic", paragraphId: "p5" },
+    reading: [{ assessorId: "sceptic", paragraphId: "p5" }],
   },
 };

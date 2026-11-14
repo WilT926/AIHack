@@ -61,7 +61,7 @@ export function TopBar({
         <AvatarStack
           people={boardMembers}
           size="md"
-          ringFor={(id) => (live?.reading?.assessorId === id ? "accent" : "ink")}
+          ringFor={(id) => (live?.reading?.some((r) => r.assessorId === id) ? "accent" : "ink")}
         />
         <div className="w-3" />
         <Button variant="outline" onClick={onUpload}>

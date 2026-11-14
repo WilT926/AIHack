@@ -14,7 +14,7 @@ import { Button } from "../ui/Button";
 import { TextInput } from "../ui/TextInput";
 import { TextArea } from "../ui/TextArea";
 import { SkeletonLine } from "../ui/SkeletonLine";
-import { ReviewScreen } from "../ReviewScreen";
+import { LiveReview } from "../live/LiveReview";
 
 type Mode = "pdf" | "paste";
 type Stage =
@@ -61,19 +61,16 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
   };
 
   if (stage.kind === "review") {
-    const view: ReviewView = {
-      ...context,
-      run: {
-        id: `run-${stage.doc.id}`,
-        number: 1,
-        uploadedAt: new Date().toISOString(),
-        document: stage.doc,
-        comments: [],
-        fixList: [],
-        questions: [],
-      },
-    };
-    return <ReviewScreen view={view} onUpload={() => setStage({ kind: "input" })} />;
+    return (
+      <LiveReview
+        project={context.project}
+        board={context.board}
+        assessors={context.assessors}
+        context={{ projectName: context.project.name }}
+        document={stage.doc}
+        onUpload={() => setStage({ kind: "input" })}
+      />
+    );
   }
 
   return (
