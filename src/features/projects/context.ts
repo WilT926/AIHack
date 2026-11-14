@@ -1,0 +1,38 @@
+// Turns a project draft into what the review engine and screens need.
+import type { ReviewContext } from "../review/engine/schemas";
+import type { ProjectDraft } from "./types";
+
+export function allWeakSpots(draft: ProjectDraft): string[] {
+  const own = draft.ownWeakSpots
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [...new Set([...draft.weakSpots, ...own])];
+}
+
+export function markSchemeText(draft: ProjectDraft): string | undefined {
+  if (!draft.markScheme?.criteria.length) return undefined;
+  const lines = draft.markScheme.criteria.map((c) => `- ${c.name} (${c.weight}%)`);
+  return `${draft.markScheme.source}. Weight your attention by these:\n${lines.join("\n")}`;
+}
+
+export function toReviewContext(draft: ProjectDraft): ReviewContext {
+  const weakSpots = allWeakSpots(draft);
+  return {
+    projectName: draft.name.trim() || "Untitled project",
+    ...(draft.brief.trim() ? { brief: draft.brief.trim() } : {}),
+    ...(draft.graded.length ? { graded: draft.graded } : {}),
+    ...(weakSpots.length ? { weakSpots } : {}),
+    ...(markSchemeText(draft) ? { markScheme: markSchemeText(draft) } : {}),
+  };
+}
+
+/** Which step's input is missing, if any. */
+export function missingFor(step: "brief" | "board", draft: ProjectDraft): string | undefined {
+  if (step === "brief") {
+    if (!draft.name.trim()) return "Give the project a name.";
+    if (!draft.brief.trim()) return "Say what it is and what you want from this run.";
+  }
+  if (step === "board" && draft.boardIds.length === 0) return "Seat at least one assessor.";
+  return undefined;
+}
