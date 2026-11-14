@@ -187,6 +187,7 @@ export function Floor({ model }: { model: FloorModel }) {
           onSearch={() => setPalette(true)}
           assessor={selectedAssessor}
           onClearAssessor={() => setAssessorId(null)}
+          sample={model.sample}
         />
 
         <Tables

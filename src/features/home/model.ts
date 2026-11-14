@@ -80,6 +80,8 @@ export type FloorModel = {
   openActions: number;
   initialFocus: number;
   newProjectHref: string;
+  /** True when the floor shows the sample fixture instead of the database. */
+  sample?: boolean;
 };
 
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];

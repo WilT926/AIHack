@@ -207,3 +207,159 @@ export function Toast({ message, className }: { message: string; className?: str
     </div>
   );
 }
+
+// ---------- Card ----------
+
+export function Card({
+  dashed,
+  inverted,
+  className,
+  children,
+}: {
+  dashed?: boolean;
+  inverted?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return <div className={cn("ui-card", dashed && "ui-card--dashed", inverted && "ui-card--inverted", className)}>{children}</div>;
+}
+
+// ---------- Badge ----------
+
+/** A small orange count (open actions, comments). Text on orange is always ink. */
+export function Badge({ count, label }: { count: number; label?: string }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ui-badge" aria-label={label ? `${count} ${label}` : undefined}>
+      {count}
+    </span>
+  );
+}
+
+// ---------- Text input and text area ----------
+
+type FieldProps = { label: string; hint?: string; id: string };
+
+export function TextInput({
+  label,
+  hint,
+  id,
+  className,
+  ...rest
+}: FieldProps & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id">) {
+  return (
+    <label className={cn("ui-field", className)} htmlFor={id}>
+      <span className="ui-label">{label}</span>
+      <input id={id} className="ui-input" {...rest} />
+      {hint && <span className="ui-field__hint">{hint}</span>}
+    </label>
+  );
+}
+
+export function TextArea({
+  label,
+  hint,
+  id,
+  className,
+  ...rest
+}: FieldProps & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "id">) {
+  return (
+    <label className={cn("ui-field", className)} htmlFor={id}>
+      <span className="ui-label">{label}</span>
+      <textarea id={id} className="ui-textarea" {...rest} />
+      {hint && <span className="ui-field__hint">{hint}</span>}
+    </label>
+  );
+}
+
+// ---------- Tabs ----------
+
+export type TabItem<T extends string> = { id: T; label: string; count?: number };
+
+/** Segmented tabs in a pill track (§9). Controlled. */
+export function Tabs<T extends string>({
+  items,
+  value,
+  onChange,
+  label,
+}: {
+  items: TabItem<T>[];
+  value: T;
+  onChange: (id: T) => void;
+  label: string;
+}) {
+  return (
+    <div className="ui-tabs" role="tablist" aria-label={label}>
+      {items.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={t.id === value}
+          className={cn("ui-tab", t.id === value && "ui-tab--active")}
+          onClick={() => onChange(t.id)}
+        >
+          {t.label}
+          {t.count !== undefined && <span className="ui-tab__count">{t.count}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Comment bubble ----------
+
+/** One assessor's comment: avatar, name, mono field, the comment and its suggestion (§9). */
+export function CommentBubble({
+  avatar,
+  name,
+  field,
+  text,
+  suggestion,
+  anchor,
+  major,
+  done,
+}: {
+  avatar: string;
+  name: string;
+  field: string;
+  text: string;
+  suggestion?: string;
+  anchor?: number;
+  major?: boolean;
+  done?: boolean;
+}) {
+  return (
+    <article className={cn("ui-comment", done && "ui-comment--done")}>
+      <header className="ui-comment__head">
+        {anchor !== undefined && (
+          <span className={cn("ui-anchor", major && !done && "ui-anchor--major", done && "ui-anchor--done")}>{anchor}</span>
+        )}
+        <Avatar avatar={avatar} size="sm" />
+        <span className="ui-comment__name">{name}</span>
+        <Label size="sm">{field}</Label>
+      </header>
+      <p className="ui-comment__text">{text}</p>
+      {suggestion && <p className="ui-comment__suggestion">{suggestion}</p>}
+    </article>
+  );
+}
+
+// ---------- Spinner (the Reading state) ----------
+
+/**
+ * A designed waiting state, never a bare spinner (§9): a mono label and three
+ * ink dots that fill left to right.
+ */
+export function Spinner({ label = "Reading" }: { label?: string }) {
+  return (
+    <span className="ui-spinner" role="status">
+      <span className="ui-label ui-label--ink">{label}</span>
+      <span className="ui-spinner__dots" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </span>
+    </span>
+  );
+}

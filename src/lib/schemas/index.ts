@@ -94,6 +94,17 @@ export const projectSchema = z.object({
 });
 export type Project = z.infer<typeof projectSchema>;
 
+/** A project template: pre-fills the brief, the mark scheme and the board. */
+export const templateSchema = z.object({
+  id: projectTemplateSchema,
+  title: z.string().min(1).max(200),
+  description: shortText,
+  brief: briefSchema,
+  markSchemeText: longText,
+  boardId: id.nullish(),
+});
+export type Template = z.infer<typeof templateSchema>;
+
 export const paragraphSchema = z.object({
   id: z.string().regex(/^p\d{1,4}$/),
   text: z.string().max(6000),

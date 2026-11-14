@@ -7,16 +7,18 @@ export function TopBar({
   onSearch,
   assessor,
   onClearAssessor,
+  sample,
 }: {
   profile: FloorModel["profile"];
   onSearch: () => void;
   assessor: FloorAssessor | null;
   onClearAssessor: () => void;
+  sample?: boolean;
 }) {
   return (
     <>
       <div className="fl-brand">
-        <Logo sub="Your floor" />
+        <Logo sub={sample ? "Your floor · sample data" : "Your floor"} />
       </div>
 
       <button type="button" className="fl-search" onClick={onSearch} aria-label="Find a table, assessor or doc (⌘K)">

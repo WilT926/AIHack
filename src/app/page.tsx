@@ -1,9 +1,27 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { Spinner } from "@/components/ui";
 import { Floor } from "@/features/home/Floor";
+import { loadWorkspace } from "@/features/home/load";
 import { buildFloor } from "@/features/home/model";
-import { sampleWorkspace } from "../../fixtures/home-sample";
 
-// Home: the Floor. Reads the sample workspace for now; Part 3 swaps this for
-// src/lib/data without changing the Floor's components.
+// Home: the Floor, read fresh from the database on every request.
+async function FloorFromData() {
+  await connection();
+  const { workspace, sample } = await loadWorkspace();
+  return <Floor model={{ ...buildFloor(workspace), sample }} />;
+}
+
 export default function HomePage() {
-  return <Floor model={buildFloor(sampleWorkspace)} />;
+  return (
+    <Suspense
+      fallback={
+        <div className="fl-viewport">
+          <Spinner label="Setting the tables" />
+        </div>
+      }
+    >
+      <FloorFromData />
+    </Suspense>
+  );
 }

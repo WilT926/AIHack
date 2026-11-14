@@ -1,0 +1,14 @@
+# Keep keys, build output and large design files out of the image.
+.env*
+!.env.example
+node_modules
+.next
+.git
+.vercel
+coverage
+design
+docs
+*.zip
+*.pdf
+Dockerfile
+.dockerignore
