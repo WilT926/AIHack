@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Document, ReviewView } from "../types";
 import { buildDocument, titleFromFilename } from "@/lib/documents/split";
+import type { ReviewContext } from "../engine/schemas";
 import { extractPdfText, PdfReadError } from "@/lib/documents/pdf";
 import { formatNumber, plural } from "../lib";
 import { cn } from "../ui/cn";
@@ -24,7 +25,10 @@ type Stage =
   | { kind: "review"; doc: Document };
 
 /** Who reviews and for which project. Step 2.4 (project setup) fills this in. */
-export type IntakeContext = Omit<ReviewView, "run" | "live">;
+export type IntakeContext = Omit<ReviewView, "run" | "live"> & {
+  /** What every assessor is told about the project. Defaults to just its name. */
+  reviewContext?: ReviewContext;
+};
 
 export function IntakeScreen({ context }: { context: IntakeContext }) {
   const [mode, setMode] = useState<Mode>("pdf");
@@ -66,7 +70,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
         project={context.project}
         board={context.board}
         assessors={context.assessors}
-        context={{ projectName: context.project.name }}
+        context={context.reviewContext ?? { projectName: context.project.name }}
         document={stage.doc}
         onUpload={() => setStage({ kind: "input" })}
       />

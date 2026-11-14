@@ -39,6 +39,7 @@ function contextBlock(context: ReviewContext): string {
   const lines = [`Project: ${context.projectName}`];
   if (context.brief) lines.push(`What it is: ${context.brief}`);
   if (context.goal) lines.push(`Student's goal for this run: ${context.goal}`);
+  if (context.graded?.length) lines.push(`What's graded: ${context.graded.join(", ")}`);
   if (context.weakSpots?.length) lines.push(`Where the student feels least sure (probe these harder): ${context.weakSpots.join("; ")}`);
   if (context.markScheme) lines.push(`Mark scheme:\n${context.markScheme}`);
   return `<context>\n${lines.join("\n")}\n</context>`;

@@ -40,6 +40,7 @@ export const reviewContextSchema = z.object({
   projectName: z.string().max(200),
   brief: z.string().max(MAX_SHORT).optional(),
   goal: z.string().max(MAX_SHORT).optional(),
+  graded: z.array(z.string().max(100)).max(12).optional(),
   weakSpots: z.array(z.string().max(500)).max(20).optional(),
   markScheme: z.string().max(20000).optional(),
 });
