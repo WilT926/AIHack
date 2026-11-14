@@ -4,7 +4,7 @@ You are the design lead and you own the Figma prize. Your code changes restyle t
 
 ## Until the foundation is pushed (tier 0)
 Finish the design system in Figma, in the order the app is being built:
-1. **Variables:** use the names listed in the plan (colour, space, radius, shadow, type). Lane 1 is using the same names in code.
+1. **Variables:** the names and values in `design/DESIGN_SYSTEM.md` §3 to §5 are final. Code uses the same names.
 2. **Base components:** button, card, avatar, text input, text area, modal, tabs, badge, comment bubble, spinner, navigation.
 3. **Pitch session screen** (the live demo): listening with live transcript, "board steps out", then the discussion laid out like a video call (one tile per assessor, one for your own camera, the speaker's tile enlarged), and final feedback.
 4. **Assessor profile:** who they are, plus their notes.
@@ -19,7 +19,7 @@ Light theme and laptop width only. Do not spend time on dark mode or phone layou
 ## 3.1 Style variables and base components (tier 1, about 60 minutes)
 **Branch:** `lane3/design-system`. Needs Lane 1's foundation.
 
-1. Put the real Figma values into the variables file in `src/styles`.
+1. Put the tokens from `design/DESIGN_SYSTEM.md` §3 to §5 into the variables file in `src/styles`, under the same names.
 2. Restyle each base component in `src/components/ui` to match Figma. Keep each component's name and inputs the same, so other lanes' screens keep working.
 3. Add the display and body fonts, with sensible fallbacks.
 4. Give keyboard focus a visible style and check text contrast.
@@ -34,11 +34,13 @@ If your agent session has the Figma plugin, let it read the variables and compon
 ## 3.2 Avatars (tier 2, about 30 minutes)
 **Branch:** `lane3/avatars`.
 
-1. One consistent illustrated set: the ten seeded assessors plus about twelve spares for custom assessors.
-2. Generate them once (fal credits, or draw them in Figma) and save the images in `public/avatars`. No generating at run time.
-3. Give each seeded assessor an avatar and one of the eight assessor colours. That colour is used for their highlights and comments in the review.
+1. The set is already drawn: copy `design/avatars-pen/` (100 SVGs) into `public/avatars`. Do not use the deprecated `design/avatar-svgs/`.
+2. Give each of the ten seeded assessors an avatar that suits their role.
+3. Build the avatar picker used when creating an assessor.
 
-**Done when:** every assessor in the app shows their own avatar and colour.
+Assessors are not colour-coded; see the design system §3.
+
+**Done when:** every assessor in the app shows their own avatar, and the picker offers the full set.
 
 ---
 
@@ -104,10 +106,10 @@ These are invented faces. An assessor named after a real lecturer gets one of th
 
 ---
 
-## 3.5 Home (tier 3, about 45 minutes)
+## 3.5 Home (tier 3, about 90 minutes)
 **Branch:** `lane3/home`.
 
-1. The table: each project is a stack of paper on it, and the current board is seated round it.
+1. Build the Floor as specified in `design/DESIGN_SYSTEM.md` §7 and §8, porting the geometry and motion from `design/Panel Home Final.dc.html`. Each project is a table with its board seated round it. Use the real meanings in §1.1 of the design system, not the prototype's sample data.
 2. "New project" and "Start session" are on this screen.
 3. Opening a project shows its past reviews and pitch sessions.
 4. Keep motion small: a member taking a seat, a new stack appearing.

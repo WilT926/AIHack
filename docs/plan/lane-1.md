@@ -17,7 +17,7 @@ This is the critical path. Nobody else can code until step 1.1 is pushed, and th
 **Build, in order:**
 1. Scaffold Next.js with TypeScript strict mode, Tailwind and lint. Confirm the first deploy works.
 2. Create the folder layout listed in `CLAUDE.md`.
-3. `src/styles`: one file of style variables using the names in the plan, with plain placeholder values. Light theme only.
+3. `src/styles`: one file of style variables using the token names and values in `design/DESIGN_SYSTEM.md` §3 to §5. Light theme only.
 4. `src/components/ui`: button, card, avatar, text input, text area, modal, tabs, badge, comment bubble, spinner, and a page frame with navigation for Home, Assessors and Profile. Plain styling through the variables only; Lane 3 restyles them later.
 5. `src/lib/schemas`: every data shape in the plan, defined once, with validation.
 6. `supabase/`: tables matching the shapes, a storage area for uploads, and a seed script.

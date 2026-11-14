@@ -1,0 +1,131 @@
+/*
+ * Base components (src/components/ui). Plain styling through the tokens only;
+ * Lane 3 restyles from here. Class names are prefixed ui-.
+ */
+
+/* ---------- Pop-in (§8) ---------- */
+@keyframes ui-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes ui-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.ui-pop { animation: ui-pop 0.35s var(--ease-spring) both; }
+
+/* ---------- Logo (§2) ---------- */
+.ui-logo { display: flex; align-items: center; gap: var(--space-3-5); }
+.ui-logo__mark { position: relative; width: 34px; height: 40px; flex: none; }
+.ui-logo__mark i { position: absolute; width: 7px; height: 7px; border-radius: var(--radius-round); background: var(--ink); }
+.ui-logo__mark i:nth-child(1) { left: 0; top: 15px; width: 10px; height: 10px; background: var(--orange); }
+.ui-logo__mark i:nth-child(2) { left: 18px; top: 0; }
+.ui-logo__mark i:nth-child(3) { left: 24px; top: 9px; }
+.ui-logo__mark i:nth-child(4) { left: 26px; top: 17px; }
+.ui-logo__mark i:nth-child(5) { left: 24px; top: 25px; }
+.ui-logo__mark i:nth-child(6) { left: 18px; top: 33px; }
+.ui-logo__text { display: flex; flex-direction: column; }
+.ui-logo__word { font: var(--text-wordmark); letter-spacing: var(--tracking-wordmark); white-space: nowrap; color: var(--ink); }
+.ui-logo__sub { font: var(--text-label); color: var(--grey-500); margin-top: 3px; white-space: nowrap; text-transform: uppercase; }
+
+/* ---------- Avatar (§6): transparent, never inside a filled circle ---------- */
+.ui-avatar { display: block; flex: none; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.ui-avatar--invert { filter: invert(1); }
+.ui-avatar--fill { width: 100%; height: 100%; }
+.ui-avatar--xs { width: 22px; height: 22px; }
+.ui-avatar--sm { width: 24px; height: 24px; }
+.ui-avatar--md { width: 36px; height: 36px; }
+.ui-avatar--lg { width: 52px; height: 52px; }
+.ui-avatar--xl { width: 62px; height: 62px; }
+.ui-avatar--2xl { width: 84px; height: 84px; }
+
+/* ---------- Buttons (§9) ---------- */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: 12px 20px; border-radius: var(--radius-pill); border: var(--line-width) solid transparent;
+  font: 600 14px/1.2 var(--font-body); color: var(--ink); background: var(--paper);
+  cursor: pointer; white-space: nowrap; text-decoration: none; box-sizing: border-box;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.ui-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.ui-btn--block { flex: 1; }
+.ui-btn--lg { padding: 14px 18px; }
+.ui-btn--sm { padding: 7px 13px; font-size: 12px; }
+.ui-btn--create { background: var(--orange); color: var(--ink); }
+.ui-btn--primary { background: var(--ink); color: var(--paper); }
+.ui-btn--secondary { background: var(--paper); border-color: var(--ink); }
+.ui-btn--quiet { background: var(--grey-50); }
+.ui-btn--on-ink { background: var(--orange); color: var(--ink); }
+.ui-btn:disabled, .ui-btn[aria-disabled="true"] { opacity: 0.4; cursor: default; }
+
+.ui-icon-btn {
+  width: 38px; height: 38px; flex: none; border-radius: var(--radius-round); display: grid; place-items: center;
+  border: var(--line); background: var(--paper); color: var(--ink); cursor: pointer; font: 500 16px/1 var(--font-body);
+  transition: opacity 0.2s;
+}
+.ui-icon-btn--quiet { border-color: transparent; background: var(--grey-50); }
+.ui-icon-btn:disabled { opacity: 0.3; cursor: default; }
+.ui-icon-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* ---------- Chips (§9) ---------- */
+.ui-chip {
+  padding: 9px 14px; border-radius: var(--radius-pill); border: var(--line-width) solid var(--grey-100);
+  background: var(--paper); color: var(--ink); font: 500 13px/1.2 var(--font-body); white-space: nowrap;
+  cursor: pointer; transition: all 0.25s;
+}
+.ui-chip--active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ui-chip:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.ui-code-chip {
+  font: 600 10px/1.2 var(--font-mono); padding: 3px 7px; border-radius: var(--radius-pill);
+  border: var(--line-width) solid currentColor;
+}
+
+/* ---------- Mono label (§4) ---------- */
+.ui-label { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--grey-500); }
+.ui-label--sm { font: var(--text-label-sm); }
+.ui-label--xs { font: var(--text-label-xs); }
+.ui-label--ink { color: var(--ink); }
+.ui-label--orange { color: var(--orange); }
+.ui-label--quiet { color: var(--grey-700); }
+
+/* ---------- Dot ratings (§9) ---------- */
+.ui-dots { display: inline-flex; gap: 4px; align-items: center; }
+.ui-dots i { width: 8px; height: 8px; border-radius: var(--radius-round); border: var(--line-width) solid currentColor; box-sizing: border-box; }
+.ui-dots i[data-on="true"] { background: currentColor; }
+
+/* ---------- Session state dots and beads (§9 state key) ---------- */
+.ui-state {
+  display: block; flex: none; border-radius: var(--radius-round); box-sizing: border-box; background: var(--paper);
+  transition: all 0.3s var(--ease-spring);
+}
+.ui-state--rim { width: 11px; height: 11px; }
+.ui-state--bead { width: 18px; height: 18px; cursor: pointer; }
+.ui-state--bead[aria-pressed="true"] { width: 26px; height: 26px; }
+.ui-state--done { background: var(--ink); }
+.ui-state--ready { border: 2px dashed var(--ink); }
+.ui-state--deadline { border: 2px solid var(--ink); }
+.ui-state--live { background: var(--orange); border: 3px solid var(--paper); box-shadow: 0 0 0 2px var(--orange); }
+.ui-state--rim.ui-state--ready { background: transparent; border: var(--line-width) dashed var(--ink); }
+.ui-state--rim.ui-state--deadline { background: transparent; border: var(--line); }
+.ui-state--rim.ui-state--live { background: var(--paper); border: none; box-shadow: none; }
+.ui-state--bead[aria-pressed="true"] { box-shadow: 0 0 0 5px var(--grey-100); }
+.ui-state--bead.ui-state--live[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--orange), 0 0 0 7px var(--orange-halo); }
+.ui-state--bead:focus-visible { outline: 2px solid var(--orange); outline-offset: 4px; }
+
+/* ---------- Toast (§9) ---------- */
+.ui-toast {
+  padding: 11px 18px; border-radius: var(--radius-pill); background: var(--ink); color: var(--paper);
+  font: 400 13px/1.2 var(--font-body); white-space: nowrap; animation: ui-pop 0.3s var(--ease-spring);
+}
+
+/* ---------- Reduced motion (§8): a 150ms cross-fade instead of movement ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ui-pop, .ui-toast { animation: ui-fade 0.15s linear both; }
+  .ui-state, .ui-chip, .ui-btn { transition: opacity 0.15s linear; }
+}
+
+/* ---------- Empty page shell ---------- */
+.shell { min-height: 100dvh; box-sizing: border-box; padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-6); background: var(--paper); }
+.shell a { text-decoration: none; align-self: flex-start; }
+.shell__note { margin: 0; font: var(--text-body); color: var(--grey-700); max-width: 52ch; }

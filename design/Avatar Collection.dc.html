@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"><style>body{margin:0;background:#fff;font-family:'Instrument Sans',sans-serif;color:#111}a{color:#111}a:hover{color:#FF5D2B}</style></helmet>
+<div style="max-width:1320px;margin:0 auto;padding:48px 32px;">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:36px;">
+<div><div style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;">PANEL · AVATAR SET 01</div><h1 style="margin:6px 0 0;font:700 44px/1 'Instrument Sans',sans-serif;letter-spacing:-0.03em;">100 pen-drawn people</h1><p style="margin:10px 0 0;max-width:520px;font-size:15px;line-height:1.5;color:#5c5c58;">Single-weight ink line, transparent background, 200×200 SVG. Weighted toward faculty: blazers, cardigans, turtlenecks, glasses and silver hair, with plenty of personality mixed in.</p></div>
+<span style="font:500 12px 'JetBrains Mono',monospace;padding:8px 14px;border:1.5px solid #111;border-radius:999px;">/avatar-svgs/avatar-001…100.svg</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:18px 10px;">
+<sc-for list="{{ items }}" as="it" hint-placeholder-count="20"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><img src="{{ it.src }}" alt="" style="width:100%;max-width:130px;aspect-ratio:1;display:block;"><span style="font:500 10px 'JetBrains Mono',monospace;color:#8b8b87;">{{ it.n }}</span></div></sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { items: Array.from({ length: 100 }, (_, i) => { const n = String(i + 1).padStart(3, '0'); return { n, src: `./avatar-svgs/avatar-${n}.svg` }; }) };
+  }
+}
+</script>
+</body>
+</html>

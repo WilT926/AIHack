@@ -1,7 +1,6 @@
-// TEMPORARY root layout for /projects (no src/app/layout.tsx yet; see
-// src/app/review/layout.tsx). Drop <html>/<body> when the foundation lands.
+// Lane 2 layout. The root layout (src/app/layout.tsx) now owns <html> and
+// <body>; this keeps the review styles and fonts for this section.
 import type { Metadata } from "next";
-import { fontVariables } from "@/features/review/styles/fonts";
 import "@/features/review/styles/review.css";
 
 export const metadata: Metadata = {
@@ -11,8 +10,6 @@ export const metadata: Metadata = {
 
 export default function ProjectsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fontVariables} h-full antialiased`}>
-      <body className="h-full">{children}</body>
-    </html>
+    <div className="h-full antialiased">{children}</div>
   );
 }
