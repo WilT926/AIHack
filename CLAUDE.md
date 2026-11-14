@@ -26,7 +26,7 @@ Only edit folders your lane owns. If you need a change elsewhere, tell the human
 |---|---|
 | `src/lib/schemas`, `src/lib/data`, `src/config`, `supabase/` | Lane 1 |
 | `src/lib/engine`, `src/lib/voice`, `src/features/pitch`, `src/app/pitch`, `src/app/api/engine`, `src/app/api/pitch`, `src/app/api/voice` | Lane 1 |
-| `src/lib/documents`, `src/features/review`, `src/features/projects`, `src/app/review`, `src/app/projects`, `src/app/api/documents` | Lane 2 |
+| `src/lib/documents`, `src/features/review`, `src/features/feedback`, `src/features/projects`, `src/app/review`, `src/app/projects`, `src/app/api/documents` | Lane 2 |
 | `src/styles`, `src/components/ui`, `public/avatars`, `src/features/assessors`, `src/features/boards`, `src/features/home`, `src/app/assessors`, `src/app/boards`, `src/app/profile`, `src/app/page.tsx` | Lane 3 |
 
 ## Code rules

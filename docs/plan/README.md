@@ -36,7 +36,7 @@ Work down the tiers. Never start a lower tier while a higher one in your lane is
 | 0 | 1.1 Foundation | Figma: review and project setup screens | Figma: system, pitch screen, assessor profile |
 | 1 | 1.2 Engine | 2.1 Review screen on sample data | 3.1 Style variables and base components |
 | 2 | 1.3 Pitch: listen and questions | 2.2 Document intake, 2.3 Wire to engine | 3.2 Avatars, 3.2b Call stage, 3.2c Realistic versions, 3.3 Assessors and notes |
-| 3 | 1.4 Pitch: voices, answers, feedback | 2.4 Project setup and pitch template | 3.4 Boards, 3.5 Home |
+| 3 | 1.4 Pitch: voices, answers, feedback | 2.3b Feedback report screen, 2.4 Project setup and pitch template | 3.4 Boards, 3.5 Home |
 | 4 | 1.5 Escalation flag, 1.6 Memory | 2.5 Mark scheme upload, second run | 3.6 Visual check and design evidence |
 | 5, only if time | Board recommender, research check, real-time lip sync for one assessor | From-scratch project options | From-scratch assessor creator, phone layout |
 
@@ -55,6 +55,8 @@ Work down the tiers. Never start a lower tier while a higher one in your lane is
 1. **Live pitch test (centrepiece):** the app listens to our own pitch to the judges, the board "steps out", then comes back as a video call and asks its questions aloud before the judges do.
 2. **Report review:** a real thesis with highlighted comments from each assessor, a deliberation, a fix list and likely questions.
 3. **The differentiator:** type what a lecturer said in a lecture under their profile, run again, and that assessor now asks about it.
+
+Both sessions end in the same feedback report: a verdict, a rating against each marking criterion, and a ranked list of actions with the evidence behind each. The pitch version also covers delivery and how each question was answered.
 
 All demo set-up is done through the app's own screens, so it can be done after the freeze.
 
@@ -106,9 +108,19 @@ Lane 1 defines these once in `src/lib/schemas`. Everyone builds against them. On
 - **Project:** id, title, template (masters-report, lab-report, pitch), brief (what it is, topic, what is graded, goal), markSchemeText, weakSpots, boardId.
 - **Document:** id, projectId, title, paragraphs (list of id such as "p1", and text).
 - **Comment:** id, assessorId, paragraphId, quote (optional exact words from that paragraph), category, severity (praise, minor, major), text, suggestion.
-- **Review:** id, projectId, documentId, createdAt, status, assessorResults (list of assessorId, status, comments), deliberation.
-- **Deliberation:** summary, agreements, disagreements (topic, each assessor's view, advice), fixes (rank, text, paragraphIds), likelyQuestions (assessorId, question), escalations (reason, who to ask).
-- **PitchSession:** id, projectId, transcript, settings (questionCount 1–5, spoken or text), questions (id, assessorId, text, reason, answerTranscript, followUp), feedback (wentWell, toChange, qaHandling, escalations).
+- **Review:** id, projectId, documentId, createdAt, status, assessorResults (list of assessorId, status, comments), deliberation, report (a FeedbackReport).
+- **Deliberation:** summary, agreements, disagreements (topic, each assessor's view, advice).
+- **PitchSession:** id, projectId, transcript, startedAt, endedAt, settings (questionCount 1–5, spoken or text), questions (id, assessorId, text, reason, answerTranscript, followUp), report (a FeedbackReport).
+- **FeedbackReport** (the same form closes both a report review and a pitch):
+  - kind (report or pitch) and verdict (two or three sentences).
+  - criteria: each marking criterion from the mark scheme, a rating of strong, adequate or weak, and the evidence for it.
+  - strengths: what to keep.
+  - actions, ranked: what to do, why it matters, which assessors raised it, the evidence (paragraph ids or a transcript quote), and effort (quick, moderate, substantial).
+  - assessorVerdicts: one line from each assessor.
+  - escalations: reason and who to ask.
+  - sinceLastTime, optional: what improved and what is still weak.
+  - Report only: likelyQuestions (assessorId, question).
+  - Pitch only: delivery (length, words per minute, notes on structure and clarity) and questionReview (for each question: how well it was answered, and an outline of a stronger answer).
 - **CallLog:** id, kind, model, startedAt, durationMs, inputTokens, outputTokens, ok, error.
 
 ## Style variable names (shared with Figma)

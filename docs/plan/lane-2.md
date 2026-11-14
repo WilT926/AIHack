@@ -5,7 +5,8 @@ You own the second thing the judges see: a real report coming back covered in co
 ## Until the foundation is pushed (tier 0)
 Keep working in Figma with Lane 3. Design the two screens you will build first, using the shared variable names in the plan:
 1. **Report review:** document on the left, comments on the right, deliberation panel.
-2. **Project setup:** the short step-by-step flow.
+2. **Feedback report:** the form that closes every session, for both a report and a pitch.
+3. **Project setup:** the short step-by-step flow.
 
 When Lane 1 says the foundation is live, pull `staging` and start 2.1.
 
@@ -19,7 +20,7 @@ When Lane 1 says the foundation is live, pull `staging` and start 2.1.
 2. **Document pane:** the numbered paragraphs, with commented paragraphs highlighted in the colour of the assessor who commented. Where a comment has a quote, highlight just those words.
 3. **Comment rail:** each comment shows the assessor's avatar, name, severity and suggestion. Clicking a comment scrolls to its paragraph; clicking a highlight selects its comments.
 4. **Filters:** by assessor and by severity.
-5. **Deliberation panel:** summary, where the board agrees, where it disagrees and the advice, the ranked fix list, likely questions, and the "Take this to your supervisor" block.
+5. **Board discussion panel:** summary, where the board agrees, where it disagrees and the advice. The ranked actions and everything else live in the feedback report (step 2.3b); leave a tab for it.
 6. **States:** loading, empty, and one assessor failed.
 
 Use only the base components in `src/components/ui`. If you need one that does not exist, ask Lane 3.
@@ -55,6 +56,29 @@ Use only the base components in `src/components/ui`. If you need one that does n
 
 ---
 
+## 2.3b Feedback report screen (tier 3, about 50 minutes)
+**Branch:** `lane2/feedback-report`. No calls to Claude in this step; Lane 1's engine produces the data.
+
+One screen, used at the end of both a report review and a pitch. It is the page the student takes away and acts on.
+
+**Build in `src/features/feedback`:**
+1. **Sample data first:** one FeedbackReport of each kind in `fixtures/`, passing the data shape.
+2. **Verdict** at the top, with one line from each assessor beside their avatar.
+3. **Against the marking criteria:** each criterion with its rating (strong, adequate, weak) and the evidence.
+4. **Actions, ranked:** what to do, why it matters, who raised it, and the effort. For a report, each action links to its paragraphs in the review screen. For a pitch, it shows the transcript quote.
+5. **Strengths:** what to keep.
+6. **Report only:** likely questions.
+7. **Pitch only:** delivery (length, words per minute, structure and clarity notes) and a review of each question with the outline of a stronger answer.
+8. **"Take this to your supervisor"** block for escalations, and "since last time" when present.
+9. Tick boxes on the actions so the student can track what they have done, saved with the report.
+10. A "Copy as text" button for the whole report.
+
+Mount it as the second tab of the review screen. Lane 1 mounts the same component at the end of pitch practice.
+
+**Done when:** both sample reports display fully, and a real review on `staging` ends on this screen.
+
+---
+
 ## 2.4 Project setup and the pitch template (tier 3, about 60 minutes)
 **Branch:** `lane2/project-setup`.
 
@@ -75,7 +99,7 @@ Use only the base components in `src/components/ui`. If you need one that does n
 
 1. Upload or paste the mark scheme on the project. Reuse the intake code and save the text on the Project.
 2. A "Run again" action on a finished review, for a new version of the document.
-3. If Lane 1's memory step is merged, show "since last time" at the top of the deliberation.
+3. If Lane 1's memory step is merged, check "since last time" appears in the feedback report.
 
 **Done when:** a review run with a mark scheme refers to its criteria.
 
