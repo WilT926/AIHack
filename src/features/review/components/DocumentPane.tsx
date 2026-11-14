@@ -30,7 +30,7 @@ export function DocumentPane({
   registerParagraph: (paragraphId: string, el: HTMLElement | null) => void;
 }) {
   const meta = [
-    plural(doc.paragraphs.length, "paragraph", "paragraphs"),
+    plural(doc.paragraphs.filter((p) => p.type === "paragraph").length, "paragraph", "paragraphs"),
     plural(openCommentCount, "comment", "comments"),
     plural(openQuestionCount, "open question", "open questions"),
   ].join(" · ");

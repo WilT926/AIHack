@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Assessor, ReviewView } from "./types";
 import { commentsByParagraph, indexAssessors, paragraphLabel, paragraphOrder, sortByParagraph } from "./lib";
 import { Tabs, type TabItem } from "./ui/Tabs";
@@ -14,7 +15,8 @@ import { DeliberationTab, FixListTab, QuestionsTab } from "./components/RailTabs
 type RailTab = "comments" | "deliberation" | "fixes" | "questions";
 type ScrollRequest = { kind: "paragraph" | "comment"; id: string; nonce: number };
 
-export function ReviewScreen({ view }: { view: ReviewView }) {
+export function ReviewScreen({ view, onUpload }: { view: ReviewView; onUpload?: () => void }) {
+  const router = useRouter();
   const { run, board, live } = view;
   const doc = run.document;
 
@@ -114,7 +116,11 @@ export function ReviewScreen({ view }: { view: ReviewView }) {
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
-      <TopBar view={view} boardMembers={boardMembers} />
+      <TopBar
+        view={view}
+        boardMembers={boardMembers}
+        onUpload={onUpload ?? (() => router.push("/review/new"))}
+      />
 
       <main className="flex min-h-0 flex-1 gap-6 px-14">
         <section className="min-w-0 flex-1 overflow-y-auto pt-6" aria-label="Document">
