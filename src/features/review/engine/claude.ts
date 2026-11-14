@@ -8,7 +8,7 @@ import { engineConfig } from "./config";
 export class EngineError extends Error {
   constructor(
     message: string,
-    readonly code: "no-key" | "refused" | "truncated" | "invalid-output" | "rate-limited" | "api",
+    readonly code: "no-key" | "refused" | "truncated" | "invalid-output" | "rate-limited" | "api" | "cancelled",
   ) {
     super(message);
   }
@@ -27,6 +27,7 @@ export async function callStructured<S extends z.ZodType>(options: {
   user: string;
   schema: S;
   maxTokens: number;
+  signal?: AbortSignal;
 }): Promise<{ output: z.infer<S>; model: string; inputTokens: number; outputTokens: number }> {
   if (!engineConfig.hasApiKey) {
     throw new EngineError("No Anthropic API key is set on the server (ANTHROPIC_API_KEY).", "no-key");
@@ -42,8 +43,9 @@ export async function callStructured<S extends z.ZodType>(options: {
       output_config: { effort: engineConfig.effort, format: betaZodOutputFormat(options.schema) },
       // On models that support it, a policy decline is retried on a fallback model server-side.
       ...(engineConfig.useFallbacks ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
-    });
+    }, { signal: options.signal });
   } catch (err) {
+    if (err instanceof Anthropic.APIUserAbortError) throw new EngineError("The request was cancelled.", "cancelled");
     if (err instanceof Anthropic.RateLimitError) throw new EngineError("Claude is busy right now. Try again shortly.", "rate-limited");
     if (err instanceof Anthropic.AuthenticationError) throw new EngineError("The server's Anthropic API key was rejected.", "no-key");
     if (err instanceof Anthropic.APIError) throw new EngineError(`Claude returned an error (${err.status ?? "network"}).`, "api");

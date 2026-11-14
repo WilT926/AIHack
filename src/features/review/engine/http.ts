@@ -22,7 +22,7 @@ export async function readBody<S extends z.ZodType>(request: Request, schema: S)
 /** Turn any failure into a short message the screen can show. Never leaks internals. */
 export function errorResponse(err: unknown): Response {
   if (err instanceof EngineError) {
-    const status = err.code === "rate-limited" ? 429 : err.code === "no-key" ? 503 : 502;
+    const status = err.code === "rate-limited" ? 429 : err.code === "no-key" ? 503 : err.code === "cancelled" ? 499 : 502;
     return Response.json({ error: err.message, code: err.code }, { status });
   }
   return Response.json({ error: "Something went wrong on the server." }, { status: 500 });

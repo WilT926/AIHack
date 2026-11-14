@@ -14,12 +14,20 @@ export function Pill({
   variant = "outline",
   onClick,
   title,
+  pressed,
+  role,
+  selected,
   className,
   children,
 }: {
   variant?: PillVariant;
   onClick?: () => void;
   title?: string;
+  /** For toggle pills (filters, chips): sets aria-pressed. */
+  pressed?: boolean;
+  /** For tab pills: role="tab" with aria-selected. */
+  role?: "tab";
+  selected?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -32,7 +40,15 @@ export function Pill({
   );
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} title={title} className={classes}>
+      <button
+        type="button"
+        onClick={onClick}
+        title={title}
+        aria-pressed={role ? undefined : pressed}
+        role={role}
+        aria-selected={role ? selected : undefined}
+        className={classes}
+      >
         {children}
       </button>
     );

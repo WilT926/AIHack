@@ -7,24 +7,13 @@ import { Avatar } from "../ui/Avatar";
 import { Label } from "../ui/Label";
 import { Pill, type PillVariant } from "../ui/Pill";
 import { TextInput } from "../ui/TextInput";
+import { TextButton } from "../ui/TextButton";
 
 const kindPill: Record<CommentKind, PillVariant> = {
   critique: "accent",
   question: "ink",
   praise: "outline",
 };
-
-function ActionLink({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="font-mono text-label uppercase tracking-label text-text-muted transition-colors hover:text-ink focus-visible:text-ink focus-visible:outline-none"
-    >
-      {children}
-    </button>
-  );
-}
 
 export const CommentCard = forwardRef<
   HTMLDivElement,
@@ -105,11 +94,11 @@ export const CommentCard = forwardRef<
       )}
 
       <div className="mt-4 flex items-center gap-3 text-text-muted">
-        <ActionLink onClick={() => setReplying((v) => !v)}>Reply</ActionLink>
+        <TextButton onClick={() => setReplying((v) => !v)}>Reply</TextButton>
         <span aria-hidden="true">·</span>
-        <ActionLink onClick={onResolve}>Resolve</ActionLink>
+        <TextButton onClick={onResolve}>Resolve</TextButton>
         <span aria-hidden="true">·</span>
-        <ActionLink onClick={onShowInText}>Show in text</ActionLink>
+        <TextButton onClick={onShowInText}>Show in text</TextButton>
       </div>
     </Card>
   );

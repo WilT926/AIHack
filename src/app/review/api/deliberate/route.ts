@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const body = await readBody(request, deliberationRequestSchema);
   if (body instanceof Response) return body;
   try {
-    return Response.json(await deliberate(body));
+    return Response.json(await deliberate(body, request.signal));
   } catch (err) {
     return errorResponse(err);
   }

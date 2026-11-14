@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDocument, isPageNumberLine, splitBlocks, titleFromFilename } from "./split";
+import { buildDocument, isPageNumberLine, MAX_PARAGRAPH_CHARS, splitBlocks, splitLong, titleFromFilename } from "./split";
 
 describe("splitBlocks", () => {
   it("splits on blank lines and joins wrapped lines", () => {
@@ -64,6 +64,32 @@ describe("buildDocument", () => {
 
   it("returns no paragraphs for empty text", () => {
     expect(buildDocument("   \n\n  ").paragraphs).toEqual([]);
+  });
+});
+
+describe("splitLong", () => {
+  it("leaves normal paragraphs alone", () => {
+    expect(splitLong("Short. Paragraph.")).toEqual(["Short. Paragraph."]);
+  });
+
+  it("splits a very long paragraph at sentence ends, under the limit", () => {
+    const sentence = "This sentence is about forty characters. ";
+    const long = sentence.repeat(200).trim();
+    const chunks = splitLong(long, 1000);
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks.every((c) => c.length <= 1000 && c.endsWith("."))).toBe(true);
+    expect(chunks.join(" ")).toBe(long);
+  });
+
+  it("hard-wraps one enormous sentence", () => {
+    const chunks = splitLong("word ".repeat(1000).trim(), 300);
+    expect(chunks.every((c) => c.length <= 300)).toBe(true);
+  });
+
+  it("is applied when building a document", () => {
+    const doc = buildDocument("A sentence that goes on. ".repeat(300));
+    expect(doc.paragraphs.length).toBeGreaterThan(1);
+    expect(doc.paragraphs.every((p) => p.text.length <= MAX_PARAGRAPH_CHARS)).toBe(true);
   });
 });
 

@@ -42,14 +42,19 @@ function contextBlock(context: ReviewContext): string {
   if (context.graded?.length) lines.push(`What's graded: ${context.graded.join(", ")}`);
   if (context.weakSpots?.length) lines.push(`Where the student feels least sure (probe these harder): ${context.weakSpots.join("; ")}`);
   if (context.markScheme) lines.push(`Mark scheme:\n${context.markScheme}`);
-  return `<context>\n${lines.join("\n")}\n</context>`;
+  return `<context>\n${fence(lines.join("\n"))}\n</context>`;
+}
+
+/** Uploaded text can't open or close the tags this prompt uses to fence it. */
+export function fence(text: string): string {
+  return text.replace(/<\/?\s*(document|context|you|board|comments)\b[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"));
 }
 
 export function documentBlock(doc: Document): string {
   const body = doc.paragraphs
-    .map((p) => (p.type === "heading" ? `[${p.id}] (heading) ${p.text}` : `[${p.id}] ${p.text}`))
+    .map((p) => (p.type === "heading" ? `[${p.id}] (heading) ${fence(p.text)}` : `[${p.id}] ${fence(p.text)}`))
     .join("\n\n");
-  return `<document title="${doc.title.replace(/"/g, "'")}">\n${body}\n</document>`;
+  return `<document title="${fence(doc.title).replace(/"/g, "'")}">\n${body}\n</document>`;
 }
 
 function assessorBlock(a: Assessor): string {
@@ -62,7 +67,7 @@ function assessorBlock(a: Assessor): string {
   ];
   if (a.personality) lines.push(`Personality: ${a.personality}`);
   if (a.notes?.length) lines.push(`What this marker has said they look for:\n- ${a.notes.join("\n- ")}`);
-  return `<you>\n${lines.join("\n")}\n</you>`;
+  return `<you>\n${fence(lines.join("\n"))}\n</you>`;
 }
 
 export function assessorUserMessage(context: ReviewContext, doc: Document, assessor: Assessor): string {
@@ -82,7 +87,7 @@ export function deliberationUserMessage(
     .map((a) => {
       const mine = comments.filter((c) => c.assessorId === a.id);
       if (mine.length === 0) return `${a.id}: (no comments)`;
-      return `${a.id}:\n${mine.map((c) => `- [${c.paragraphIds.join(", ")}] ${c.kind}: ${c.text}`).join("\n")}`;
+      return `${a.id}:\n${mine.map((c) => `- [${c.paragraphIds.join(", ")}] ${c.kind}: ${fence(c.text)}`).join("\n")}`;
     })
     .join("\n\n");
   return [

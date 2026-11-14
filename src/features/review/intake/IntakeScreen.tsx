@@ -15,6 +15,7 @@ import { Button } from "../ui/Button";
 import { TextInput } from "../ui/TextInput";
 import { TextArea } from "../ui/TextArea";
 import { SkeletonLine } from "../ui/SkeletonLine";
+import { FileDrop } from "../ui/FileDrop";
 import { LiveReview } from "../live/LiveReview";
 
 type Mode = "pdf" | "paste";
@@ -36,7 +37,6 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
   const [pasteTitle, setPasteTitle] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [error, setError] = useState<string>();
-  const [dragging, setDragging] = useState(false);
 
   const readPdf = async (file: File) => {
     setError(undefined);
@@ -82,7 +82,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
       <header className="flex h-topbar shrink-0 items-center gap-6 border-b border-rule bg-surface px-7">
         <Logo name="Panel" />
         <div className="h-7 w-px bg-rule" />
-        <Label tone="ink">{context.project.name}  /  New version</Label>
+        <Label tone="ink">{context.project.name}  /  Upload document</Label>
       </header>
 
       <main className="mx-auto flex w-full max-w-sheet flex-col gap-6 px-6 py-12">
@@ -113,36 +113,12 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
             />
 
             {mode === "pdf" ? (
-              <label
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragging(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file) void readPdf(file);
-                }}
-                className={cn(
-                  "flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-6 py-14 text-center transition-colors",
-                  dragging ? "border-accent bg-critique-tint" : "border-rule hover:border-ink",
-                )}
-              >
-                <span className="font-semibold text-ink">Drop a PDF here, or click to choose one</span>
-                <Label>PDF · up to 25 MB · text, not scans</Label>
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  className="sr-only"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void readPdf(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
+              <FileDrop
+                accept="application/pdf,.pdf"
+                onFile={(file) => void readPdf(file)}
+                title="Drop a PDF here, or click to choose one"
+                hint={<Label>PDF · up to 25 MB · text, not scans</Label>}
+              />
             ) : (
               <div className="flex flex-col gap-3">
                 <TextInput value={pasteTitle} onChange={setPasteTitle} placeholder="Title (optional), e.g. Chapter 3, Methods" ariaLabel="Title" />
@@ -227,7 +203,7 @@ function Preview({
 
       <ol className="flex max-h-96 flex-col gap-2 overflow-y-auto rounded-md bg-paper p-4">
         {doc.paragraphs.map((p) => (
-          <li key={p.id} className="grid grid-cols-[2.5rem_1fr] gap-2">
+          <li key={p.id} className="grid grid-cols-numbered gap-2">
             <span className="pt-0.5 font-mono text-label text-text-muted">¶{p.index}</span>
             <span className={cn("text-body text-ink", p.type === "heading" ? "font-bold" : "line-clamp-2")}>{p.text}</span>
           </li>

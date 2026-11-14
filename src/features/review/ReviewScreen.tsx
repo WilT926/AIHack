@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Assessor, ReviewView } from "./types";
+import type { Assessor, CommentKind, ReviewView } from "./types";
 import { commentsByParagraph, indexAssessors, paragraphLabel, paragraphOrder, sortByParagraph } from "./lib";
 import { Tabs, type TabItem } from "./ui/Tabs";
 import { TopBar } from "./components/TopBar";
@@ -11,6 +11,7 @@ import { CommentCard } from "./components/CommentCard";
 import { DeliberationCard } from "./components/DeliberationCard";
 import { ArrivingCard, DeliberatingCard, EmptyState, FailedCard } from "./components/StatusCards";
 import { DeliberationTab, FixListTab, QuestionsTab } from "./components/RailTabs";
+import { CommentFilters } from "./components/CommentFilters";
 
 type RailTab = "comments" | "deliberation" | "fixes" | "questions";
 type ScrollRequest = { kind: "paragraph" | "comment"; id: string; nonce: number };
@@ -38,6 +39,8 @@ export function ReviewScreen({
   const [selectedCommentIds, setSelectedCommentIds] = useState<Set<string>>(() => new Set());
   const [replies, setReplies] = useState<Record<string, string[]>>({});
   const [scrollRequest, setScrollRequest] = useState<ScrollRequest>();
+  const [kindFilter, setKindFilter] = useState<CommentKind | "all">("all");
+  const [assessorFilter, setAssessorFilter] = useState<Set<string>>(() => new Set());
 
   const paragraphEls = useRef(new Map<string, HTMLElement>());
   const commentEls = useRef(new Map<string, HTMLElement>());
@@ -53,6 +56,20 @@ export function ReviewScreen({
     [run.comments, resolved, order],
   );
   const openByParagraph = useMemo(() => commentsByParagraph(openComments), [openComments]);
+  // Filters narrow both the rail and the highlights in the document.
+  const filtering = kindFilter !== "all" || assessorFilter.size > 0;
+  const visibleComments = useMemo(
+    () =>
+      openComments.filter(
+        (c) => (kindFilter === "all" || c.kind === kindFilter) && (assessorFilter.size === 0 || assessorFilter.has(c.assessorId)),
+      ),
+    [openComments, kindFilter, assessorFilter],
+  );
+  const visibleByParagraph = useMemo(() => commentsByParagraph(visibleComments), [visibleComments]);
+  const commenters = useMemo(
+    () => boardMembers.filter((a) => openComments.some((c) => c.assessorId === a.id)),
+    [boardMembers, openComments],
+  );
   const openQuestionCount = openComments.filter((c) => c.kind === "question").length;
 
   // Scroll after the DOM has updated (e.g. after switching back to the Comments tab).
@@ -84,7 +101,7 @@ export function ReviewScreen({
 
   /** Highlighted paragraph -> its comments in the rail. */
   const showCommentsFor = (paragraphId: string) => {
-    const onParagraph = openByParagraph.get(paragraphId) ?? [];
+    const onParagraph = visibleByParagraph.get(paragraphId) ?? [];
     if (onParagraph.length === 0) return;
     setTab("comments");
     setSelectedParagraphId(paragraphId);
@@ -138,7 +155,7 @@ export function ReviewScreen({
         <section className="min-w-0 flex-1 overflow-y-auto pt-6" aria-label="Document">
           <DocumentPane
             doc={doc}
-            openByParagraph={openByParagraph}
+            openByParagraph={visibleByParagraph}
             openCommentCount={openComments.length}
             openQuestionCount={openQuestionCount}
             assessors={assessors}
@@ -174,7 +191,28 @@ export function ReviewScreen({
                   />
                 ))}
 
-                {openComments.map((c) => (
+                {openComments.length > 0 && (
+                  <CommentFilters
+                    kind={kindFilter}
+                    onKind={setKindFilter}
+                    assessors={commenters}
+                    selected={assessorFilter}
+                    onToggleAssessor={(id) =>
+                      setAssessorFilter((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(id)) next.delete(id);
+                        else next.add(id);
+                        return next;
+                      })
+                    }
+                  />
+                )}
+
+                {filtering && visibleComments.length === 0 && openComments.length > 0 && (
+                  <EmptyState title="No comments match these filters" body="Choose All to see every open comment." />
+                )}
+
+                {visibleComments.map((c) => (
                   <CommentCard
                     key={c.id}
                     ref={(el) => registerComment(c.id, el)}

@@ -85,7 +85,7 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
-      <header className="grid h-topbar shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-rule px-7">
+      <header className="grid h-topbar shrink-0 grid-cols-centred items-center border-b border-rule px-7">
         <Logo name="Panel" />
         <Stepper current={current.steps} />
         <Link
@@ -112,7 +112,7 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
       </main>
 
       <footer className="fixed inset-x-0 bottom-0 border-t border-rule bg-surface">
-        <div className="mx-auto grid w-full max-w-page grid-cols-[1fr_auto_1fr] items-center px-8 py-4">
+        <div className="mx-auto grid w-full max-w-page grid-cols-centred items-center px-8 py-4">
           <div>
             <Button variant="outline" onClick={back} disabled={index === 0}>
               Back

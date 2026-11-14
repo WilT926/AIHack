@@ -67,7 +67,8 @@ export function TopBar({
         <Button variant="outline" onClick={onUpload}>
           Upload v{doc.version + 1}
         </Button>
-        <Button onClick={onRunAgain}>Run again</Button>
+        {/* Switched off until step 2.5 (second run) gives it something to do. */}
+        {onRunAgain && <Button onClick={onRunAgain}>Run again</Button>}
       </div>
     </header>
   );

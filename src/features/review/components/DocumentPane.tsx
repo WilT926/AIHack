@@ -60,7 +60,7 @@ export function DocumentPane({
               <li
                 key={p.id}
                 ref={(el) => registerParagraph(p.id, el)}
-                className="grid scroll-mt-6 grid-cols-[2rem_1fr_2rem] items-start gap-2"
+                className="grid scroll-mt-6 grid-cols-paragraph items-start gap-2"
               >
                 <span className="pt-2.5 font-mono text-label text-text-muted">¶{p.index}</span>
                 <div

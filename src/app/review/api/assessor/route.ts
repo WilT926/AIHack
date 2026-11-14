@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const body = await readBody(request, assessorRequestSchema);
   if (body instanceof Response) return body;
   try {
-    const comments = await reviewAsAssessor(body);
+    const comments = await reviewAsAssessor(body, request.signal);
     return Response.json({ comments });
   } catch (err) {
     return errorResponse(err);

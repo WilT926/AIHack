@@ -11,6 +11,7 @@ import { TextInput } from "../../review/ui/TextInput";
 import { TextArea } from "../../review/ui/TextArea";
 import { Avatar, AvatarStack } from "../../review/ui/Avatar";
 import { Card } from "../../review/ui/Card";
+import { SelectCard } from "../../review/ui/SelectCard";
 import { TemplateIcon } from "./TemplateIcon";
 
 function pick(ids: string[], assessors: Map<string, Assessor>): Assessor[] {
@@ -38,17 +39,13 @@ export function TemplateStep({
         const active = t.id === selected;
         const blank = t.id === "blank";
         return (
-          <button
+          <SelectCard
             key={t.id}
-            type="button"
             role="radio"
-            aria-checked={active}
-            onClick={() => onSelect(t.id)}
-            className={cn(
-              "flex min-h-60 flex-col items-start gap-1 rounded-lg p-6 text-left transition-colors",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-              active ? "border-2 border-accent" : blank ? "border-2 border-dashed border-rule hover:border-graphite" : "border-2 border-ink hover:bg-paper",
-            )}
+            checked={active}
+            onSelect={() => onSelect(t.id)}
+            dashed={blank}
+            className="min-h-60 items-start gap-1 p-6"
           >
             <div className="flex w-full items-start justify-between">
               <TemplateIcon name={t.icon} active={active} />
@@ -65,7 +62,7 @@ export function TemplateStep({
                 <Label>Suggested board</Label>
               </span>
             )}
-          </button>
+          </SelectCard>
         );
       })}
     </div>
@@ -79,7 +76,7 @@ export function BriefStep({ draft, onChange }: { draft: ProjectDraft; onChange: 
   const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
 
   return (
-    <div className="grid grid-cols-[1fr_34rem] gap-14">
+    <div className="grid grid-cols-form-aside gap-14">
       <div className="flex flex-col gap-6">
         <div>
           <FieldLabel>Project name</FieldLabel>
@@ -209,18 +206,7 @@ export function BoardStep({
       {presets.map((a) => {
         const seated = draft.boardIds.includes(a.id);
         return (
-          <button
-            key={a.id}
-            type="button"
-            role="checkbox"
-            aria-checked={seated}
-            onClick={() => toggle(a.id)}
-            className={cn(
-              "flex flex-col gap-3 rounded-lg p-5 text-left transition-colors",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-              seated ? "border-2 border-accent" : "border-2 border-rule hover:border-graphite",
-            )}
-          >
+          <SelectCard key={a.id} role="checkbox" checked={seated} onSelect={() => toggle(a.id)} dashed={false} className="gap-3 p-5">
             <div className="flex items-start gap-3">
               <Avatar avatar={a.avatar} name={a.name} size="lg" ring={seated ? "accent" : "ink"} />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -239,7 +225,7 @@ export function BoardStep({
               </span>
               {suggested.includes(a.id) && <Label>Suggested</Label>}
             </div>
-          </button>
+          </SelectCard>
         );
       })}
     </div>
@@ -262,11 +248,11 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
   ];
 
   return (
-    <div className="grid grid-cols-[1fr_24rem] gap-10">
+    <div className="grid grid-cols-summary-aside gap-10">
       <Card className="p-7">
         <dl className="flex flex-col divide-y divide-rule">
           {rows.map(([k, v]) => (
-            <div key={k} className="grid grid-cols-[10rem_1fr] gap-4 py-3.5">
+            <div key={k} className="grid grid-cols-label-value gap-4 py-3.5">
               <dt>
                 <Label>{k}</Label>
               </dt>

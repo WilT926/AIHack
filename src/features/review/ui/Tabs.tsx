@@ -17,6 +17,8 @@ export function Tabs<T extends string>({
       {items.map((item) => (
         <Pill
           key={item.id}
+          role="tab"
+          selected={item.id === active}
           variant={item.id === active ? "ink" : "outline"}
           onClick={() => onChange(item.id)}
         >

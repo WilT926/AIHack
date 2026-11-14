@@ -19,7 +19,7 @@ function log(kind: string, startedAt: number, extra: Record<string, unknown>) {
   console.info(JSON.stringify({ engine: kind, durationMs: Date.now() - startedAt, ...extra }));
 }
 
-export async function reviewAsAssessor(req: AssessorRequest): Promise<Comment[]> {
+export async function reviewAsAssessor(req: AssessorRequest, signal?: AbortSignal): Promise<Comment[]> {
   const startedAt = Date.now();
   if (engineConfig.mock) {
     await sleep(mockDelay(req.assessor.id));
@@ -34,6 +34,7 @@ export async function reviewAsAssessor(req: AssessorRequest): Promise<Comment[]>
       user: assessorUserMessage(req.context, req.document, req.assessor),
       schema: assessorOutputSchema,
       maxTokens: 16000,
+      signal,
     });
     const comments = sanitizeAssessorOutput(result.output, req.document, req.assessor.id);
     log("assessor", startedAt, { ok: true, assessor: req.assessor.id, model: result.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens, kept: comments.length, returned: result.output.comments.length });
@@ -46,6 +47,7 @@ export async function reviewAsAssessor(req: AssessorRequest): Promise<Comment[]>
 
 export async function deliberate(
   req: DeliberationRequest,
+  signal?: AbortSignal,
 ): Promise<{ deliberation: Deliberation; fixList: FixItem[]; questions: Question[] }> {
   const startedAt = Date.now();
   const ids = req.assessors.map((a) => a.id);
@@ -60,6 +62,7 @@ export async function deliberate(
       user: deliberationUserMessage(req.context, req.document, req.assessors, req.comments),
       schema: deliberationOutputSchema,
       maxTokens: 16000,
+      signal,
     });
     const out = sanitizeDeliberation(result.output, req.document, ids, seconds());
     log("deliberation", startedAt, { ok: true, model: result.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens });

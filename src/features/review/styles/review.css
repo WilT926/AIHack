@@ -55,6 +55,26 @@
   --spacing-topbar: 4.5rem;
 }
 
+/* Named grid layouts, so components never carry raw widths. */
+@utility grid-cols-paragraph {
+  grid-template-columns: 2rem 1fr 2rem; /* ¶ number · text · commenter avatars */
+}
+@utility grid-cols-numbered {
+  grid-template-columns: 2.5rem 1fr;
+}
+@utility grid-cols-centred {
+  grid-template-columns: 1fr auto 1fr;
+}
+@utility grid-cols-form-aside {
+  grid-template-columns: 1fr 34rem;
+}
+@utility grid-cols-summary-aside {
+  grid-template-columns: 1fr 24rem;
+}
+@utility grid-cols-label-value {
+  grid-template-columns: 10rem 1fr;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-text);

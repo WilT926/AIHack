@@ -117,6 +117,32 @@ function mergeFragments(blocks: Block[]): Block[] {
   return out;
 }
 
+/** Paragraphs longer than this are split at sentence ends (the engine caps paragraph size). */
+export const MAX_PARAGRAPH_CHARS = 2500;
+
+/** Split an over-long paragraph into chunks at sentence boundaries. */
+export function splitLong(text: string, max = MAX_PARAGRAPH_CHARS): string[] {
+  if (text.length <= max) return [text];
+  const sentences = text.match(/[^.!?]+(?:[.!?]+["'”’)\]]*\s*|$)/g) ?? [text];
+  const chunks: string[] = [];
+  let current = "";
+  for (const sentence of sentences) {
+    if (current && (current + sentence).length > max) {
+      chunks.push(current.trim());
+      current = "";
+    }
+    current += sentence;
+    // A single sentence longer than max: hard-wrap at a space.
+    while (current.length > max) {
+      const cut = current.lastIndexOf(" ", max) > max / 2 ? current.lastIndexOf(" ", max) : max;
+      chunks.push(current.slice(0, cut).trim());
+      current = current.slice(cut);
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
 export type BuildDocumentOptions = {
   id?: string;
   title?: string;
@@ -125,7 +151,9 @@ export type BuildDocumentOptions = {
 
 /** Raw text -> Document with paragraphs p1, p2, ... */
 export function buildDocument(text: string, options: BuildDocumentOptions = {}): Document {
-  const blocks = splitBlocks(text);
+  const blocks = splitBlocks(text).flatMap((b) =>
+    b.type === "paragraph" ? splitLong(b.text).map((t) => ({ type: b.type, text: t })) : [b],
+  );
   const paragraphs: Paragraph[] = blocks.map((b, i) => ({
     id: `p${i + 1}`,
     index: i + 1,
