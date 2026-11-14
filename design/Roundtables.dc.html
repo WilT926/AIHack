@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>html,body{margin:0;height:100%;background:#fff;font-family:'Instrument Sans',system-ui,sans-serif;color:#111;overflow:hidden}a{color:#111}a:hover{color:#FF5D2B}*{-webkit-tap-highlight-color:transparent}
+@keyframes rtPulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.22);opacity:0}}
+@keyframes rtPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}</style></helmet>
+<div style="width:100vw;height:100vh;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;">
+<div style="position:relative;flex:none;width:1440px;height:900px;transform:scale({{ scale }});background:#fff radial-gradient(circle,#e9e8e4 1.2px,transparent 1.6px) 0 0/28px 28px;overflow:hidden;">
+{{ gooDefs }}
+
+<div style="position:absolute;left:32px;top:26px;display:flex;flex-direction:column;gap:14px;z-index:20;">
+<div style="display:flex;align-items:center;gap:14px;"><div style="position:relative;width:34px;height:40px;flex:none;"><i style="position:absolute;left:0;top:15px;width:10px;height:10px;border-radius:50%;background:#FF5D2B;"></i><i style="position:absolute;left:18px;top:0;width:7px;height:7px;border-radius:50%;background:#111;"></i><i style="position:absolute;left:24px;top:9px;width:7px;height:7px;border-radius:50%;background:#111;"></i><i style="position:absolute;left:26px;top:17px;width:7px;height:7px;border-radius:50%;background:#111;"></i><i style="position:absolute;left:24px;top:25px;width:7px;height:7px;border-radius:50%;background:#111;"></i><i style="position:absolute;left:18px;top:33px;width:7px;height:7px;border-radius:50%;background:#111;"></i></div><div style="display:flex;flex-direction:column;"><span style="font:700 24px/1 'Instrument Sans',sans-serif;letter-spacing:-0.03em;white-space:nowrap;">Panel</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;margin-top:3px;white-space:nowrap;">YOUR FLOOR · AUTUMN</span></div></div>
+<div style="display:flex;padding:4px;background:#fff;border:1.5px solid #ecebe8;border-radius:999px;font-size:13px;font-weight:600;align-self:flex-start;">
+<span onClick="{{ setFloor }}" style="padding:7px 14px;border-radius:999px;cursor:pointer;background:{{ swFloorBg }};color:{{ swFloorFg }};transition:all .3s;">Floor plan</span>
+<span onClick="{{ setCarousel }}" style="padding:7px 14px;border-radius:999px;cursor:pointer;background:{{ swCarBg }};color:{{ swCarFg }};transition:all .3s;">Carousel</span>
+</div>
+</div>
+
+<div onClick="{{ openPal }}" style="position:absolute;left:560px;top:28px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;width:340px;padding:11px 16px;background:#fff;border:1.5px solid #111;border-radius:999px;font-size:14px;color:#8b8b87;z-index:20;cursor:text;box-sizing:border-box;"><i style="width:12px;height:12px;border-radius:50%;border:2px solid #111;"></i><span style="flex:1;">Find a table, assessor or doc</span><span style="font:500 11px 'JetBrains Mono',monospace;padding:3px 7px;border-radius:999px;background:#f3f2ef;">⌘K</span></div>
+<sc-if value="{{ hasProf }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:560px;top:84px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:5px 6px 5px 14px;background:#111;color:#fff;border-radius:999px;font-size:13px;z-index:20;animation:rtPop .35s cubic-bezier(.3,1.6,.5,1);white-space:nowrap;">Tables with <b>{{ profName }}</b><span onClick="{{ clearProf }}" style="width:24px;height:24px;border-radius:50%;background:#3a3a3a;display:grid;place-items:center;cursor:pointer;">×</span></div></sc-if>
+
+<div style="position:absolute;right:28px;top:22px;display:flex;align-items:center;gap:12px;padding:6px 18px 6px 6px;background:#fff;border:1.5px solid #ecebe8;border-radius:999px;z-index:20;"><dc-import name="Avatar" who="6" hint-size="52px,52px" style="width:52px;height:52px;"></dc-import><div style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:600;">Sam Rivera</span><span style="font-size:12px;color:#5c5c58;">MArch · Year 2</span></div></div>
+
+<sc-if value="{{ isCar }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:140px;top:240px;width:760px;height:340px;border-radius:50%;border:1.5px dashed #dcdbd7;box-sizing:border-box;"></div><div style="position:absolute;left:470px;top:782px;display:flex;gap:8px;z-index:12;"><span onClick="{{ prev }}" style="width:40px;height:40px;border-radius:50%;border:1.5px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:16px;">←</span><span onClick="{{ next }}" style="width:40px;height:40px;border-radius:50%;border:1.5px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:16px;">→</span></div></sc-if>
+<sc-if value="{{ isFloor }}" hint-placeholder-val="{{ true }}"><div onClick="{{ togglePlus }}" style="position:absolute;left:772px;top:562px;width:156px;height:156px;border-radius:50%;border:2px dashed #c9c8c4;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;cursor:pointer;background:#fff;" style-hover="border-color:#111;"><span style="width:40px;height:40px;border-radius:50%;background:#FF5D2B;display:grid;place-items:center;font-size:22px;">+</span><span style="font-size:13px;font-weight:600;margin-top:4px;">New table</span><span style="font-size:11px;color:#5c5c58;">room or doc review</span></div></sc-if>
+
+<sc-for list="{{ tables }}" as="t" hint-placeholder-count="4"><div onClick="{{ t.onClick }}" style="position:absolute;left:{{ t.left }}px;top:{{ t.top }}px;width:{{ t.d }}px;height:{{ t.d }}px;border-radius:50%;background:{{ t.bg }};border:{{ t.border }};box-sizing:border-box;z-index:{{ t.z }};opacity:{{ t.op }};transition:opacity .4s,border-color .2s;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:0 {{ t.pad }}px;">
+
+<sc-if value="{{ t.full }}" hint-placeholder-val="{{ false }}"><span style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:{{ t.sc }};">{{ t.status }}</span><span style="font:600 26px/1.02 'Bricolage Grotesque',sans-serif;letter-spacing:-0.02em;">{{ t.name }}</span><span style="font-size:12px;color:{{ t.sc }};">{{ t.next }}</span></sc-if>
+<sc-if value="{{ t.compact }}" hint-placeholder-val="{{ true }}"><span style="font:600 {{ t.fs }}px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-0.01em;">{{ t.name }}</span><sc-if value="{{ t.showStatus }}" hint-placeholder-val="{{ true }}"><span style="font:500 9.5px 'JetBrains Mono',monospace;color:{{ t.sc }};">{{ t.short }}</span></sc-if></sc-if>
+</div></sc-for>
+<sc-for list="{{ rim }}" as="rd" hint-placeholder-count="0"><i style="position:absolute;left:{{ rd.x }}px;top:{{ rd.y }}px;width:11px;height:11px;border-radius:50%;background:{{ rd.bg }};border:{{ rd.b }};box-sizing:border-box;z-index:{{ rd.z }};pointer-events:none;"></i></sc-for>
+<sc-for list="{{ papers }}" as="pa" hint-placeholder-count="0"><div style="position:absolute;left:{{ pa.left }}px;top:{{ pa.top }}px;width:{{ pa.w }}px;height:{{ pa.h }}px;z-index:{{ pa.z }};opacity:{{ pa.op }};background:#fff;border:1.5px solid #111;border-radius:7px;transform:rotate(-9deg);box-sizing:border-box;padding:8px 7px;display:flex;flex-direction:column;gap:5px;pointer-events:none;"><i style="height:3px;border-radius:2px;background:#111;"></i><i style="height:3px;border-radius:2px;background:#c9c8c4;"></i><i style="height:3px;border-radius:2px;background:#c9c8c4;width:70%;"></i><sc-if value="{{ pa.hasC }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-10px;top:-10px;width:22px;height:22px;border-radius:50%;background:#FF5D2B;display:grid;place-items:center;font:600 11px 'JetBrains Mono',monospace;">{{ pa.c }}</span></sc-if></div></sc-for>
+<sc-for list="{{ seats }}" as="s" hint-placeholder-count="0"><div style="position:absolute;left:{{ s.left }}px;top:{{ s.top }}px;width:{{ s.s }}px;height:{{ s.s }}px;z-index:{{ s.z }};opacity:{{ s.op }};transition:opacity .4s;pointer-events:none;">
+<sc-if value="{{ s.real }}" hint-placeholder-val="{{ true }}"><dc-import name="Avatar" who="{{ s.who }}" hint-size="100%,100%" style="width:100%;height:100%;"></dc-import></sc-if>
+<sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}"><div style="width:100%;height:100%;border-radius:50%;border:2px dashed #b5b5b1;box-sizing:border-box;display:grid;place-items:center;font:500 9px 'JetBrains Mono',monospace;color:#8b8b87;text-align:center;background:#fff;">YOUR<br>SEAT</div></sc-if>
+<sc-if value="{{ s.dot }}" hint-placeholder-val="{{ false }}"><i style="position:absolute;left:50%;bottom:-8px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#FF5D2B;box-shadow:0 0 0 3px #fff;animation:rtPop .3s;"></i></sc-if>
+</div></sc-for>
+<sc-if value="{{ quote.show }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ quote.left }}px;top:{{ quote.top }}px;z-index:15;display:flex;align-items:flex-end;gap:4px;pointer-events:none;"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid #111;background:#fff;"></span><span style="padding:10px 16px;background:#fff;border:1.5px solid #111;border-radius:999px;font-size:13px;white-space:nowrap;animation:rtPop .4s cubic-bezier(.3,1.6,.5,1);">{{ quote.text }}</span></div></sc-if>
+
+<div style="position:absolute;left:28px;bottom:30px;display:flex;gap:6px;font-size:13px;font-weight:500;white-space:nowrap;z-index:12;">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="4"><span onClick="{{ f.onClick }}" style="padding:9px 14px;border-radius:999px;cursor:pointer;background:{{ f.bg }};color:{{ f.fg }};border:1.5px solid {{ f.bd }};transition:all .25s;">{{ f.label }}</span></sc-for>
+</div>
+
+<div style="position:absolute;left:24px;width:1010px;bottom:104px;height:352px;z-index:30;background:#fff;border:1.5px solid #111;border-radius:32px;box-sizing:border-box;padding:22px 26px;display:flex;flex-direction:column;gap:14px;transform:translateY({{ sheetPanelY }});opacity:{{ sheetPanelOp }};pointer-events:{{ sheetPanelPe }};transition:transform .55s cubic-bezier(.3,1.35,.45,1),opacity .3s;">
+<div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:baseline;gap:12px;"><span style="font:600 20px 'Bricolage Grotesque',sans-serif;">Assessors</span><span style="font-size:13px;color:#5c5c58;">Tap someone to see their tables · invite them to yours</span></div><div style="display:flex;gap:8px;"><span onClick="{{ carPrev }}" style="width:38px;height:38px;border-radius:50%;border:1.5px solid #111;display:grid;place-items:center;cursor:pointer;opacity:{{ carPrevOp }};">←</span><span onClick="{{ carNext }}" style="width:38px;height:38px;border-radius:50%;border:1.5px solid #111;display:grid;place-items:center;cursor:pointer;opacity:{{ carNextOp }};">→</span><span onClick="{{ closeSheet }}" style="width:38px;height:38px;border-radius:50%;background:#f3f2ef;display:grid;place-items:center;cursor:pointer;">×</span></div></div>
+<div style="flex:1;overflow:hidden;margin:0 -4px;padding:0 4px;">
+<div style="display:flex;gap:16px;height:100%;transform:translateX({{ carX }}px);transition:transform .6s cubic-bezier(.3,1.3,.45,1);">
+<sc-for list="{{ profCards }}" as="c" hint-placeholder-count="4"><div onClick="{{ c.onClick }}" style="flex:none;width:228px;height:100%;box-sizing:border-box;border-radius:26px;border:1.5px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};padding:12px 16px 16px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .3s,color .3s;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;"><dc-import name="Avatar" who="{{ c.who }}" invert="{{ c.inv }}" hint-size="84px,84px" style="width:84px;height:84px;"></dc-import><div style="display:flex;gap:4px;margin-top:6px;"><sc-for list="{{ c.tables }}" as="tc" hint-placeholder-count="1"><span style="font:600 10px 'JetBrains Mono',monospace;padding:3px 7px;border-radius:999px;border:1.5px solid {{ c.fg }};">{{ tc }}</span></sc-for></div></div>
+<span style="font:600 16px/1.15 'Bricolage Grotesque',sans-serif;margin-top:4px;">{{ c.name }}</span>
+<span style="font-size:12px;opacity:.75;">{{ c.role }}</span>
+<span style="font-size:12px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.focus }}</span>
+<span style="margin-top:auto;font:500 10px 'JetBrains Mono',monospace;opacity:.7;">{{ c.hours }}</span>
+<span onClick="{{ c.invite }}" style="margin-top:6px;align-self:flex-start;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:600;background:{{ c.btnBg }};color:{{ c.btnFg }};">Invite to {{ focusCode }}</span>
+</div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="position:absolute;left:24px;width:1010px;bottom:104px;height:300px;z-index:30;background:#fff;border:1.5px solid #111;border-radius:32px;box-sizing:border-box;padding:22px 26px;display:flex;flex-direction:column;gap:16px;transform:translateY({{ sheetDeskY }});opacity:{{ sheetDeskOp }};pointer-events:{{ sheetDeskPe }};transition:transform .55s cubic-bezier(.3,1.35,.45,1),opacity .3s;">
+<div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:baseline;gap:12px;"><span style="font:600 20px 'Bricolage Grotesque',sans-serif;">Your desk</span><span style="font-size:13px;color:#5c5c58;">Documents out for review</span></div><span onClick="{{ closeSheet }}" style="width:38px;height:38px;border-radius:50%;background:#f3f2ef;display:grid;place-items:center;cursor:pointer;">×</span></div>
+<div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+<sc-for list="{{ deskDocs }}" as="dd" hint-placeholder-count="3"><div onClick="{{ dd.onClick }}" style="position:relative;border:1.5px solid #111;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px;cursor:pointer;" style-hover="background:#f6f6f4;"><div style="display:flex;flex-direction:column;gap:6px;width:46px;padding:10px 8px;border:1.5px solid #111;border-radius:6px;box-sizing:border-box;transform:rotate(-6deg);"><i style="height:3px;border-radius:2px;background:#111;"></i><i style="height:3px;border-radius:2px;background:#c9c8c4;"></i><i style="height:3px;border-radius:2px;background:#c9c8c4;"></i></div><span style="font-size:15px;font-weight:600;margin-top:10px;">{{ dd.t }}</span><span style="font-size:12px;color:#5c5c58;">{{ dd.p }}</span><span style="margin-top:auto;font:600 11px 'JetBrains Mono',monospace;color:{{ dd.cc }};">{{ dd.cl }}</span></div></sc-for>
+<div onClick="{{ newDoc }}" style="border:2px dashed #c9c8c4;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#5c5c58;font-size:13px;font-weight:600;"><span style="width:40px;height:40px;border-radius:50%;background:#FF5D2B;color:#111;display:grid;place-items:center;font-size:22px;">+</span>Start live doc review</div>
+</div>
+</div>
+
+<div style="position:absolute;left:1056px;top:104px;width:358px;bottom:28px;z-index:25;background:#fff;border:1.5px solid #111;border-radius:32px;box-sizing:border-box;padding:24px;display:flex;flex-direction:column;gap:18px;">
+<div style="display:flex;justify-content:space-between;align-items:center;font:500 11px 'JetBrains Mono',monospace;"><span style="color:{{ panel.statusColor }};">{{ panel.status }}</span><span style="color:#8b8b87;">{{ panel.idx }}</span></div>
+<div style="display:flex;flex-direction:column;gap:4px;"><span style="font:600 30px/1.02 'Bricolage Grotesque',sans-serif;letter-spacing:-0.025em;">{{ panel.name }}</span><span style="font-size:13px;color:#5c5c58;">{{ panel.next }}</span></div>
+<div style="display:flex;flex-direction:column;gap:10px;">
+<span style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;">SESSIONS</span>
+<div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:0 4px;"><div style="position:absolute;left:12px;right:12px;top:50%;height:1.5px;background:#ecebe8;"></div>
+<sc-for list="{{ panel.beads }}" as="b" hint-placeholder-count="4"><span onClick="{{ b.onClick }}" style="position:relative;width:{{ b.s }}px;height:{{ b.s }}px;border-radius:50%;background:{{ b.bg }};border:{{ b.b }};box-shadow:{{ b.sh }};box-sizing:border-box;cursor:pointer;transition:all .3s cubic-bezier(.3,1.6,.5,1);"></span></sc-for>
+</div>
+<div style="padding:14px 16px;border-radius:20px;background:#f6f6f4;display:flex;flex-direction:column;gap:3px;"><div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:600;">{{ panel.bead.t }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#5c5c58;">{{ panel.bead.d }}</span></div><span style="font-size:12px;color:#5c5c58;">{{ panel.bead.n }}</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<span style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;">AT THIS TABLE</span>
+<div style="display:flex;gap:4px;">
+<sc-for list="{{ panel.people }}" as="pp" hint-placeholder-count="3"><div onClick="{{ pp.onClick }}" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 8px;border-radius:18px;cursor:pointer;background:{{ pp.bg }};transition:background .25s;" style-hover="background:#f3f2ef;"><div style="width:62px;height:62px;"><sc-if value="{{ pp.real }}" hint-placeholder-val="{{ true }}"><dc-import name="Avatar" who="{{ pp.who }}" hint-size="62px,62px" style="width:62px;height:62px;"></dc-import></sc-if><sc-if value="{{ pp.empty }}" hint-placeholder-val="{{ false }}"><div style="width:52px;height:52px;margin:5px;border-radius:50%;border:2px dashed #b5b5b1;box-sizing:border-box;"></div></sc-if></div><span style="font-size:12px;font-weight:600;white-space:nowrap;">{{ pp.name }}</span><span style="font:500 9.5px 'JetBrains Mono',monospace;color:#8b8b87;">{{ pp.role }}</span></div></sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<span style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;">ON THE TABLE</span>
+<sc-for list="{{ panel.docs }}" as="pd" hint-placeholder-count="1"><div onClick="{{ openDesk }}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid #ecebe8;border-radius:16px;cursor:pointer;" style-hover="border-color:#111;"><i style="width:16px;height:20px;border-radius:3px;border:1.5px solid #111;"></i><span style="flex:1;font-size:13px;font-weight:500;">{{ pd.t }}</span><span style="font:600 11px 'JetBrains Mono',monospace;color:{{ pd.cc }};">{{ pd.cl }}</span></div></sc-for>
+</div>
+<div style="margin-top:auto;display:flex;gap:8px;font-size:14px;font-weight:600;"><span onClick="{{ panel.ctaClick }}" style="flex:1;text-align:center;padding:14px;border-radius:999px;background:{{ panel.ctaBg }};color:{{ panel.ctaFg }};cursor:pointer;">{{ panel.cta }}</span><span onClick="{{ openPanel }}" style="padding:14px 18px;border-radius:999px;border:1.5px solid #111;cursor:pointer;">Invite</span></div>
+</div>
+
+<div style="position:absolute;left:373px;top:822px;width:374px;height:56px;z-index:35;">
+<div style="position:absolute;left:0;top:0;width:304px;height:56px;filter:url(#rt-goo);"><sc-for list="{{ dockGoo }}" as="g" hint-placeholder-count="0"><div style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px;border-radius:{{ g.r }};background:#111;"></div></sc-for></div>
+<div style="position:absolute;left:{{ dockActive }}px;top:6px;width:44px;height:44px;border-radius:50%;background:#fff;transition:left .55s cubic-bezier(.4,1.7,.45,1);"></div>
+<sc-for list="{{ dock }}" as="di" hint-placeholder-count="5"><div onClick="{{ di.onClick }}" onMouseEnter="{{ di.enter }}" onMouseLeave="{{ dockLeave }}" style="position:absolute;left:{{ di.x }}px;top:0;width:56px;height:56px;display:grid;place-items:center;cursor:pointer;">
+<sc-if value="{{ di.isFloor }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:3px;align-items:center;"><i style="width:9px;height:9px;border-radius:50%;background:{{ di.c }};"></i><i style="width:13px;height:13px;border-radius:50%;background:{{ di.c }};"></i></span></sc-if>
+<sc-if value="{{ di.isDesk }}" hint-placeholder-val="{{ false }}"><span style="position:relative;width:14px;height:18px;border-radius:3px;border:2px solid {{ di.c }};box-sizing:border-box;"><i style="position:absolute;right:-12px;top:-11px;min-width:16px;height:16px;border-radius:999px;background:#FF5D2B;color:#111;font:600 9px/16px 'JetBrains Mono',monospace;text-align:center;font-style:normal;">7</i></span></sc-if>
+<sc-if value="{{ di.isPanel }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:2px;align-items:flex-end;"><i style="width:7px;height:7px;border-radius:50%;background:{{ di.c }};"></i><i style="width:9px;height:9px;border-radius:50%;background:{{ di.c }};"></i><i style="width:7px;height:7px;border-radius:50%;background:{{ di.c }};"></i></span></sc-if>
+<sc-if value="{{ di.isAvatar }}" hint-placeholder-val="{{ false }}"><span style="display:flex;flex-direction:column;align-items:center;gap:1px;"><i style="width:8px;height:8px;border-radius:50%;background:{{ di.c }};"></i><i style="width:16px;height:7px;border-radius:8px 8px 2px 2px;background:{{ di.c }};"></i></span></sc-if>
+<sc-if value="{{ di.isSettings }}" hint-placeholder-val="{{ false }}"><i style="width:16px;height:16px;border-radius:50%;border:4px solid {{ di.c }};box-sizing:border-box;"></i></sc-if>
+</div></sc-for>
+<sc-if value="{{ hasDockLabel }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ dockLabelX }}px;top:-36px;transform:translateX(-50%);padding:5px 11px;border-radius:999px;background:#111;color:#fff;font:500 11px 'JetBrains Mono',monospace;white-space:nowrap;animation:rtPop .2s;">{{ dockLabel }}</div></sc-if>
+<div onClick="{{ togglePlus }}" style="position:absolute;left:318px;top:0;width:56px;height:56px;border-radius:50%;background:#FF5D2B;display:grid;place-items:center;cursor:pointer;font-size:28px;transform:rotate({{ plusRot }}deg);transition:transform .45s cubic-bezier(.3,1.7,.5,1);">+</div>
+<sc-if value="{{ plusOpen }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:252px;bottom:68px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+<span onClick="{{ newRoom }}" style="padding:12px 18px;border-radius:999px;background:#111;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;animation:rtPop .35s .06s both cubic-bezier(.3,1.7,.5,1);">Panel room</span>
+<span onClick="{{ newDoc }}" style="padding:12px 18px;border-radius:999px;background:#fff;border:1.5px solid #111;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;animation:rtPop .35s both cubic-bezier(.3,1.7,.5,1);">Live doc review</span>
+</div></sc-if>
+</div>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:560px;top:760px;transform:translateX(-50%);z-index:40;padding:11px 18px;border-radius:999px;background:#111;color:#fff;font-size:13px;white-space:nowrap;animation:rtPop .3s cubic-bezier(.3,1.6,.5,1);">{{ toast }}</div></sc-if>
+
+<sc-if value="{{ pal }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closePal }}" style="position:absolute;inset:0;z-index:50;background:rgba(255,255,255,.82);display:flex;justify-content:center;padding-top:120px;">
+<div onClick="{{ stop }}" style="width:560px;align-self:flex-start;background:#fff;border:1.5px solid #111;border-radius:30px;padding:10px;display:flex;flex-direction:column;gap:4px;animation:rtPop .3s cubic-bezier(.3,1.5,.5,1);">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;"><i style="width:14px;height:14px;border-radius:50%;border:2px solid #111;"></i><input ref="{{ palRef }}" value="{{ q }}" onChange="{{ onQ }}" placeholder="Type a table, person or document…" style="flex:1;border:none;outline:none;font:500 17px 'Instrument Sans',sans-serif;background:transparent;color:#111;"><span style="font:500 11px 'JetBrains Mono',monospace;color:#8b8b87;">ESC</span></div>
+<sc-for list="{{ results }}" as="r" hint-placeholder-count="3"><div onClick="{{ r.onClick }}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:18px;cursor:pointer;" style-hover="background:#f3f2ef;"><span style="flex:none;width:34px;height:34px;border-radius:50%;background:{{ r.bg }};border:{{ r.bd }};box-sizing:border-box;"></span><div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:600;">{{ r.label }}</span><span style="font-size:12px;color:#5c5c58;">{{ r.sub }}</span></div><span style="font:500 10px 'JetBrains Mono',monospace;color:#8b8b87;">{{ r.kind }}</span></div></sc-for>
+<sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}"><div style="padding:14px;font-size:13px;color:#8b8b87;">Nothing found — try “Lind” or “thesis”.</div></sc-if>
+</div>
+</div></sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;floor&quot;,&quot;carousel&quot;],&quot;default&quot;:&quot;floor&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;motion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;springy&quot;,&quot;calm&quot;],&quot;default&quot;:&quot;springy&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const D = Math.PI / 180;
+const PROFS = [
+  { id:'lind', who:9, name:'Prof. Ingrid Lind', short:'Lind', role:'Chair · Architecture', focus:'Research methods, studio pedagogy', hours:'OFFICE HOURS · THU 14:00' },
+  { id:'marsh', who:2, name:'Dr. Leo Marsh', short:'Marsh', role:'Senior lecturer · Materials', focus:'Fabrication, sustainability', hours:'OFFICE HOURS · MON 10:00' },
+  { id:'okafor', who:10, name:'Dr. Tomas Okafor', short:'Okafor', role:'Reader · Chemistry', focus:'Lab writing, data integrity', hours:'OFFICE HOURS · WED 11:00' },
+  { id:'ruiz', who:3, name:'Dr. Helena Ruiz', short:'Ruiz', role:'Studio tutor · Design', focus:'Portfolio, visual narrative', hours:'DROP-IN · FRIDAYS' },
+  { id:'anand', who:8, name:'Prof. Dev Anand', short:'Anand', role:'Director · Venture Lab', focus:'Pitching, business models', hours:'OFFICE HOURS · TUE 16:00' },
+  { id:'park', who:11, name:'Prof. Sofia Park', short:'Park', role:'Professor · Urbanism', focus:'Public space, housing policy', hours:'ON SABBATICAL UNTIL JAN' },
+  { id:'tanaka', who:7, name:'Aiko Tanaka', short:'Tanaka', role:'Guest critic · Practice', focus:'Community-led housing', hours:'AVAILABLE FROM DEC' }
+];
+const PEERS = { maya:{ who:1, name:'Maya', role:'PEER' }, jonah:{ who:0, name:'Jonah', role:'PEER' }, priya:{ who:5, name:'Priya', role:'PEER' } };
+const TABLES = [
+  { k:'MT', name:"Master's Thesis", live:true, status:'● IN SESSION · 18 MIN', short:'LIVE', next:'Ch.3 Methods · 4 panelists', seats:['lind','marsh','ruiz','maya'], tags:['live','week'],
+    sessions:[{t:'Early gateway',d:'2 OCT',k:'past',n:'Passed · 3 notes from the panel'},{t:'Ch.2 review',d:'12 NOV',k:'past',n:'2 runs · 6 notes'},{t:'Lit review',d:'13 NOV',k:'doc',n:'Document · 3 open comments'},{t:'Ch.3 Methods',d:'NOW',k:'live',n:'Live with Lind, Marsh, Ruiz and Maya'},{t:'Final viva',d:'9 JAN',k:'next',n:'Booked · 45 min · 3 assessors'}], docs:[{t:'Literature review',c:3}], cta:'Take your seat' },
+  { k:'LR', name:'Lab Report Series', status:'NEXT · FRI 15:00', short:'FRI 15:00', next:'Additive report with Okafor & Marsh', seats:['okafor','marsh'], tags:['week','prep'],
+    sessions:[{t:'Draft 1 debrief',d:'20 OCT',k:'past',n:'2 assessors · 5 notes'},{t:'Draft 2',d:'4 NOV',k:'doc',n:'Document · 4 open comments'},{t:'Additive report',d:'FRI 15:00',k:'next',n:'Upload by Thu 18:00'}], docs:[{t:'Lab report · draft 2',c:4}], cta:'Prepare' },
+  { k:'PP', name:'Pitch Practice', status:'NEXT · TOMORROW 14:00', short:'TOMORROW', next:'Pitch run · 10 min + Q&A', seats:['anand','jonah','priya',null], tags:['week','prep'],
+    sessions:[{t:'Q&A run',d:'TODAY 9:30',k:'past',n:'Recorded · 3 notes'},{t:'Pitch run',d:'TOMORROW',k:'next',n:'10 min + 5 min Q&A · upload deck'},{t:'Final pitch',d:'28 NOV',k:'next',n:'Venture Lab panel'}], docs:[{t:'Pitch deck v3',c:0}], cta:'Upload deck' },
+  { k:'PO', name:'Portfolio', status:'TODAY · 15:00', short:'TODAY 15:00', next:'Crit prep with Dr. Ruiz', seats:['ruiz',null], tags:['week'],
+    sessions:[{t:'Crit prep',d:'TODAY 15:00',k:'next',n:'1:1 with Dr. Ruiz · 30 min'},{t:'Portfolio crit',d:'FRI 10:00',k:'next',n:'Studio panel · 6 boards'}], docs:[], cta:'Prepare' }
+];
+const QUOTES = ['Why twelve studios?', 'Walk us through 3.2', 'Nice framing.', 'What would you cut?'];
+const BEAD = { past:{ bg:'#111', b:'none', sh:'none' }, live:{ bg:'#FF5D2B', b:'3px solid #fff', sh:'0 0 0 2px #FF5D2B' }, doc:{ bg:'#fff', b:'2px dashed #111', sh:'none' }, next:{ bg:'#fff', b:'2px solid #111', sh:'none' } };
+const person = id => id == null ? null : (PROFS.find(p => p.id === id) || PEERS[id]);
+
+class Component extends DCLogic {
+  state = { dir: 'floor', focus: 0, cur: null, phi: 0, prof: null, filter: 'all', sheet: null, carIdx: 0, plus: false, pal: false, q: '', toast: '', quote: 0, bead: {}, hover: -1, anim: false, scale: 1 };
+  slotsA(focus, cur) {
+    const SL = [215, 152, 325];
+    return [0,1,2,3].map(i => { const rel = (i - focus + 4) % 4; return rel === 0 ? { a: (cur ? cur[i].a : 0) + 50, d: 0, r: 140 } : { a: SL[rel - 1], d: 1, r: 92 }; });
+  }
+  ease(t) { const c1 = (this.props.motion ?? 'springy') === 'calm' ? 0.4 : 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  componentDidMount() {
+    const dir = this.props.direction === 'carousel' ? 'carousel' : 'floor';
+    this.setState({ dir, cur: this.slotsA(0, null) });
+    this.fit = () => this.setState({ scale: Math.min(window.innerWidth / 1440, window.innerHeight / 900) });
+    this.fit(); window.addEventListener('resize', this.fit);
+    this.key = e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' || (e.key === '/' && !this.state.pal)) { e.preventDefault(); this.setState({ pal: true, q: '' }); }
+      else if (e.key === 'Escape') this.setState({ pal: false, sheet: null, plus: false });
+      else if (!this.state.pal && e.key === 'ArrowRight') this.focusTable((this.state.focus + 1) % 4);
+      else if (!this.state.pal && e.key === 'ArrowLeft') this.focusTable((this.state.focus + 3) % 4);
+    };
+    window.addEventListener('keydown', this.key);
+    this.qt = setInterval(() => this.setState(s => ({ quote: (s.quote + 1) % QUOTES.length })), 3600);
+  }
+  componentDidUpdate(pp) { if (pp.direction !== this.props.direction && this.props.direction) this.switchDir(this.props.direction === 'carousel' ? 'carousel' : 'floor'); }
+  componentWillUnmount() { window.removeEventListener('resize', this.fit); window.removeEventListener('keydown', this.key); clearInterval(this.qt); cancelAnimationFrame(this.raf); clearTimeout(this.tt); }
+  tween(dur, apply, done) {
+    cancelAnimationFrame(this.raf); const t0 = performance.now();
+    this.setState({ anim: true });
+    const step = now => { const t = Math.min(1, (now - t0) / dur); apply(this.ease(t), t); if (t < 1) this.raf = requestAnimationFrame(step); else this.setState({ anim: false }, done); };
+    this.raf = requestAnimationFrame(step);
+  }
+  focusTable(i) {
+    if (i === this.state.focus && !this.state.anim) return;
+    this.setState({ focus: i, plus: false });
+    if (this.state.dir === 'floor') {
+      const from = this.state.cur.map(c => ({ ...c })), to = this.slotsA(i, from);
+      to.forEach((t, k) => { if (from[k].d < .5 && t.d > .5) from[k].a = t.a - 90; t.a = from[k].a + ((((t.a - from[k].a) % 360) + 540) % 360 - 180); });
+      this.tween(1000, e => this.setState({ cur: from.map((f, k) => ({ a: f.a + (to[k].a - f.a) * e, d: f.d + (to[k].d - f.d) * e, r: f.r + (to[k].r - f.r) * e })) }));
+    } else {
+      const p0 = this.state.phi, tgt = p0 + ((((i * 90 - p0) % 360) + 540) % 360 - 180);
+      this.tween(1000, e => this.setState({ phi: p0 + (tgt - p0) * e }));
+    }
+  }
+  switchDir(dir) { if (dir === this.state.dir) return; cancelAnimationFrame(this.raf); this.setState({ dir, anim: false, cur: this.slotsA(this.state.focus, null), phi: this.state.focus * 90 }); }
+  say(msg) { clearTimeout(this.tt); this.setState({ toast: msg, plus: false }); this.tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  openProf(id) { const idx = PROFS.findIndex(p => p.id === id); this.setState({ sheet: 'panel', prof: id, carIdx: Math.max(0, Math.min(PROFS.length - 4, idx - 1)), pal: false }); }
+  geo() {
+    const s = this.state;
+    if (s.dir === 'floor') {
+      const cur = s.cur || this.slotsA(0, null);
+      return cur.map(c => ({ x: 520 + c.d * 420 * Math.cos(c.a * D), y: 455 + c.d * 280 * Math.sin(c.a * D), r: c.r, z: c.d < .5 ? 6 : 4 }));
+    }
+    return TABLES.map((t, i) => { const th = (i * 90 - s.phi) * D, sc = .45 + .55 * (1 + Math.cos(th)) / 2; return { x: 520 + 380 * Math.sin(th), y: 410 + 170 * Math.cos(th), r: 140 * sc, z: 2 + Math.round(sc * 8) }; });
+  }
+  renderVals() {
+    const s = this.state, G = this.geo(), O = '#FF5D2B';
+    const match = t => (s.filter === 'all' || t.tags.includes(s.filter)) && (!s.prof || t.seats.includes(s.prof));
+    const tables = [], seats = [], papers = [], rim = [];
+    let quote = { show: false, left: 0, top: 0, text: '' };
+    TABLES.forEach((t, i) => {
+      const g = G[i], op = match(t) ? 1 : .18, full = g.r >= 120;
+      tables.push({ left: g.x - g.r, top: g.y - g.r, d: g.r * 2, z: g.z, op, live: !!t.live, full, compact: !full, pad: full ? 30 : 10,
+        bg: i === s.focus ? O : '#fff', border: i === s.focus ? 'none' : '1.5px solid #111', sc: i === s.focus ? '#111' : '#5c5c58',
+        name: t.name, status: t.status, next: t.next, short: t.short, fs: Math.max(11, Math.min(19, g.r * .19)), showStatus: g.r >= 78, onClick: () => this.focusTable(i) });
+      if (i === s.focus) { const n2 = t.sessions.length, rr = g.r - 17; t.sessions.forEach((x, k) => { const a = (90 - (k - (n2 - 1) / 2) * 12) * D; rim.push({ x: g.x + rr * Math.cos(a) - 5.5, y: g.y + rr * Math.sin(a) - 5.5, z: g.z + 1, bg: x.k === 'past' ? '#111' : x.k === 'live' ? '#fff' : 'transparent', b: x.k === 'past' || x.k === 'live' ? 'none' : (x.k === 'doc' ? '1.5px dashed #111' : '1.5px solid #111') }); }); }
+      const ss = t.seats.filter(Boolean), n = ss.length, av = g.r * .64, dist = g.r + av * .5 + 2;
+      ss.forEach((id, k) => {
+        const a = (-110 + k * 360 / n) * D, x = g.x + dist * Math.cos(a), y = g.y + dist * Math.sin(a), p = person(id);
+        seats.push({ left: x - av / 2, top: y - av / 2, s: av, z: g.z + 1, op, who: p ? p.who : 0, real: !!p, empty: !p, dot: !!id && id === s.prof });
+        if (t.live && k === 0 && i === s.focus && !s.anim && g.r >= 120) quote = { show: true, left: x + av * .42, top: y - av * .62, text: QUOTES[s.quote] };
+      });
+      if (t.docs.length && g.r >= 80) { const w = g.r * .34; papers.push({ left: g.x + g.r * .5 - w / 2, top: g.y - g.r * .78, w, h: w * 1.25, z: g.z + 1, op, c: t.docs[0].c, hasC: t.docs[0].c > 0 }); }
+    });
+    const T = TABLES[s.focus], defBead = T.sessions.findIndex(x => x.k !== 'past'), bi = s.bead[T.k] ?? (defBead < 0 ? 0 : defBead);
+    const panel = {
+      status: T.status, statusColor: T.live ? O : '#5c5c58', idx: `${s.focus + 1} / 4  ←  →`, name: T.name, next: T.next,
+      beads: T.sessions.map((x, k) => ({ ...BEAD[x.k], s: k === bi ? 26 : 18, sh: k === bi ? (x.k === 'live' ? '0 0 0 2px #FF5D2B, 0 0 0 7px #ffe4da' : '0 0 0 5px #ecebe8') : BEAD[x.k].sh, onClick: () => this.setState(st => ({ bead: { ...st.bead, [T.k]: k } })) })),
+      bead: T.sessions[bi],
+      people: T.seats.filter(Boolean).map(id => { const p = person(id), isProf = !!PROFS.find(q => q.id === id); return { real: !!p, empty: !p, who: p ? p.who : 0, name: p ? (p.short || p.name) : 'You?', role: p ? (isProf ? 'ASSESSOR' : p.role) : 'OPEN', bg: id && id === s.prof ? '#f3f2ef' : 'transparent', onClick: () => isProf ? this.openProf(id) : this.say(p ? `${p.name} is a peer reviewer` : 'Seat saved for you') }; }),
+      docs: T.docs.map(d => ({ t: d.t, cl: d.c ? `${d.c} OPEN` : 'CLEAN', cc: d.c ? O : '#8b8b87' })),
+      cta: T.cta, ctaBg: T.live ? O : '#111', ctaFg: T.live ? '#111' : '#fff', ctaClick: () => this.say(T.live ? 'Joining Ch.3 Methods…' : `${T.cta} — ${T.name}`)
+    };
+    const fl = [['all','All tables'],['live','Live'],['week','This week'],['prep','To prepare']];
+    const filters = fl.map(([id, label]) => ({ label, bg: s.filter === id ? '#111' : '#fff', fg: s.filter === id ? '#fff' : '#111', bd: s.filter === id ? '#111' : '#ecebe8', onClick: () => this.setState({ filter: id }) }));
+    const profCards = PROFS.map(p => { const sel = s.prof === p.id; return { ...p, inv: sel, bg: sel ? '#111' : '#fff', fg: sel ? '#fff' : '#111', bd: sel ? '#111' : '#e3e2de', btnBg: sel ? O : '#111', btnFg: sel ? '#111' : '#fff',
+      tables: TABLES.filter(t => t.seats.includes(p.id)).map(t => t.k), onClick: () => this.setState({ prof: sel ? null : p.id }),
+      invite: e => { e.stopPropagation(); this.say(`Invite sent to ${p.name} for ${T.name}`); } }; });
+    const deskDocs = TABLES.filter(t => t.docs.length).map(t => ({ t: t.docs[0].t, p: t.name, cl: t.docs[0].c ? `${t.docs[0].c} OPEN COMMENTS` : 'NO COMMENTS YET', cc: t.docs[0].c ? O : '#8b8b87', onClick: () => this.say(`Opening ${t.docs[0].t}…`) }));
+    const active = s.sheet === 'desk' ? 1 : s.sheet === 'panel' ? 2 : 0;
+    const labels = ['Floor', 'Desk · 7 comments', 'Assessors', 'Avatar studio', 'Settings'];
+    const acts = [() => this.setState({ sheet: null }), () => this.setState({ sheet: s.sheet === 'desk' ? null : 'desk', plus: false }), () => this.setState({ sheet: s.sheet === 'panel' ? null : 'panel', plus: false }), () => this.say('Opening Avatar studio…'), () => this.say('Opening Settings…')];
+    const dock = [0,1,2,3,4].map(k => ({ x: k * 62, c: k === active ? '#111' : '#9a9a96', isFloor: k === 0, isDesk: k === 1, isPanel: k === 2, isAvatar: k === 3, isSettings: k === 4, onClick: acts[k], enter: () => this.setState({ hover: k }) }));
+    const ql = s.q.trim().toLowerCase();
+    let results = [];
+    TABLES.forEach((t, i) => results.push({ label: t.name, sub: t.next, kind: 'TABLE', bg: t.live ? O : '#fff', bd: t.live ? 'none' : '1.5px solid #111', onClick: () => { this.setState({ pal: false }); this.focusTable(i); } }));
+    PROFS.forEach(p => results.push({ label: p.name, sub: p.role, kind: 'ASSESSOR', bg: '#111', bd: 'none', onClick: () => this.openProf(p.id) }));
+    TABLES.forEach(t => t.docs.forEach(d => results.push({ label: d.t, sub: t.name, kind: 'DOC', bg: '#fff', bd: '1.5px dashed #111', onClick: () => this.setState({ pal: false, sheet: 'desk' }) })));
+    results = (ql ? results.filter(r => (r.label + ' ' + r.sub).toLowerCase().includes(ql)) : results.slice(0, 6)).slice(0, 7);
+    const prof = PROFS.find(p => p.id === s.prof);
+    const sheetVals = name => ({ Y: s.sheet === name ? '0' : '120%', Op: s.sheet === name ? 1 : 0, Pe: s.sheet === name ? 'auto' : 'none' });
+    const sp = sheetVals('panel'), sd = sheetVals('desk');
+    return {
+      scale: s.scale, gooDefs: this.goo(),
+      isFloor: s.dir === 'floor', isCar: s.dir === 'carousel',
+      swFloorBg: s.dir === 'floor' ? '#111' : 'transparent', swFloorFg: s.dir === 'floor' ? '#fff' : '#5c5c58',
+      swCarBg: s.dir === 'carousel' ? '#111' : 'transparent', swCarFg: s.dir === 'carousel' ? '#fff' : '#5c5c58',
+      setFloor: () => this.switchDir('floor'), setCarousel: () => this.switchDir('carousel'),
+      prev: () => this.focusTable((s.focus + 3) % 4), next: () => this.focusTable((s.focus + 1) % 4),
+      tables, seats, papers, rim, quote, panel, filters, profCards, deskDocs, dock,
+      dockGoo: [0,1,2,3,4].map(k => ({ x: k * 62, y: 0, w: 56, h: 56, r: '50%' })).concat([{ x: 28, y: 14, w: 248, h: 28, r: '0' }]),
+      dockActive: 6 + active * 62, hasDockLabel: s.hover >= 0, dockLabel: labels[s.hover] || '', dockLabelX: 28 + Math.max(0, s.hover) * 62, dockLeave: () => this.setState({ hover: -1 }),
+      plusOpen: s.plus, plusRot: s.plus ? 135 : 0, togglePlus: () => this.setState({ plus: !s.plus, sheet: null }),
+      newRoom: () => this.say(`New panel room added to ${T.name}`), newDoc: () => this.say('Live doc review started — share link copied'),
+      hasProf: !!prof, profName: prof ? prof.name : '', clearProf: () => this.setState({ prof: null }),
+      sheetPanelY: sp.Y, sheetPanelOp: sp.Op, sheetPanelPe: sp.Pe, sheetDeskY: sd.Y, sheetDeskOp: sd.Op, sheetDeskPe: sd.Pe,
+      closeSheet: () => this.setState({ sheet: null }), openDesk: () => this.setState({ sheet: 'desk' }), openPanel: () => this.setState({ sheet: 'panel' }),
+      carX: -s.carIdx * 244, carPrevOp: s.carIdx > 0 ? 1 : .3, carNextOp: s.carIdx < PROFS.length - 4 ? 1 : .3,
+      carPrev: () => this.setState({ carIdx: Math.max(0, s.carIdx - 1) }), carNext: () => this.setState({ carIdx: Math.min(PROFS.length - 4, s.carIdx + 1) }),
+      focusCode: T.k, hasToast: !!s.toast, toast: s.toast,
+      pal: s.pal, q: s.q, openPal: () => this.setState({ pal: true, q: '' }), closePal: () => this.setState({ pal: false }), stop: e => e.stopPropagation(),
+      onQ: e => this.setState({ q: e.target.value }), palRef: el => { if (el && document.activeElement !== el) el.focus(); },
+      results, noResults: results.length === 0
+    };
+  }
+  goo() {
+    const e = React.createElement;
+    return e('svg', { width: 0, height: 0, style: { position: 'absolute' } }, e('defs', null, e('filter', { id: 'rt-goo', x: '-20%', y: '-40%', width: '140%', height: '180%' },
+      e('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: 6, result: 'b' }),
+      e('feColorMatrix', { in: 'b', mode: 'matrix', values: '1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9' }))));
+  }
+}
+</script>
+</body>
+</html>

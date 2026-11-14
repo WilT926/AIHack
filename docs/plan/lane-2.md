@@ -17,7 +17,7 @@ When Lane 1 says the foundation is live, pull `staging` and start 2.1.
 
 **Build in `src/features/review` and `src/app/review`:**
 1. **Sample data first:** write one realistic Review and Document into `fixtures/` that pass the data shapes in `src/lib/schemas`. Use an invented, publishable document, never the thesis. Replace it with Lane 1's real outputs when they land.
-2. **Document pane:** the numbered paragraphs, with commented paragraphs highlighted in the colour of the assessor who commented. Where a comment has a quote, highlight just those words.
+2. **Document pane:** the numbered paragraphs, with a numbered anchor in the margin for each comment, as in `design/DESIGN_SYSTEM.md` §9 (Comment anchors). Where a comment has a quote, underline just those words. Assessors are not colour-coded.
 3. **Comment rail:** each comment shows the assessor's avatar, name, severity and suggestion. Clicking a comment scrolls to its paragraph; clicking a highlight selects its comments.
 4. **Filters:** by assessor and by severity.
 5. **Board discussion panel:** summary, where the board agrees, where it disagrees and the advice. The ranked actions and everything else live in the feedback report (step 2.3b); leave a tab for it.

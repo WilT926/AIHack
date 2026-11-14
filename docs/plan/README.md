@@ -77,7 +77,7 @@ We must show in the presentation how we qualify. Lane 3 owns this:
 - A real design system in Figma: variables, components and the key screens.
 - The coded app uses the same variable names and matches the Figma screens.
 - Designed AI states: reading, deliberating, speaking, listening, failed, empty.
-- One consistent set of assessor avatars, and one colour per assessor used for their highlights and comments.
+- One consistent set of pen-drawn assessor avatars, and a single highlight colour used sparingly.
 - Each illustrated avatar has a realistic counterpart that appears when the board joins the live call.
 - The Figma file linked in the README and shown for a few seconds in the pitch.
 
@@ -89,7 +89,7 @@ We must show in the presentation how we qualify. Lane 3 owns this:
 | Your coding agent | Building | Use a mid-tier model at medium effort. Use the top model only when stuck on a hard bug. One step per session. |
 | Codex | Building | Give it the mechanical steps (seed data, README, simple forms) to spread the load. |
 | ElevenLabs Creator | Assessor voices | Claim tonight. Text-only while developing; switch voices on for testing and the demo. |
-| fal, $25 each | The illustrated avatar set, plus realistic portraits and short clips for the live call | Generate once, save the files in the repo. Test one clip before making the rest. |
+| fal, $25 each | Realistic portraits and short clips of the assessors for the live call (the pen avatars are already drawn) | Generate once, save the files in the repo. Test one clip before making the rest. |
 | Figma | Design system | Lane 3. |
 | Supabase and Vercel free tiers | Database and hosting | One shared project each. |
 
@@ -102,10 +102,10 @@ App model settings, in `src/config`:
 Lane 1 defines these once in `src/lib/schemas`. Everyone builds against them. Only Lane 1 changes them, and announces it.
 
 - **Profile:** id, name, university, course, level.
-- **Assessor:** id, name, field, role (one line), personality, harshness (1–5), focusAreas (list), avatar (illustrated), portrait (realistic, optional), idleClip and talkingClip (optional), colour (1–8), voiceId, isPreset, basedOn (optional id).
+- **Assessor:** id, name, field, role (one line), personality, harshness (1–5), focusAreas (list), avatar (illustrated), portrait (realistic, optional), idleClip and talkingClip (optional), voiceId, isPreset, basedOn (optional id).
 - **AssessorNote:** id, assessorId, text, source (lecture, handbook, other), createdAt.
 - **Board:** id, name, assessorIds.
-- **Project:** id, title, template (masters-report, lab-report, pitch), brief (what it is, topic, what is graded, goal), markSchemeText, weakSpots, boardId.
+- **Project:** id, title, template (masters-report, lab-report, pitch), brief (what it is, topic, what is graded, goal), deadline (optional), markSchemeText, weakSpots, boardId.
 - **Document:** id, projectId, title, paragraphs (list of id such as "p1", and text).
 - **Comment:** id, assessorId, paragraphId, quote (optional exact words from that paragraph), category, severity (praise, minor, major), text, suggestion.
 - **Review:** id, projectId, documentId, createdAt, status, assessorResults (list of assessorId, status, comments), deliberation, report (a FeedbackReport).
@@ -124,11 +124,9 @@ Lane 1 defines these once in `src/lib/schemas`. Everyone builds against them. On
 - **CallLog:** id, kind, model, startedAt, durationMs, inputTokens, outputTokens, ok, error.
 
 ## Style variable names (shared with Figma)
-Figma variables and code use the same names. Lane 3 may add names freely; renaming means updating every use.
+The names and values are set by the design system: [`design/DESIGN_SYSTEM.md`](../../design/DESIGN_SYSTEM.md), §3 (colour), §4 (type) and §5 (shape, line and space). Figma and code use those names exactly, for example `--ink`, `--paper`, `--orange` and the `--grey-*` scale.
 
-- Colour: `bg`, `surface`, `surface-raised`, `text`, `text-muted`, `border`, `accent`, `accent-contrast`, `focus`, `praise`, `minor`, `major`, `assessor-1` to `assessor-8`.
-- Space: `space-1` to `space-8`. Radius: `radius-sm`, `radius-md`, `radius-lg`. Shadow: `shadow-sm`, `shadow-md`.
-- Type: `font-display`, `font-body`, `font-mono`, and sizes `text-xs` to `text-3xl`.
+There is one highlight colour. Assessors do not get a colour each, and there are no red, amber or green states: levels are shown as rows of dots (design system §9).
 
 ## Seeded content
 - **Report board:** Module Lead, Methodologist, Literature Hawk, Communicator, Outsider, Sceptic.
