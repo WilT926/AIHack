@@ -11,7 +11,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { dockMemory, useGlide } from "./glide";
 import { features } from "@/config";
 import { Button, cn } from "./index";
-import { MenuItem, MenuSection, Popover } from "./Popover";
+import { Popover } from "./Popover";
 
 export type NavDockId = "floor" | "desk" | "assessors" | "profile";
 export type PlusTable = { id: string; name: string; kind: "review" | "pitch" };
@@ -148,29 +148,8 @@ export function NavDock({
     );
   };
 
-  /** Off the floor, Assessors opens a small menu: the full page or the avatar studio. */
-  const assessorsItem = on.assessors ? (
-    item("assessors")
-  ) : (
-    <li key="assessors" className="ui-nav__slot" style={{ left: X.assessors }}>
-      <Popover
-        side="top"
-        align="center"
-        label="Assessors"
-        triggerClassName={cn("ui-nav__item ui-nav__item--static", active === "assessors" && "ui-nav__item--active")}
-        trigger={ICON.assessors}
-      >
-        <MenuSection title="Assessors">
-          <MenuItem href="/assessors" icon={ICON.assessors}>
-            All assessors
-          </MenuItem>
-          <MenuItem href="/studio" icon={<i className="ui-ico-settings" />}>
-            Avatar studio
-          </MenuItem>
-        </MenuSection>
-      </Popover>
-    </li>
-  );
+  /** Off the floor, Assessors goes straight to the full assessors page (no menu). */
+  const assessorsItem = item("assessors");
 
   const targetX = active === undefined ? dockMemory.activeX : active ? X[active] : null;
   // Start where the last page's circle was, then slide to this page's item.
