@@ -123,16 +123,18 @@ export function SidePanel({
                 <Avatar avatar={f.avatar} size="xs" />
                 <span className="fl-feedback__name">{f.short}</span>
                 {f.score === null ? <Label size="xs">No feedback yet</Label> : <DotRating value={f.score} max={5} label={`${f.short}'s score`} />}
-                {f.reviewed && f.reviewed.total > 0 && (
-                  <span className="fl-feedback__reviewed" title={`${f.reviewed.done} of ${f.reviewed.total} comments reviewed`}>
-                    <span className="fl-feedback__progress">
-                      <i style={{ width: `${(f.reviewed.done / f.reviewed.total) * 100}%` }} />
+                {f.reviewed && f.reviewed.total > 0 && (() => {
+                  // Progress through this assessor's comments, as a percentage out of 100.
+                  const percent = Math.round((Math.min(f.reviewed.done, f.reviewed.total) / f.reviewed.total) * 100);
+                  return (
+                    <span className="fl-feedback__reviewed" title={`${percent}% of comments reviewed`}>
+                      <span className="fl-feedback__progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={`${f.short}'s comments reviewed`}>
+                        <i style={{ width: `${percent}%` }} />
+                      </span>
+                      <span className="fl-feedback__count">{percent}%</span>
                     </span>
-                    <span className="fl-feedback__count">
-                      {f.reviewed.done}/{f.reviewed.total}
-                    </span>
-                  </span>
-                )}
+                  );
+                })()}
               </li>
             ))}
           </ul>

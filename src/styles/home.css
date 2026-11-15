@@ -292,7 +292,7 @@
 .fl-feedback__reviewed { display: flex; align-items: center; gap: 6px; }
 .fl-feedback__progress { position: relative; flex: 1; height: 8px; border-radius: var(--radius-pill); border: var(--line-width) solid var(--ink); box-sizing: border-box; overflow: hidden; }
 .fl-feedback__progress > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); transition: width 0.4s var(--ease-spring); }
-.fl-feedback__count { font: 600 9.5px/1 var(--font-mono); color: var(--grey-700); min-width: 22px; text-align: right; }
+.fl-feedback__count { font: 600 9.5px/1 var(--font-mono); color: var(--grey-700); min-width: 30px; text-align: right; }
 
 /* At this table: wraps after four; scrolls (no bar) past two rows. */
 .fl-people-scroll { }
