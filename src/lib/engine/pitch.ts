@@ -2,6 +2,7 @@
 // the pitch feedback report (lane-1.md steps 1.3 and 1.4). Prompts, reply
 // shapes, checks and sample replies live together here; run.ts-style
 // orchestration is in ./pitchRun.ts.
+import { INTEGRITY_RULES } from "./pipeline";
 import { z } from "zod";
 import {
   effortSchema,
@@ -42,7 +43,7 @@ export const pitchReportReplySchema = z.object({
   assessorVerdicts: z.array(z.object({ assessorId: z.string(), line: z.string() })),
   escalations: z.array(z.object({ reason: z.string(), whoToAsk: z.string() })),
   delivery: z.object({ structure: z.string(), clarity: z.string() }),
-  questionReview: z.array(z.object({ questionId: z.string(), howWell: z.string().describe("strong, adequate or weak."), strongerAnswer: z.string() })),
+  questionReview: z.array(z.object({ questionId: z.string(), howWell: z.string().describe("strong, adequate or weak."), strongerAnswer: z.array(z.string()).describe("Points a stronger answer would cover; no model answer or copyable wording.") })),
   sinceLastTime: z
     .object({ improved: z.array(z.string()), raisedAgain: z.array(z.string()) })
     .describe("Compare with the board's memory: earlier points now fixed, and earlier points raised again. Empty lists if no earlier attempt."),
@@ -102,7 +103,7 @@ function contextBlock(ctx: PitchContext): string {
 
 export function questionsPrompt(ctx: PitchContext, count: number) {
   return {
-    system: { rules: PITCH_RULES, context: contextBlock(ctx) },
+    system: { rules: `${PITCH_RULES}\n${INTEGRITY_RULES}`, context: contextBlock(ctx) },
     user: `The board steps out and agrees its questions. Write exactly ${count} question${count === 1 ? "" : "s"}, the ones most worth asking. Spread them across different judges where you can, each from their own field. Each must be answerable in under a minute and must point at something said (or left out). Use only the judge ids listed.${
       ctx.memory ? " Where an earlier point is still open, one question may check whether it has been dealt with. Do not ask a question identical to one asked last time." : ""
     }`,
@@ -123,7 +124,7 @@ export function pitchReportPrompt(
     )
     .join("\n\n");
   return {
-    system: { rules: PITCH_RULES, context: contextBlock(ctx) },
+    system: { rules: `${PITCH_RULES}\n${INTEGRITY_RULES}`, context: contextBlock(ctx) },
     user: `<full_qa_history>\n${JSON.stringify(turns)}\n</full_qa_history>\nUse the full history, including every follow-up and answer. Group questionReview by the planned question id.\n\n<questions_and_answers>\n${exchange || "(the Q&A was ended before any question)"}\n</questions_and_answers>
 
 Measured in code (use these figures, do not estimate your own): length ${Math.floor(delivery.lengthSeconds / 60)} min ${delivery.lengthSeconds % 60} s, ${delivery.wordsPerMinute} words per minute.
@@ -136,7 +137,7 @@ Write the board's feedback report on the pitch and the answers:
 - assessorVerdicts: one line from each judge.
 - escalations: points the board cannot settle or that fall outside every judge's field, with who to ask. Empty if none.
 - delivery: notes on structure and on clarity of content (not voice, not body language). Mention the pace only using the figure above.
-- questionReview: for each question id, how well it was answered (strong, adequate or weak) and an outline of a stronger answer.`,
+- questionReview: for each question id, how well it was answered (strong, adequate or weak) and a list of points a stronger answer would cover. Never supply answer wording.`,
   };
 }
 
@@ -206,7 +207,7 @@ export function checkPitchReport(
     },
     questionReview: (reply.questionReview ?? [])
       .filter((q) => asked.has(q.questionId) && rating(q.howWell).success)
-      .map((q) => ({ questionId: q.questionId, howWell: rating(q.howWell).data, strongerAnswer: q.strongerAnswer?.trim() ?? "" })),
+      .map((q) => ({ questionId: q.questionId, howWell: rating(q.howWell).data, strongerAnswer: (q.strongerAnswer ?? []).map((p) => p.trim()).filter(Boolean) })),
   });
 }
 
@@ -244,7 +245,7 @@ export function samplePitchReportReply(ctx: PitchContext, questionIds: string[])
     assessorVerdicts: ctx.board.map((b) => ({ assessorId: b.id, line: `Sample line from ${b.name}.` })),
     escalations: [],
     delivery: { structure: "Sample note on structure.", clarity: "Sample note on clarity." },
-    questionReview: questionIds.map((id) => ({ questionId: id, howWell: "adequate", strongerAnswer: "Sample outline of a stronger answer." })),
+    questionReview: questionIds.map((id) => ({ questionId: id, howWell: "adequate", strongerAnswer: ["Sample point a stronger answer would cover."] })),
     sinceLastTime: { improved: ["Sample: a point from last time now looks fixed."], raisedAgain: ["Sample: one point from last time came up again."] },
   };
 }

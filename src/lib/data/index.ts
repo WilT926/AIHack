@@ -6,6 +6,7 @@ import {
   boardSchema,
   callLogSchema,
   documentSchema,
+  engineEventSchema,
   documentSummarySchema,
   keepValid,
   pitchSessionSchema,
@@ -144,6 +145,7 @@ export const projects = table("projects", projectSchema, byCreated);
 export const documents = table("documents", documentSchema, byCreated);
 export const reviews = table("reviews", reviewSchema, byCreated);
 export const pitchSessions = table("pitch_sessions", pitchSessionSchema, byCreated);
+export const engineEvents = table("engine_events", engineEventSchema, byCreated);
 export const callLogs = table("call_logs", callLogSchema, { column: "started_at", ascending: true });
 
 /** Documents without their text, for lists. */

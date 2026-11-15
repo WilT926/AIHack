@@ -5,6 +5,7 @@
 //   4. This run's angles: focus points picked at random by the code.
 // Layer 1 goes in the system prompt after the fixed rules, so the six parallel
 // assessor calls share a cacheable prefix; layers 2 to 4 go in the user turn.
+import { INTEGRITY_RULES } from "./pipeline";
 import type { Assessor, AssessorNote, Document, Profile, Project } from "@/lib/schemas";
 
 export type SharedContext = {
@@ -125,7 +126,7 @@ export function assessorPrompt(input: {
   angles: string[];
 }): { system: { rules: string; context: string }; user: string } {
   return {
-    system: { rules: ASSESSOR_RULES, context: sharedContextLayer(input.context) },
+    system: { rules: `${ASSESSOR_RULES}\n${INTEGRITY_RULES}`, context: sharedContextLayer(input.context) },
     user: [
       assessorLayer(input.assessor, input.notes),
       earlierFeedbackLayer(input.earlierSummary),
@@ -155,7 +156,7 @@ export function deliberationPrompt(input: {
     })
     .join("\n\n");
   return {
-    system: { rules: DELIBERATION_RULES, context: sharedContextLayer(input.context) },
+    system: { rules: `${DELIBERATION_RULES}\n${INTEGRITY_RULES}`, context: sharedContextLayer(input.context) },
     user: `<board>\n${board}\n</board>\n\n${
       input.memory
         ? `<board_memory>\nWhat the board said on earlier attempts.\n${input.memory}\n</board_memory>\n\n`

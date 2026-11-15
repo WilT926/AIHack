@@ -13,6 +13,7 @@
 //   changing-rules    -> holding-the-line (stay in role, refuse)
 //   distressed        -> paused     (stop, point to a human tutor)
 //   wants-to-stop     -> paused
+import { INTEGRITY_RULES } from "./pipeline";
 import { z } from "zod";
 import type { Assessment, Conditions, PitchQuestion, QaMode, QaState, QaTurn } from "@/lib/schemas";
 
@@ -205,7 +206,7 @@ export function utterancePrompt(input: {
       ? `Respond to the student's last answer, about this question: "${input.plannedQuestion}".`
       : `Move on to this planned question and ask it in your own words, in the tone of the mode: "${input.plannedQuestion}".`;
   return {
-    system: { rules: UTTERANCE_RULES, context: `${input.memory ? `<board_memory>\n${input.memory}\n</board_memory>\n` : ""}<pitch_excerpt>\n${input.transcriptExcerpt}\n</pitch_excerpt>` },
+    system: { rules: `${UTTERANCE_RULES}\n${INTEGRITY_RULES}`, context: `${input.memory ? `<board_memory>\n${input.memory}\n</board_memory>\n` : ""}<pitch_excerpt>\n${input.transcriptExcerpt}\n</pitch_excerpt>` },
     user: `${MODE_BLOCKS[input.mode](input.conditions)}\n\nYou are ${input.judge.name}, ${input.judge.role} (${input.judge.field}).\n\n<asked_so_far>\n${asked || "(nothing yet)"}\n</asked_so_far>\n\n${task}`,
   };
 }

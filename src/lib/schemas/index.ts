@@ -215,6 +215,20 @@ export const feedbackActionSchema = z.object({
 });
 export type FeedbackAction = z.infer<typeof feedbackActionSchema>;
 
+/** Integrity events contain reasons and locations, never ignored text or secrets. */
+export const guardrailEventSchema = z.object({
+  rule: z.enum(["reviewer-instruction", "rewriting", "grade-prediction", "unobservable-delivery", "unsupplied-citation", "instruction-disclosure"]),
+  stage: z.enum(["input", "output"]),
+  action: z.enum(["ignored", "dropped", "trimmed"]),
+  location: z.string().max(300),
+  reason: shortText,
+  count: z.number().int().min(1),
+});
+export type GuardrailEvent = z.infer<typeof guardrailEventSchema>;
+export const engineEventSchema = guardrailEventSchema.extend({ id, sessionId: id, createdAt: timestamp });
+export const qaModeSchema = z.enum(["pressing", "probing", "coaching", "steering", "holding-the-line", "paused"]);
+export type QaMode = z.infer<typeof qaModeSchema>;
+
 export const feedbackReportSchema = z.object({
   kind: z.enum(["report", "pitch"]),
   verdict: shortText,
@@ -229,6 +243,10 @@ export const feedbackReportSchema = z.object({
   sinceLastTime: z
     .object({ improved: z.array(shortText).max(20), raisedAgain: z.array(shortText).max(20), stillOpen: z.array(shortText).max(20) })
     .nullish(),
+  behavior: z.object({
+    modeShifts: z.array(z.object({ turnId: id, mode: qaModeSchema, reason: shortText })).max(60),
+    guardrailEvents: z.array(guardrailEventSchema).max(1000),
+  }).optional(),
   // Report only
   likelyQuestions: z.array(z.object({ assessorId: id, question: shortText })).max(20).nullish(),
   // Pitch only
@@ -241,7 +259,7 @@ export const feedbackReportSchema = z.object({
     })
     .nullish(),
   questionReview: z
-    .array(z.object({ questionId: id, howWell: ratingSchema, strongerAnswer: shortText }))
+    .array(z.object({ questionId: id, howWell: ratingSchema, strongerAnswer: z.preprocess((v) => typeof v === "string" ? [v] : v, z.array(shortText).max(12)) }))
     .max(10)
     .nullish(),
 });
@@ -284,8 +302,7 @@ export const assessmentSchema = z.object({ answerQuality: answerQualitySchema, s
 export type Assessment = z.infer<typeof assessmentSchema>;
 
 /** The mode the code picks from the assessment. Each mode has its own prompt block. */
-export const qaModeSchema = z.enum(["pressing", "probing", "coaching", "steering", "holding-the-line", "paused"]);
-export type QaMode = z.infer<typeof qaModeSchema>;
+
 
 /** Coaching (hints allowed) or exam conditions (no hints). */
 export const conditionsSchema = z.enum(["coaching", "exam"]);

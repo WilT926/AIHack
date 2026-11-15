@@ -11,6 +11,7 @@ import { deliberateAndSave, reviewWithAssessor, type FinishedResult } from "./se
 
 it.skipIf(process.env.PANEL_VERIFY_LIVE !== "1")("verifies real review and pitch replies on invented material", async () => {
   process.loadEnvFile(".env.local");
+  const prefix = process.env.PANEL_VERIFY_GUARDS === "1" ? "guarded-real" : "real";
   expect(Boolean(process.env.ANTHROPIC_API_KEY)).toBe(true);
   const project = (await projects.get("proj-mt"))!;
   await projects.save({ ...project, boardId: reportBoard.id, memory: { attempts: [] }, markSchemeText: "", brief: { ...project.brief, graded: ["Methods", "Analysis", "Writing"], goal: "Clear, justified methods" } });
@@ -22,7 +23,7 @@ it.skipIf(process.env.PANEL_VERIFY_LIVE !== "1")("verifies real review and pitch
   const review = await deliberateAndSave({ projectId: project.id, documentId: sampleEngineDocument.id, results: finished });
   expect(review.replySource).toBe("claude");
   expect(review.report?.actions.length).toBeGreaterThan(0);
-  await writeFile("fixtures/engine/real-review.json", JSON.stringify({ provenance: "Real Claude replies on invented sample-document.ts; not student work", verifiedAt: new Date().toISOString(), review, calls: await callLogs.list() }, null, 2) + "\n");
+  await writeFile(`fixtures/engine/${prefix}-review.json`, JSON.stringify({ provenance: "Real Claude replies on invented sample-document.ts; not student work", verifiedAt: new Date().toISOString(), review, calls: await callLogs.list() }, null, 2) + "\n");
   console.info("Real review saved");
 
   const p = (await projects.get("proj-hp"))!;
@@ -45,6 +46,6 @@ it.skipIf(process.env.PANEL_VERIFY_LIVE !== "1")("verifies real review and pitch
   const pitch = await finishQandA(s.id);
   expect(pitch.report?.questionReview?.length).toBe(asked.questions.length);
   expect(pitch.replySource).toBe("claude");
-  await writeFile("fixtures/engine/real-pitch.json", JSON.stringify({ provenance: "Real Claude replies on an invented typed pitch; microphone and audio not verified", verifiedAt: new Date().toISOString(), firstQuestionMs, answerToQuestionMs: gaps, pitch, calls: (await callLogs.list()).filter((c) => c.kind !== "review" && c.kind !== "deliberation") }, null, 2) + "\n");
+  await writeFile(`fixtures/engine/${prefix}-pitch.json`, JSON.stringify({ provenance: "Real Claude replies on an invented typed pitch; microphone and audio not verified", verifiedAt: new Date().toISOString(), firstQuestionMs, answerToQuestionMs: gaps, pitch, calls: (await callLogs.list()).filter((c) => c.kind !== "review" && c.kind !== "deliberation") }, null, 2) + "\n");
   console.info("Real pitch saved", { firstQuestionMs, answerToQuestionMs: gaps });
 }, 300_000);
