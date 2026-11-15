@@ -338,3 +338,4 @@ a.fl-list__row:hover { background: var(--grey-50); }
 }
 .fl-add-list__item:hover { border-color: var(--ink); }
 .fl-add-list__name { font: 600 13px/1.2 var(--font-body); }
+.fl-table[data-drop="true"] { outline: 3px dashed var(--orange); outline-offset: 6px; }

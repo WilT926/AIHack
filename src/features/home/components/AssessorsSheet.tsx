@@ -4,6 +4,8 @@ import { Avatar, Button, CodeChip, DotRating, IconButton } from "@/components/ui
 import { ASSESSOR_CARD } from "@/styles/floor";
 import type { FloorAssessor } from "../model";
 
+import { SEAT_DRAG_TYPE } from "./Tables";
+
 export function AssessorsSheet({
   open,
   assessors,
@@ -57,6 +59,12 @@ export function AssessorsSheet({
                 role="button"
                 tabIndex={0}
                 className="fl-card"
+                data-seated={seatedHere || undefined}
+                draggable={features.editBoards}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(SEAT_DRAG_TYPE, a.id);
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
                 aria-pressed={selected}
                 onClick={(e) => { if (!(e.target as HTMLElement).closest("a")) onSelect(a.id); }}
                 onKeyDown={(e) => {
@@ -86,13 +94,7 @@ export function AssessorsSheet({
                     {a.notes} {a.notes === 1 ? "NOTE" : "NOTES"}
                   </span>
                 </div>
-                {features.editBoards && focusCode ? (
-                  <Button variant={selected ? "on-ink" : "primary"} size="sm" className="fl-card__seat">
-                    {seatedHere ? `Unseat from ${focusCode}` : `Seat at ${focusCode}`}
-                  </Button>
-                ) : (
-                  <Button variant={selected ? "on-ink" : "secondary"} size="sm" href={`/assessors/${a.id}`}>Profile and notes</Button>
-                )}
+                <Button variant={selected ? "on-ink" : "secondary"} size="sm" href={`/assessors/${a.id}`}>Profile and notes</Button>
               </div>
             );
           })}

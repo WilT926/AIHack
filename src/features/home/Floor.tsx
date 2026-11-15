@@ -16,7 +16,9 @@ import { AssessorsSheet } from "./components/AssessorsSheet";
 import { DeskSheet } from "./components/DeskSheet";
 import { Dock, type PlusState } from "./components/Dock";
 import { CommandPalette } from "./components/CommandPalette";
-import { markTableViewed } from "./actions";
+import { markTableViewed, saveBoardSeats } from "./actions";
+import { useRouter } from "next/navigation";
+import { features } from "@/config";
 
 export type Sheet = null | "desk" | "assessors";
 
@@ -76,6 +78,16 @@ const serverReduced = () => false;
 
 export function Floor({ model }: { model: FloorModel }) {
   const n = model.tables.length;
+  const router = useRouter();
+  /** Drag to seat: add the assessor to that panel's board, save, then refresh the seats. */
+  const seatOn = async (i: number, assessorId: string) => {
+    const t = model.tables[i];
+    if (!t?.boardId) return;
+    const ids = t.seats.map((s) => s.assessorId);
+    if (ids.includes(assessorId)) return;
+    const res = await saveBoardSeats(t.boardId, [...ids, assessorId]);
+    if (res.ok) router.refresh();
+  };
   const size = useSyncExternalStore(subscribeResize, readSize, serverSize);
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelContent, setPanelContent] = useState(0);
@@ -277,6 +289,7 @@ export function Floor({ model }: { model: FloorModel }) {
           fadeKey={fadeKey}
           onQuotePause={setQuotePaused}
           deskOpen={sheet === "desk"}
+          onSeat={features.editBoards ? (i, id) => void seatOn(i, id) : undefined}
           onFocus={(i) => {
             if (i === focusRef.current && !animRef.current) {
               setAllDeskTables(false);

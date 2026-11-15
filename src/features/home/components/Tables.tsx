@@ -1,10 +1,14 @@
 // Tables, rim dots, papers, seats and the speech bubble. Every position is
 // derived from the polar geometry each frame (§13.5): no per-element CSS
 // animation.
+import { useState } from "react";
 import { Avatar } from "@/components/ui";
 import { COMPACT, DIM_OPACITY, TABLE_R } from "@/styles/floor";
 import { isFull, paperBox, questionExcerpt, quoteAnchor, rimDots, seatBoxes, toPoint, type Point, type Polar } from "../geometry";
 import type { FloorTable } from "../model";
+
+/** Drag type for an assessor card dragged from the sheet onto a panel. */
+export const SEAT_DRAG_TYPE = "application/x-panel-assessor";
 
 /** The likely question cycling beside the seat of the assessor who would ask it. */
 function speechBubble(tables: FloorTable[], points: Point[], focus: number, anim: boolean, tick: number) {
@@ -29,6 +33,7 @@ export function Tables({
   quoteTick,
   fadeKey,
   onFocus,
+  onSeat,
   onNewTable,
   onQuotePause,
   deskOpen,
@@ -42,10 +47,13 @@ export function Tables({
   quoteTick: number;
   fadeKey: number;
   onFocus: (i: number) => void;
+  /** Seat a dragged assessor on panel i (only when boards can be edited). */
+  onSeat?: (i: number, assessorId: string) => void;
   onNewTable: () => void;
   onQuotePause: (paused: boolean) => void;
   deskOpen: boolean;
 }) {
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
   const points = cur.map(toPoint);
   const quote = speechBubble(tables, points, focus, anim, quoteTick);
 
@@ -71,6 +79,21 @@ export function Tables({
           title={focused ? "Open the documents and feedback on this panel" : undefined}
           aria-label={`${t.name} · ${t.status.replace("● ", "")}`}
           onClick={() => onFocus(i)}
+          data-drop={dropIdx === i || undefined}
+          onDragOver={(e) => {
+            if (!onSeat || !e.dataTransfer.types.includes(SEAT_DRAG_TYPE)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+            if (dropIdx !== i) setDropIdx(i);
+          }}
+          onDragLeave={() => setDropIdx((d) => (d === i ? null : d))}
+          onDrop={(e) => {
+            const id = e.dataTransfer.getData(SEAT_DRAG_TYPE);
+            setDropIdx(null);
+            if (!onSeat || !id) return;
+            e.preventDefault();
+            onSeat(i, id);
+          }}
           style={{
             left: g.x - g.r,
             top: g.y - g.r,
