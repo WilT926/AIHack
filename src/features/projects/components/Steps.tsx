@@ -249,7 +249,24 @@ export function BoardStep({
 
 // ---- Step 5: start ----
 
-export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors: Map<string, Assessor> }) {
+export type StartChoice = "review" | "pitch";
+
+const START_CHOICES: { id: StartChoice; title: string; body: string }[] = [
+  { id: "review", title: "Review a report", body: "Upload your document. Each assessor reads it on their own, then the board deliberates." },
+  { id: "pitch", title: "Practise a presentation", body: "Present aloud or paste a transcript, then the board asks its questions. You can add slides or notes first." },
+];
+
+export function StartStep({
+  draft,
+  assessors,
+  choice,
+  onChoose,
+}: {
+  draft: ProjectDraft;
+  assessors: Map<string, Assessor>;
+  choice: StartChoice;
+  onChoose: (c: StartChoice) => void;
+}) {
   const template = getTemplate(draft.template);
   const weakSpots = allWeakSpots(draft);
   const board = pick(draft.boardIds, assessors);
@@ -278,9 +295,16 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
       </Card>
       <div className="flex flex-col gap-4">
         <RoundTable label={draft.name} seated={board} compact />
-        <p className="text-body text-grey-700">
-          Next: upload your document. Each assessor reads it on their own, then the board deliberates.
-        </p>
+        <div role="radiogroup" aria-label="What to do first" className="flex flex-col gap-3">
+          <Label>What first?</Label>
+          {START_CHOICES.map((c) => (
+            <SelectCard key={c.id} role="radio" checked={choice === c.id} onSelect={() => onChoose(c.id)} className="items-start gap-1 p-5">
+              <span className="text-body font-semibold text-ink">{c.title}</span>
+              <span className="text-small text-grey-700">{c.body}</span>
+            </SelectCard>
+          ))}
+          <p className="text-small text-grey-700">The panel can do either later, from its side panel.</p>
+        </div>
       </div>
     </div>
   );

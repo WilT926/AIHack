@@ -6,7 +6,7 @@
 // The top bar, dock and command palette sit outside the stage at their real
 // size; the stage scales to fill the space between them, so it fits any screen.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ASSESSOR_CARD, CHROME, MOTION, PANEL } from "@/styles/floor";
+import { ASSESSOR_CARD, CHROME, MOTION, PANEL, SPREAD, STAGE } from "@/styles/floor";
 import { ease, focusPath, lerpPolar, slots, type Polar } from "./geometry";
 import type { FloorFilter, FloorModel } from "./model";
 import { TopBar } from "./components/TopBar";
@@ -38,7 +38,7 @@ const serverSize = () => "";
  * `center` is the main area's middle, where the search pill and the dock sit.
  */
 function fit(size: string, panelContent: number) {
-  if (!size) return { scale: 0, x: 0, y: 0, panel: PANEL.width, panelK: 1, panelH: PANEL.height, center: 0 };
+  if (!size) return { scale: 0, spread: 1, x: 0, y: 0, panel: PANEL.width, panelK: 1, panelH: PANEL.height, center: 0 };
   const [w, h] = size.split("x").map(Number);
   const room = h - PANEL.top - PANEL.bottom;
   const baseK = Math.max(PANEL.minScale, Math.min(PANEL.maxScale, w / 1440, room / PANEL.height));
@@ -51,11 +51,15 @@ function fit(size: string, panelContent: number) {
   const right = w - CHROME.gutter - panel - PANEL.gap;
   const mainW = Math.max(200, right - left);
   const mainH = Math.max(200, h - CHROME.top - CHROME.bottom);
-  const bandW = CHROME.fitRight;
   const bandH = CHROME.fitBottom - CHROME.fitTop;
+  // Wide windows: spread the floor sideways instead of leaving the width unused,
+  // keeping a margin either side. Narrow windows keep the design layout.
+  const spread = Math.max(1, Math.min(SPREAD.max, (mainW * (1 - SPREAD.marginShare)) / mainH / (CHROME.fitRight / bandH)));
+  const bandW = CHROME.fitRight * spread;
   const scale = Math.max(0.3, Math.min(mainW / bandW, mainH / bandH));
   return {
     scale,
+    spread,
     x: left + (mainW - bandW * scale) / 2,
     y: CHROME.top + (mainH - bandH * scale) / 2 - CHROME.fitTop * scale,
     panel,
@@ -91,7 +95,7 @@ export function Floor({ model }: { model: FloorModel }) {
   const size = useSyncExternalStore(subscribeResize, readSize, serverSize);
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelContent, setPanelContent] = useState(0);
-  const { scale, x: stageX, y: stageY, panelK, panelH, center } = fit(size, panelContent);
+  const { scale, spread, x: stageX, y: stageY, panelK, panelH, center } = fit(size, panelContent);
 
   // The side panel's natural height (unscaled), so it can be scaled to fit whole.
   useEffect(() => {
@@ -274,12 +278,13 @@ export function Floor({ model }: { model: FloorModel }) {
       <div
         className="fl-stage"
         data-ready={scale > 0}
-        style={{ transform: `translate(${stageX}px, ${stageY}px) scale(${scale || 1})` }}
+        style={{ transform: `translate(${stageX}px, ${stageY}px) scale(${scale || 1})`, width: STAGE.width * spread }}
         aria-label="Your floor"
       >
 
         <Tables
           tables={model.tables}
+          spread={spread}
           cur={cur}
           focus={focus}
           anim={anim}

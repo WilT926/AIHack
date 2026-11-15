@@ -367,6 +367,8 @@ export const pitchSessionSchema = z.object({
     capture: z.enum(["live", "typed"]).nullish(),
     /** Coaching (default) or exam conditions. */
     conditions: conditionsSchema.default("coaching"),
+    /** Optional slides or notes the student added before presenting: context for the board's questions. */
+    slides: z.string().max(20000).nullish(),
   }),
   /** The planned questions, agreed when the board stepped out. */
   questions: z.array(pitchQuestionSchema).max(10),

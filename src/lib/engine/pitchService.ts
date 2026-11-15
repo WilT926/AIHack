@@ -72,6 +72,7 @@ async function loadContext(s: PitchSession): Promise<PitchContext> {
     memory: memoryForBoard(memory, s.id),
     lastOpen: stillOpen(memory, s.id),
     transcript: s.transcript,
+    slides: s.settings.slides ?? null,
     board: members
       .filter((a) => a !== null)
       .map((a) => ({ ...a, notes: notes.filter((n) => n.assessorId === a.id) })),
@@ -89,9 +90,10 @@ export async function generateQuestions(sessionId: string): Promise<PitchSession
   const boardIds = ctx.board.map((b) => b.id);
 
   const pipeline = await runIntegrityPipeline({
-    material: { transcript: ctx.transcript }, supplied: JSON.stringify({ transcript: s.transcript, answers: s.qa.turns.map((t) => t.answer), brief: ctx.project.brief, markScheme: ctx.project.markSchemeText }),
+    material: { transcript: ctx.transcript, ...(ctx.slides ? { slides: ctx.slides } : {}) },
+    supplied: JSON.stringify({ transcript: s.transcript, slides: ctx.slides ?? "", answers: s.qa.turns.map((t) => t.answer), brief: ctx.project.brief, markScheme: ctx.project.markSchemeText }),
     assess: async (material) => {
-      const clean = { ...ctx, transcript: material.transcript };
+      const clean = { ...ctx, transcript: material.transcript, slides: material.slides ?? null };
       let reply;
       if (source === "sample") reply = sampleQuestionsReply(clean, count);
       else {

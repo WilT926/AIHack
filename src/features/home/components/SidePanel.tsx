@@ -225,10 +225,14 @@ export function SidePanel({
       )}
 
       <div className="fl-panel__footer">
-        {!editing && table.cta && (
-          <Button variant={table.cta.tone === "orange" ? "create" : "primary"} size="lg" block href={table.cta.href}>
-            {table.cta.label}
-          </Button>
+        {!editing && table.starts && table.starts.length > 0 && (
+          <div className="fl-panel__starts" role="group" aria-label="Start a session">
+            {table.starts.map((s) => (
+              <Button key={s.kind} variant={s.preferred ? "primary" : "secondary"} size="lg" block href={s.href}>
+                {s.label}
+              </Button>
+            ))}
+          </div>
         )}
         {editing ? (
           <>
@@ -240,7 +244,7 @@ export function SidePanel({
             </Button>
           </>
         ) : (
-          <Button variant="secondary" size="lg" block={!table.cta} onClick={startEditing} disabled={!table.boardId}>
+          <Button variant="secondary" size="lg" block onClick={startEditing} disabled={!table.boardId}>
             Edit board
           </Button>
         )}

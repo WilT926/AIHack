@@ -12,7 +12,7 @@ import { Button, Logo } from "@/components/ui";
 import { Label } from "../review/ui/Label";
 import { IntakeScreen } from "../review/intake/IntakeScreen";
 import { Stepper } from "./components/Stepper";
-import { BoardStep, BriefStep, StartStep, TemplateStep } from "./components/Steps";
+import { BoardStep, BriefStep, StartStep, TemplateStep, type StartChoice } from "./components/Steps";
 
 type Screen = "template" | "brief" | "board" | "start" | "intake";
 
@@ -39,7 +39,7 @@ const SCREENS: { id: Exclude<Screen, "intake">; steps: number[]; title: string; 
     id: "start",
     steps: [5],
     title: "Ready when you are.",
-    intro: "Check the summary. Next you upload the document and the board starts reading.",
+    intro: "Check the summary, then choose what the board does first.",
   },
 ];
 
@@ -50,6 +50,9 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<ProjectDraft | undefined>();
   const [error, setError] = useState<string>();
+  // What happens after saving. Preselected from the template; both are always offered.
+  const [choice, setChoice] = useState<StartChoice | null>(null);
+  const startChoice: StartChoice = choice ?? (draft?.template === "hackathon-pitch" ? "pitch" : "review");
   const assessors = useMemo(() => new Map(presets.map((a) => [a.id, a])), [presets]);
 
   if (screen === "intake" && draft && saved) {
@@ -71,6 +74,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
   const chooseTemplate = (id: TemplateId) => {
     // Re-picking the same template keeps edits; a new one starts fresh.
     setDraft((d) => (d?.template === id ? d : draftFromTemplate(id)));
+    setChoice(null);
     setError(undefined);
   };
 
@@ -85,7 +89,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
     void createProjectFromDraft(draft).then((res) => {
       setSaving(false);
       if (!res.ok) return setError(res.error);
-      if (res.template === "pitch") return router.push(`/pitch?project=${encodeURIComponent(res.projectId)}`);
+      if (startChoice === "pitch") return router.push(`/pitch?project=${encodeURIComponent(res.projectId)}`);
       setSaved({ projectId: res.projectId, boardId: res.boardId });
       setScreen("intake");
     });
@@ -120,7 +124,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
           {screen === "template" && <TemplateStep selected={draft?.template} assessors={assessors} onSelect={chooseTemplate} />}
           {screen === "brief" && draft && <BriefStep draft={draft} onChange={setDraft} />}
           {screen === "board" && draft && <BoardStep draft={draft} presets={presets} onChange={setDraft} />}
-          {screen === "start" && draft && <StartStep draft={draft} assessors={assessors} />}
+          {screen === "start" && draft && <StartStep draft={draft} assessors={assessors} choice={startChoice} onChoose={setChoice} />}
         </div>
       </main>
 
@@ -140,7 +144,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
           )}
           <div className="justify-self-end">
             <Button variant={screen === "start" ? "create" : "primary"} onClick={next} disabled={saving}>
-              {screen === "start" ? (draft?.template === "hackathon-pitch" ? "Practise the pitch →" : "Start review →") : "Continue →"}
+              {screen === "start" ? (startChoice === "pitch" ? "Practise a presentation →" : "Review a report →") : "Continue →"}
             </Button>
           </div>
         </div>

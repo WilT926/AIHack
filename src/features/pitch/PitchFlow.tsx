@@ -38,6 +38,8 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     mode: data.defaultMode,
     capture: "live",
     conditions: "coaching",
+    slides: null,
+    slidesSkipped: false,
   });
   const [phase, setPhase] = useState<Phase>("setup");
   // Live avatars (LIVE_AVATAR=1 only): join when the set-up screen opens, so
@@ -129,6 +131,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
         mode: setup.mode,
         conditions: setup.conditions,
         capture: "live",
+        slides: setup.slides,
       });
       sessionRef.current = s;
       setSession(s);
@@ -264,6 +267,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
           mode: setup.mode,
           conditions: setup.conditions,
           capture: "typed",
+          slides: setup.slides,
         });
       }
       const endedAt = new Date().toISOString();

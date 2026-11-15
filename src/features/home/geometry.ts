@@ -63,9 +63,12 @@ export function lerpPolar(from: Polar[], to: Polar[], e: number): Polar[] {
   }));
 }
 
-export function toPoint(c: Polar): Point {
+/** Stage x stretched sideways by `spread` (1 = the design layout). */
+export const spreadX = (x: number, spread = 1) => x * spread;
+
+export function toPoint(c: Polar, spread = 1): Point {
   return {
-    x: FLOOR.cx + c.d * FLOOR.rx * Math.cos(c.a * DEG),
+    x: spreadX(FLOOR.cx + c.d * FLOOR.rx * Math.cos(c.a * DEG), spread),
     y: FLOOR.cy + c.d * FLOOR.ry * Math.sin(c.a * DEG),
     r: c.r,
     z: c.d < 0.5 ? 6 : 4,
@@ -124,13 +127,15 @@ export function quoteAnchor(
   tables: Point[],
   focus: number,
   neighbors: { cx: number; cy: number; size: number }[] = [],
+  spread = 1,
 ): { left: number; top: number; side: QuoteSide; tailLeft: number; tailTop: number } {
+  const B = { ...FLOOR_BOUNDS, right: spreadX(FLOOR_BOUNDS.right, spread) };
   const w = QUOTE.width;
   const h = QUOTE.height;
   const s = seat.size;
   const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
-  const top = clamp(seat.cy - h * QUOTE.tailDown, FLOOR_BOUNDS.top, FLOOR_BOUNDS.bottom - h);
-  const left = clamp(seat.cx - w * QUOTE.tailAcross, FLOOR_BOUNDS.left, FLOOR_BOUNDS.right - w);
+  const top = clamp(seat.cy - h * QUOTE.tailDown, B.top, B.bottom - h);
+  const left = clamp(seat.cx - w * QUOTE.tailAcross, B.left, B.right - w);
   const options: { left: number; top: number; side: QuoteSide }[] = [
     { left: seat.cx + s / 2 + QUOTE.gap, top, side: "right" },
     { left: seat.cx - s / 2 - QUOTE.gap - w, top, side: "left" },
@@ -139,15 +144,15 @@ export function quoteAnchor(
   ];
   const circles = [
     ...tables.map((t, i) => ({ x: t.x, y: t.y, r: t.r, weight: i === focus ? 3 : 1 })),
-    { x: NEW_TABLE.cx, y: NEW_TABLE.cy, r: NEW_TABLE.r, weight: 1 },
+    { x: spreadX(NEW_TABLE.cx, spread), y: NEW_TABLE.cy, r: NEW_TABLE.r, weight: 1 },
     ...neighbors.filter((n) => n.cx !== seat.cx || n.cy !== seat.cy).map((n) => ({ x: n.cx, y: n.cy, r: n.size / 2, weight: 3 })),
   ];
   const cost = (o: { left: number; top: number }) => {
     const outside =
-      Math.max(0, FLOOR_BOUNDS.left - o.left) +
-      Math.max(0, o.left + w - FLOOR_BOUNDS.right) +
-      Math.max(0, FLOOR_BOUNDS.top - o.top) +
-      Math.max(0, o.top + h - FLOOR_BOUNDS.bottom);
+      Math.max(0, B.left - o.left) +
+      Math.max(0, o.left + w - B.right) +
+      Math.max(0, B.top - o.top) +
+      Math.max(0, o.top + h - B.bottom);
     if (outside > 0) return Infinity;
     return circles.reduce((n, c) => n + c.weight * overlapDepth(o.left, o.top, w, h, c), 0);
   };

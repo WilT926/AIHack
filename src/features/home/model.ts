@@ -83,7 +83,8 @@ export type FloorTable = {
   openActions: number;
   questions: { assessorId: string; text: string }[];
   tags: FloorFilter[];
-  cta?: { label: string; href: string; tone: "orange" | "ink" };
+  /** What this panel can start: both kinds, the template's own first. */
+  starts?: { kind: "review" | "pitch"; label: string; href: string; preferred: boolean }[];
 };
 
 export type FloorAssessor = {
@@ -372,14 +373,14 @@ export function buildFloor(ws: Workspace): FloorModel {
         ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}`
         : `Not ${isPitch ? "practised" : "reviewed"} yet`;
 
-    let cta: FloorTable["cta"];
-    if (liveSession) {
-      // A session in progress runs in the tab that started it; there is
-      // nothing to rejoin from here, so no "Take your seat".
-    } else if (isPitch) {
-      if (features.pitch) cta = { label: "Practise a presentation", href: `/pitch?project=${p.id}`, tone: "ink" };
-    } else if (features.review) {
-      cta = { label: "Review a report", href: `/review/new?project=${p.id}`, tone: "ink" };
+    // A session in progress runs in the tab that started it; there is
+    // nothing to rejoin from here, so no "Take your seat".
+    let starts: FloorTable["starts"];
+    if (!liveSession) {
+      const both: NonNullable<FloorTable["starts"]> = [];
+      if (features.review) both.push({ kind: "review", label: "Review a report", href: `/review/new?project=${p.id}`, preferred: !isPitch });
+      if (features.pitch) both.push({ kind: "pitch", label: "Practise a presentation", href: `/pitch?project=${p.id}`, preferred: isPitch });
+      starts = both.sort((a, b) => Number(b.preferred) - Number(a.preferred));
     }
 
     const tags: FloorFilter[] = ["all"];
@@ -415,7 +416,7 @@ export function buildFloor(ws: Workspace): FloorModel {
         .filter((q) => seats.some((s) => s.assessorId === q.assessorId))
         .map((q) => ({ assessorId: q.assessorId, text: q.question })),
       tags,
-      cta,
+      starts,
     };
   });
 
