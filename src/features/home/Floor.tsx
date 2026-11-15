@@ -16,6 +16,7 @@ import { AssessorsSheet } from "./components/AssessorsSheet";
 import { DeskSheet } from "./components/DeskSheet";
 import { Dock, type PlusState } from "./components/Dock";
 import { CommandPalette } from "./components/CommandPalette";
+import { markTableViewed } from "./actions";
 
 export type Sheet = null | "desk" | "assessors";
 
@@ -105,7 +106,6 @@ export function Floor({ model }: { model: FloorModel }) {
   const [palette, setPalette] = useState(false);
   const [quoteTick, setQuoteTick] = useState(0);
   const [quotePaused, setQuotePaused] = useState(false);
-  const [beads, setBeads] = useState<Record<string, number>>({});
 
   const curRef = useRef(cur);
   const focusRef = useRef(focus);
@@ -231,13 +231,14 @@ export function Floor({ model }: { model: FloorModel }) {
       ),
     [model.tables, filter, assessorId],
   );
-  const beadIndex = table
-    ? (beads[table.id] ??
-      (() => {
-        const i = table.sessions.findIndex((s) => s.state !== "done");
-        return i < 0 ? Math.max(0, table.sessions.length - 1) : i;
-      })())
-    : 0;
+  // Opening a table (focusing it for a moment) records the visit, so the next
+  // visit only calls feedback "new" if it arrived after this one.
+  const focusedId = table?.id;
+  useEffect(() => {
+    if (!focusedId) return;
+    const t = window.setTimeout(() => void markTableViewed(focusedId), 1500);
+    return () => window.clearTimeout(t);
+  }, [focusedId]);
 
   return (
     <div
@@ -313,20 +314,24 @@ export function Floor({ model }: { model: FloorModel }) {
       </div>
       <div ref={panelRef} className="fl-panel-slot">
       <SidePanel
+        key={table?.id ?? "none"}
         table={table}
         index={focus}
         count={n}
-        beadIndex={beadIndex}
+        assessors={model.assessors}
         selectedAssessorId={assessorId}
         newProjectHref={model.newProjectHref}
-        onBead={(k) => table && setBeads((b) => ({ ...b, [table.id]: k }))}
         onPrev={() => focusTable((focus + n - 1) % n)}
         onNext={() => focusTable((focus + 1) % n)}
-        onPerson={(id) => openAssessor(id)}
-        onEditBoard={() => openAssessor(null)}
+        onPerson={(id) => {
+          // Clicking the selected person again clears the filter.
+          if (id === assessorId) {
+            setAssessorId(null);
+            setSheet(null);
+          } else openAssessor(id);
+        }}
       />
       </div>
-      {model.sample && <span className="fl-sample">Sample data</span>}
       {palette && (
           <CommandPalette
             tables={model.tables}

@@ -4,21 +4,25 @@ import { SkeletonPage } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
 import { getProfile } from "@/lib/data";
 import { Settings } from "@/features/settings/Settings";
+import { sectionFrom } from "@/features/settings/sections";
 
-// Settings: profile, panel defaults, clips and camera, notifications, privacy,
-// accessibility and account (design: "Panel defaults").
-async function SettingsFromData() {
+type Params = Promise<{ section?: string }>;
+
+// User settings: profile (default), panel defaults, clips and camera,
+// notifications, privacy, accessibility and account. ?section=… opens one.
+async function SettingsFromData({ searchParams }: { searchParams: Params }) {
   await connection();
-  const p = await getProfile();
+  const [p, { section }] = await Promise.all([getProfile(), searchParams]);
   if (!p) return <p className="ui-empty">No profile yet. Run npm run db:seed to add the demo student.</p>;
-  return <Settings profile={{ name: p.name, university: p.university, course: p.course, level: p.level, avatar: p.avatar }} />;
+  const initial = sectionFrom(section);
+  return <Settings key={initial} profile={p} initialSection={initial} />;
 }
 
-export default function SettingsPage() {
+export default function SettingsPage({ searchParams }: { searchParams: Params }) {
   return (
-    <PageFrame title="Settings" bare>
-      <Suspense fallback={<SkeletonPage label="Opening settings" cards={0} />}>
-        <SettingsFromData />
+    <PageFrame title="User settings" active="profile" bare>
+      <Suspense fallback={<SkeletonPage label="Opening user settings" cards={0} />}>
+        <SettingsFromData searchParams={searchParams} />
       </Suspense>
     </PageFrame>
   );

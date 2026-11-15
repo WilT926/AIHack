@@ -1,7 +1,7 @@
 // Tables, rim dots, papers, seats and the speech bubble. Every position is
 // derived from the polar geometry each frame (§13.5): no per-element CSS
 // animation.
-import { Avatar, RimDot } from "@/components/ui";
+import { Avatar } from "@/components/ui";
 import { COMPACT, DIM_OPACITY, TABLE_R } from "@/styles/floor";
 import { isFull, paperBox, questionExcerpt, quoteAnchor, rimDots, seatBoxes, toPoint, type Point, type Polar } from "../geometry";
 import type { FloorTable } from "../model";
@@ -57,7 +57,8 @@ export function Tables({
     const detail = Math.max(0, Math.min(1, (g.r - TABLE_R.side) / (TABLE_R.focus - TABLE_R.side)));
     const seats = seatBoxes(g, t.seats.length);
     const paper = t.docs.length ? paperBox(g) : null;
-    const rim = rimDots(g, t.sessions.length);
+    // Reports only: one dot per assessor, solid when all their comments are reviewed.
+    const rim = rimDots(g, t.dots.length);
 
     return (
       <div key={t.id}>
@@ -80,7 +81,7 @@ export function Tables({
           }}
         >
           <span className="fl-table__content" style={{ width: TABLE_R.focus * 2 - COMPACT.padFull * 2, marginTop: -detail * COMPACT.titleLift, transform: `translate(-50%, -50%) scale(${g.r / TABLE_R.focus})` }}>
-            <span className="fl-table__status" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.status}</span>
+            {t.live && <span className="fl-table__status" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.status}</span>}
             <span className="fl-table__name">{t.name}</span>
             <span className="fl-table__line" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.line}</span>
             <span className="fl-table__short" style={{ opacity: 1 - detail }} aria-hidden={detail === 1}>{t.short}</span>
@@ -88,7 +89,13 @@ export function Tables({
         </button>
 
         {rim.map((p, k) => (
-          <RimDot key={k} state={t.sessions[k].state} style={{ position: "absolute", left: p.x, top: p.y, zIndex: g.z + 1, pointerEvents: "none", opacity: op * detail }} />
+          <i
+            key={t.dots[k].assessorId}
+            className="fl-dot"
+            data-reviewed={t.dots[k].reviewed}
+            aria-hidden
+            style={{ left: p.x, top: p.y, zIndex: g.z + 1, opacity: op, transform: `scale(${Math.max(0.7, g.r / TABLE_R.focus)})` }}
+          />
         ))}
 
         {paper && (

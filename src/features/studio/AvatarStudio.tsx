@@ -1,18 +1,31 @@
 "use client";
 
-// Pick your avatar from the pen set. Saved on this device until the profile
-// can be updated through src/lib/data (Lane 1).
-import { useState } from "react";
+// Pick your avatar from the pen set. Saves to your profile in the database
+// (the same action as User settings → Profile → Edit avatar).
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, Button, Label } from "@/components/ui";
-import { chooseAvatar, useChosenAvatar } from "@/components/ui/avatarChoice";
-
-const SET = Array.from({ length: 100 }, (_, i) => `avatar-${String(i + 1).padStart(3, "0")}`);
+import { AvatarGrid } from "@/components/ui/AvatarGrid";
+import { saveAvatar } from "@/features/settings/actions";
 
 export function AvatarStudio({ profileAvatar, name }: { profileAvatar: string; name: string }) {
-  const current = useChosenAvatar(profileAvatar);
+  const router = useRouter();
+  const [current, setCurrent] = useState(profileAvatar);
   const [picked, setPicked] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
   const shown = picked ?? current;
   const changed = shown !== current;
+
+  const save = () =>
+    start(async () => {
+      const res = await saveAvatar(shown);
+      if (!res.ok) return setError(res.error);
+      setCurrent(res.profile.avatar);
+      setPicked(null);
+      setError(null);
+      router.refresh();
+    });
 
   return (
     <div className="studio">
@@ -20,32 +33,22 @@ export function AvatarStudio({ profileAvatar, name }: { profileAvatar: string; n
         <Avatar avatar={shown} size="fill" className="studio__big" alt={`${name}'s avatar`} />
         <Label>{changed ? "Not saved yet" : "Your avatar"}</Label>
         <div className="studio__actions">
-          <Button
-            variant="create"
-            disabled={!changed}
-            onClick={() => {
-              chooseAvatar(shown === profileAvatar ? null : shown);
-              setPicked(null);
-            }}
-          >
-            Save avatar
+          <Button variant="create" disabled={!changed || pending} onClick={save}>
+            {pending ? "Saving…" : "Save avatar"}
           </Button>
           {changed && (
-            <Button variant="secondary" onClick={() => setPicked(null)}>
+            <Button variant="secondary" onClick={() => setPicked(null)} disabled={pending}>
               Cancel
             </Button>
           )}
         </div>
+        {error && (
+          <p className="ps-error" role="alert">
+            {error}
+          </p>
+        )}
       </section>
-      <ul className="studio__grid" aria-label="Avatars">
-        {SET.map((a) => (
-          <li key={a}>
-            <button type="button" className="studio__pick" aria-pressed={a === shown} aria-label={`Avatar ${a.slice(-3)}`} onClick={() => setPicked(a)}>
-              <Avatar avatar={a} size="fill" />
-            </button>
-          </li>
-        ))}
-      </ul>
+      <AvatarGrid value={shown} onPick={setPicked} />
     </div>
   );
 }

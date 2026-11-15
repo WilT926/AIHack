@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { SkeletonChrome, SkeletonFloor } from "@/components/ui";
+import { SkeletonFloor } from "@/components/ui";
+import { LoadingChrome } from "@/components/ui/PageFrame";
 import { Floor } from "@/features/home/Floor";
 import { loadWorkspace } from "@/features/home/load";
 import { buildFloor } from "@/features/home/model";
@@ -17,7 +18,7 @@ export default function HomePage() {
     <Suspense
       fallback={
         <div className="fl-viewport">
-          <SkeletonChrome />
+          <LoadingChrome />
           <SkeletonFloor />
         </div>
       }

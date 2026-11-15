@@ -166,6 +166,30 @@ export async function getProfile() {
   return profiles.get(DEMO_USER_ID);
 }
 
+/** Record that the student opened this table on the floor. Returns the time it was viewed before, if any. */
+export async function markProjectViewed(projectId: string): Promise<string | null> {
+  const p = await projects.get(projectId);
+  if (!p) throw new Error("That table no longer exists.");
+  await projects.save({ ...p, viewedAt: new Date().toISOString() });
+  return p.viewedAt ?? null;
+}
+
+/** Seat these assessors at a board (unknown ids are dropped). */
+export async function setBoardSeats(boardId: string, assessorIds: string[]) {
+  const [board, all] = await Promise.all([boards.get(boardId), assessors.list()]);
+  if (!board) throw new Error("That board no longer exists.");
+  const known = new Set(all.map((a) => a.id));
+  const seats = [...new Set(assessorIds)].filter((id) => known.has(id)).slice(0, 12);
+  return boards.save({ ...board, assessorIds: seats });
+}
+
+/** Change the demo student's own details (user settings). Validated against the Profile shape before writing. */
+export async function updateProfile(patch: Partial<Pick<z.input<typeof profileSchema>, "name" | "university" | "course" | "level" | "avatar">>) {
+  const current = await profiles.get(DEMO_USER_ID);
+  if (!current) throw new Error("There is no profile to update yet.");
+  return profiles.save({ ...current, ...patch, id: DEMO_USER_ID });
+}
+
 /** Everything the home floor needs, in one round of parallel queries. */
 export async function getWorkspace(): Promise<Workspace> {
   const [profile, a, n, b, p, d, r, s] = await Promise.all([

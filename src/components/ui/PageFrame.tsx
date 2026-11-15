@@ -86,3 +86,16 @@ export function PageFrame({
     </div>
   );
 }
+
+/**
+ * The real top bar and dock while a page loads (no grey placeholders), so
+ * they stay put and glide instead of flickering between pages.
+ */
+export function LoadingChrome() {
+  return (
+    <>
+      <AppBar search={<SearchPill searchHref="/?find=1" />} profile={<ProfileSkeleton />} />
+      <NavDock active={undefined} />
+    </>
+  );
+}
