@@ -27,7 +27,7 @@ type Stage =
 
 export type { IntakeContext };
 
-export function IntakeScreen({ context, sampleReplies }: { context: IntakeContext; sampleReplies: boolean }) {
+export function IntakeScreen({ context, sampleReplies, backHref = null }: { context: IntakeContext; sampleReplies: boolean; backHref?: string | null }) {
   const [mode, setMode] = useState<Mode>("pdf");
   const [stage, setStage] = useState<Stage>({ kind: "input" });
   const [pasteTitle, setPasteTitle] = useState("");
@@ -119,7 +119,7 @@ export function IntakeScreen({ context, sampleReplies }: { context: IntakeContex
         </div>
 
         {stage.kind === "input" && (
-          <Card className="flex flex-col gap-5 p-6">
+          <Card className="rv-intake-card flex flex-col gap-5 p-6">
             <Tabs
               items={[
                 { id: "pdf", label: "Upload PDF" },
@@ -140,7 +140,7 @@ export function IntakeScreen({ context, sampleReplies }: { context: IntakeContex
                 hint={<Label>PDF · up to 25 MB · text, not scans</Label>}
               />
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex min-h-0 flex-1 flex-col gap-3">
                 <TextInput value={pasteTitle} onChange={setPasteTitle} placeholder="Title (optional), e.g. Chapter 3, Methods" ariaLabel="Title" />
                 <TextArea
                   value={pasteText}
@@ -166,7 +166,7 @@ export function IntakeScreen({ context, sampleReplies }: { context: IntakeContex
         )}
 
         {stage.kind === "reading" && (
-          <Card variant="dashed" className="flex flex-col gap-2 p-6">
+          <Card variant="dashed" className="rv-intake-card flex flex-col justify-center gap-2 p-6">
             <Spinner label="Reading" />
             <span className="font-display text-h3-lg font-semibold tracking-h3 text-ink">{stage.fileName}</span>
             <Label>{stage.pages ? `Page ${stage.page} of ${stage.pages}` : "Opening the PDF"}</Label>
@@ -191,7 +191,7 @@ export function IntakeScreen({ context, sampleReplies }: { context: IntakeContex
           </>
         )}
       </main>
-      <ExitBubble />
+      <ExitBubble href={backHref ?? "/"} label={backHref ? "Back to the review" : "Back to the floor"} />
     </div>
   );
 }
@@ -221,14 +221,14 @@ function Preview({
     .join(" · ");
 
   return (
-    <Card className="flex flex-col gap-5 p-6">
+    <Card className="rv-intake-card flex flex-col gap-5 p-6">
       <div className="flex items-baseline justify-between gap-4">
         <span className="font-display text-h3-lg font-semibold tracking-h3 text-ink">Found {summary}</span>
         <Label className="truncate">{source}</Label>
       </div>
       <TextInput value={doc.title} onChange={onTitle} ariaLabel="Document title" />
 
-      <ol className="flex max-h-96 flex-col gap-2 overflow-y-auto rounded-row bg-grey-50 p-4">
+      <ol className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-row bg-grey-50 p-4">
         {doc.paragraphs.map((p) => (
           <li key={p.id} className="grid grid-cols-numbered gap-2">
             <span className="pt-0.5 font-mono text-label text-grey-500">¶{p.index}</span>

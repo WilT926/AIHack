@@ -392,3 +392,12 @@
 .ui-frame__main, .ui-frame__bare { animation: ui-page-in 0.32s cubic-bezier(.2, .7, .3, 1) both; }
 @keyframes ui-page-in { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ui-frame__main, .ui-frame__bare { animation: ui-fade 0.15s linear both; } }
+
+/* Review upload: every step (choose, reading, check paragraphs) is the same fixed height. */
+.rv-intake-card { height: clamp(420px, calc(100dvh - 340px), 620px); min-height: 0; box-sizing: border-box; overflow: hidden; }
+.rv-intake-card textarea { flex: 1; min-height: 0; resize: none; }
+.rv-intake-card > label:has(input[type="file"]), .rv-intake-card [data-filedrop] { flex: 1; }
+
+/* Review filters: Show and From chips are the same height, avatars the same size. */
+.rv-filters .ui-chip { height: 32px; box-sizing: border-box; display: inline-flex; align-items: center; }
+.rv-filters .ui-chip img { width: 20px; height: 20px; margin: 0; }

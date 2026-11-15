@@ -45,8 +45,8 @@ export function SessionFrame({
         </div>
       </header>
       <main className="ps-main">{children}</main>
-      <Link href="/" className="ps-exit" aria-label="Leave the session and go back to your floor" title="Leave">
-        ×
+      <Link href="/" className="ps-exit" aria-label="Leave the session and go back to your floor" title="Back to your floor">
+        <span aria-hidden>←</span>
       </Link>
     </div>
   );

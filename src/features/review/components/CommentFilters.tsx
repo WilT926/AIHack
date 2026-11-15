@@ -17,15 +17,18 @@ export function CommentFilters({
   assessors,
   selected,
   onToggleAssessor,
+  onAllAssessors,
 }: {
   kind: CommentSeverity | "all";
   onKind: (kind: CommentSeverity | "all") => void;
   assessors: Assessor[];
   selected: Set<string>;
   onToggleAssessor: (id: string) => void;
+  /** Show every assessor's comments again. */
+  onAllAssessors?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-2.5 pb-1" aria-label="Filter comments">
+    <div className="rv-filters flex flex-col gap-2.5 pb-1" aria-label="Filter comments">
       <div className="flex flex-wrap items-center gap-1.5">
         <Label className="w-12">Show</Label>
         {KINDS.map((k) => (
@@ -37,6 +40,9 @@ export function CommentFilters({
       {assessors.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
           <Label className="w-12">From</Label>
+          <Chip active={selected.size === 0} onClick={onAllAssessors}>
+            All
+          </Chip>
           {assessors.map((a) => {
             const on = selected.has(a.id);
             return (

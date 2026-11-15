@@ -173,7 +173,13 @@ export function ReviewScreen({
       <TopBar
         view={view}
         boardMembers={boardMembers}
-        onUpload={onUpload ?? (() => router.push(`/review/new?project=${encodeURIComponent(view.project.id)}`))}
+        onUpload={
+          onUpload ??
+          (() =>
+            router.push(
+              `/review/new?project=${encodeURIComponent(view.project.id)}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+            ))
+        }
       />
 
       {/* Document and comment margin scroll together as one page (§9 Comment anchors). */}
@@ -203,6 +209,7 @@ export function ReviewScreen({
                     onKind={setKindFilter}
                     assessors={commenters}
                     selected={assessorFilter}
+                    onAllAssessors={() => setAssessorFilter(new Set())}
                     onToggleAssessor={(id) =>
                       setAssessorFilter((prev) => {
                         const next = new Set(prev);

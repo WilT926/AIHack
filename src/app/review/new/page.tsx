@@ -6,13 +6,16 @@ import { loadIntakeContext } from "@/features/review/load";
 import { EmptyState } from "@/features/review/components/StatusCards";
 import { replySource } from "@/lib/engine/service";
 
-type Params = Promise<{ project?: string }>;
+type Params = Promise<{ project?: string; from?: string; fresh?: string }>;
+
+/** Only a review page can be "back": anything else goes to the floor. */
+const safeBack = (from: unknown) => (typeof from === "string" && /^\/review(\?|$)/.test(from) ? from : null);
 
 // Upload a PDF or paste text, preview the numbered paragraphs, then start a
 // live review for the project (?project=<id>, or the first report project).
 async function Intake({ searchParams }: { searchParams: Params }) {
   await connection();
-  const { project } = await searchParams;
+  const { project, from, fresh } = await searchParams;
   const context = await loadIntakeContext(typeof project === "string" ? project : null);
   if (!context) {
     return (
@@ -21,7 +24,8 @@ async function Intake({ searchParams }: { searchParams: Params }) {
       </div>
     );
   }
-  return <IntakeScreen context={context} sampleReplies={replySource() === "sample"} />;
+  // `fresh` (from the floor's "+") always opens a blank new-document form.
+  return <IntakeScreen key={fresh ?? project ?? "intake"} context={context} sampleReplies={replySource() === "sample"} backHref={safeBack(from)} />;
 }
 
 export default function NewReviewPage({ searchParams }: { searchParams: Params }) {
