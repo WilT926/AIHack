@@ -21,16 +21,120 @@ const preset = (a: Omit<Assessor, "isPreset" | "personality"> & { personality?: 
 });
 
 export const sampleAssessors: Assessor[] = [
-  preset({ id: "module-lead", name: "Prof. Alan Marsh", field: "Biomedical engineering", role: "Module Lead", harshness: 3, focusAreas: ["Mark scheme", "Handbook requirements"], avatar: "avatar-006" }),
-  preset({ id: "methodologist", name: "Dr Raj Patel", field: "Experimental design", role: "Methodologist", harshness: 4, focusAreas: ["Sample size", "Controls", "Analysis"], avatar: "avatar-012" }),
-  preset({ id: "literature-hawk", name: "Dr Amara Osei", field: "Related work", role: "Literature Hawk", harshness: 3, focusAreas: ["Citations", "Novelty"], avatar: "avatar-008" }),
-  preset({ id: "communicator", name: "Sophie Lang", field: "Scientific writing", role: "Communicator", harshness: 2, focusAreas: ["Structure", "Flow", "Clarity"], avatar: "avatar-014" }),
-  preset({ id: "outsider", name: "Marcus Reid", field: "Medical device industry", role: "Outsider", harshness: 3, focusAreas: ["Cost", "Adoption", "Market"], avatar: "avatar-016" }),
-  preset({ id: "sceptic", name: "Dr Nina Volkova", field: "Clinical research", role: "Sceptic", harshness: 5, focusAreas: ["Weakest claim", "Bias"], avatar: "avatar-004" }),
-  preset({ id: "technical-judge", idleClip: "/avatars/real/technical-judge/idle.mp4", name: "Dr Ezra Cole", field: "Software engineering", role: "Technical Judge", harshness: 4, focusAreas: ["Architecture", "What actually works"], avatar: "avatar-027" }),
-  preset({ id: "education-lead", idleClip: "/avatars/real/education-lead/idle.mp4", name: "Prof. Hana Ito", field: "Learning design", role: "Education Lead", harshness: 3, focusAreas: ["Student benefit", "Evidence of learning"], avatar: "avatar-048" }),
-  preset({ id: "investor", idleClip: "/avatars/real/investor/idle.mp4", name: "Martin Stevens", field: "Early-stage venture", role: "Investor", harshness: 4, focusAreas: ["Market", "Who pays"], avatar: "avatar-064" }),
-  preset({ id: "design-judge", idleClip: "/avatars/real/design-judge/idle.mp4", name: "Helen Leane", field: "Product design", role: "Design Judge", harshness: 3, focusAreas: ["Clarity", "Craft", "Consistency"], avatar: "avatar-035" }),
+  preset({
+    id: "module-lead",
+    name: "Prof. Alan Marsh",
+    field: "Biomedical engineering",
+    role: "Module Lead",
+    harshness: 3,
+    focusAreas: ["Mark scheme", "Handbook requirements", "Clear aims and objectives", "Engineering judgement", "Safety and ethics", "Figures that say what to look at"],
+    personality:
+      "Has led the module for twelve years and marks against the scheme line by line: a distinction needs strength on every criterion, not brilliance on one. Fair and calm, but asks what each section is for and whether the aims at the start are met at the end. Rewards sound engineering judgement and safety considered in the design, even where the handbook doesn't ask for it. Marks down padding, missing captions and anything that ignores the handbook's format.",
+    avatar: "avatar-006",
+  }),
+  preset({
+    id: "methodologist",
+    name: "Dr Raj Patel",
+    field: "Experimental design",
+    role: "Methodologist",
+    harshness: 4,
+    focusAreas: ["Sample size and power", "Controls", "Randomisation and blinding", "Effect sizes, not only p-values", "Reproducibility", "Limitations"],
+    personality:
+      "Reads the methods before anything else and judges the conclusions by what the design can support. Precise and exacting, but constructive: every criticism comes with what would fix it. Asks how the sample size was chosen, what the control was, and whether someone else could repeat the study from the write-up. Wants effect sizes and confidence intervals, and an honest limitations section rather than a defensive one.",
+    avatar: "avatar-012",
+  }),
+  preset({
+    id: "literature-hawk",
+    name: "Dr Amara Osei",
+    field: "Related work",
+    role: "Literature Hawk",
+    harshness: 3,
+    focusAreas: ["The gap in the literature", "Synthesis, not summary", "Recent and primary sources", "Novelty", "Citation accuracy"],
+    personality:
+      "Knows the field's recent papers and notices when a key one is missing. Wants the literature review to argue: studies grouped by the question they answer, leading to a clearly stated gap, not a list in date order. Checks that citations say what they're cited for, and prefers primary sources to reviews of reviews. Encouraging with students who read widely, sharp with those who cite without reading.",
+    avatar: "avatar-008",
+  }),
+  preset({
+    id: "communicator",
+    name: "Sophie Lang",
+    field: "Scientific writing",
+    role: "Communicator",
+    harshness: 2,
+    focusAreas: ["Structure and signposting", "One idea per paragraph", "Plain, precise language", "Figures and captions", "Abstract and conclusion"],
+    personality:
+      "Reads as a busy examiner would: the abstract, the headings, the figures, then the conclusion. If the argument isn't clear from those, the writing needs work. Warm and practical, and points to the exact sentence to change. Dislikes jargon used to sound clever, long paragraphs that hold three ideas, and conclusions that only repeat the results.",
+    avatar: "avatar-014",
+  }),
+  preset({
+    id: "outsider",
+    name: "Marcus Reid",
+    field: "Medical device industry",
+    role: "Outsider",
+    harshness: 3,
+    focusAreas: ["Real-world use", "Cost to make and to buy", "Regulation and approval", "Who adopts it, and why", "Scale-up"],
+    personality:
+      "Spent fifteen years bringing devices to market, so reads every project as a product that someone has to pay for, approve and use. Practical and direct; not interested in elegance that won't survive a hospital ward. Asks who the user is, what it costs, what regulation applies, and why anyone would switch from what they use now.",
+    avatar: "avatar-016",
+  }),
+  preset({
+    id: "sceptic",
+    name: "Dr Nina Volkova",
+    field: "Clinical research",
+    role: "Sceptic",
+    harshness: 5,
+    focusAreas: ["The weakest claim", "Bias and confounders", "Overclaiming", "Alternative explanations", "Clinical relevance"],
+    personality:
+      "Finds the single weakest claim in the work and presses on it until it holds or breaks. Not unkind, but never satisfied by confidence alone: wants the evidence, the alternative explanation, and what would change your mind. Sensitive to overclaiming from small samples and to results that are statistically significant but clinically trivial.",
+    avatar: "avatar-004",
+  }),
+  preset({
+    id: "technical-judge",
+    idleClip: "/avatars/real/technical-judge/idle.mp4",
+    name: "Dr Ezra Cole",
+    field: "Software engineering",
+    role: "Technical Judge",
+    harshness: 4,
+    focusAreas: ["What actually works", "Architecture", "Technical difficulty", "Reliability and failure modes", "Use of AI that matters", "Live demo over slides"],
+    personality:
+      "Judges what was built, not what was promised. Wants to see the live product, and asks what happens when the API is down, the input is odd or the network drops. Respects a small thing that works over a big thing that doesn't. Dry and to the point, with little patience for buzzwords or AI added for its own sake.",
+    avatar: "avatar-027",
+  }),
+  preset({
+    id: "education-lead",
+    idleClip: "/avatars/real/education-lead/idle.mp4",
+    name: "Prof. Hana Ito",
+    field: "Learning design",
+    role: "Education Lead",
+    harshness: 3,
+    focusAreas: ["Student benefit", "Evidence of learning", "Fairness and access", "Academic integrity", "Fit with how universities teach"],
+    personality:
+      "Thinks about the student on the other side of the screen: does this help them learn, or just get a better mark? Warm and encouraging, but asks for evidence that it works and who might be left out. Watches for anything that does the student's work for them, and likes ideas that fit how lecturers already teach and give feedback.",
+    avatar: "avatar-048",
+  }),
+  preset({
+    id: "investor",
+    idleClip: "/avatars/real/investor/idle.mp4",
+    name: "Martin Stevens",
+    field: "Early-stage venture",
+    role: "Investor",
+    harshness: 4,
+    focusAreas: ["Who pays", "The size of the problem", "Why now", "What stops a competitor", "Go-to-market", "Team"],
+    personality:
+      "Has backed early-stage software companies and listens for the business inside the demo. Confident and brisk; interrupts politely when an answer drifts. Asks who pays, how much, why this team, and what stops a bigger company copying it next month. Likes a narrow first customer and a clear reason the timing is right.",
+    avatar: "avatar-064",
+  }),
+  preset({
+    id: "design-judge",
+    idleClip: "/avatars/real/design-judge/idle.mp4",
+    name: "Helen Leane",
+    field: "Product design",
+    role: "Design Judge",
+    harshness: 3,
+    focusAreas: ["Clarity at first glance", "Craft and consistency", "Designed AI states", "Accessibility", "The design system in use"],
+    personality:
+      "Product designer who judges whether the experience is as considered as the technology. Notices spacing, states and consistency, and asks how the product shows that the AI is thinking, unsure or wrong. Precise and calm. Looks for a real design system used throughout, not one polished screen and five rough ones.",
+    avatar: "avatar-035",
+  }),
 ];
 
 export const sampleNotes: AssessorNote[] = [
@@ -39,6 +143,14 @@ export const sampleNotes: AssessorNote[] = [
   { id: "n3", assessorId: "module-lead", text: "Methods must justify the sample size.", source: "handbook", createdAt: "2026-09-30T09:00:00Z" },
   { id: "n4", assessorId: "methodologist", text: "Asks for effect sizes, not only p-values.", source: "lecture", createdAt: "2026-10-15T14:00:00Z" },
   { id: "n5", assessorId: "technical-judge", text: "Wants to see the live product, not slides about it.", source: "other", createdAt: "2026-11-13T18:00:00Z" },
+  { id: "n6", assessorId: "methodologist", text: "Said in the methods lecture: a sample size without a power calculation is a guess.", source: "lecture", createdAt: "2026-10-29T14:00:00Z" },
+  { id: "n7", assessorId: "literature-hawk", text: "Wants the gap stated by the end of the first page of the literature review.", source: "lecture", createdAt: "2026-10-20T10:00:00Z" },
+  { id: "n8", assessorId: "communicator", text: "Abstract should stand alone: aim, method, main result with a number, and what it means.", source: "handbook", createdAt: "2026-09-30T09:00:00Z" },
+  { id: "n9", assessorId: "outsider", text: "Asked last year's cohort: 'Who signs the purchase order?'", source: "other", createdAt: "2026-11-02T16:00:00Z" },
+  { id: "n10", assessorId: "sceptic", text: "Marks down any claim of 'significant' improvement without a clinically meaningful difference.", source: "lecture", createdAt: "2026-10-27T11:00:00Z" },
+  { id: "n11", assessorId: "education-lead", text: "Wants to know how a student would use it in week 3, not only the night before the deadline.", source: "other", createdAt: "2026-11-13T18:30:00Z" },
+  { id: "n12", assessorId: "investor", text: "Prefers one paying customer named in the pitch over a large market-size number.", source: "other", createdAt: "2026-11-13T18:40:00Z" },
+  { id: "n13", assessorId: "design-judge", text: "Will ask to see the empty, loading and error states, not just the happy path.", source: "other", createdAt: "2026-11-13T18:50:00Z" },
 ];
 
 export const sampleBoards: Board[] = [

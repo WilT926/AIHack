@@ -1,11 +1,12 @@
-import { Button, Chip, Label, Tabs } from "@/components/ui";
+import { Avatar, Button, Label, Tabs } from "@/components/ui";
 import type { PitchSetupData } from "../types";
-import { BoardRow } from "./BoardRow";
 import { SlidesCard } from "./SlidesCard";
 
 export type SetupValue = {
   projectId: string | null;
   boardId: string | null;
+  /** Who from the panel's board is in this meeting (all of them by default). */
+  attendeeIds: string[];
   questionCount: number;
   mode: "spoken" | "text";
   capture: "live" | "typed";
@@ -37,7 +38,11 @@ export function Setup({
 }) {
   const board = data.boards.find((b) => b.id === value.boardId);
   const capture = canListen ? value.capture : "typed";
-  const projects = [...data.projects].sort((a, b) => Number(b.isPitch) - Number(a.isPitch));
+  const projects = data.projects;
+  const project = data.projects.find((p) => p.id === value.projectId);
+  const attending = new Set(value.attendeeIds);
+  const toggle = (id: string) =>
+    onChange({ ...value, attendeeIds: attending.has(id) ? value.attendeeIds.filter((x) => x !== id) : [...value.attendeeIds, id] });
 
   return (
     <section className="ps-setup" aria-labelledby="ps-setup-title">
@@ -52,30 +57,31 @@ export function Setup({
         <p className="ui-empty">You have no panels yet. Start one from your floor first.</p>
       ) : (
         <>
+          {/* The panel is the one focused on the floor; its board is changed there with Edit board. */}
           <div className="ps-field">
-            <Label>Panel</Label>
-            <div className="ps-chips">
-              {projects.map((p) => (
-                <Chip
-                  key={p.id}
-                  active={p.id === value.projectId}
-                  onClick={() => onChange({ ...value, projectId: p.id, boardId: p.boardId ?? null })}
-                >
-                  {p.title}
-                </Chip>
-              ))}
-            </div>
-          </div>
-
-          {/* The board is the panel's own; it is changed on the floor with Edit board, not here. */}
-          <div className="ps-field">
-            <Label>Board</Label>
+            <Label>Who is in the meeting{project ? ` · ${project.title}` : ""}</Label>
             {board && board.seats.length > 0 ? (
-              <BoardRow seats={board.seats} />
+              <ul className="ps-attend" aria-label="Choose who is in the meeting">
+                {board.seats.map((s) => {
+                  const on = attending.has(s.id);
+                  return (
+                    <li key={s.id}>
+                      <button type="button" className="ps-attend__seat" aria-pressed={on} onClick={() => toggle(s.id)} title={on ? `Leave ${s.short} out` : `Bring ${s.short} in`}>
+                        <Avatar avatar={s.avatar} size="xl" alt="" />
+                        <span className="ps-attend__name">{s.short}</span>
+                        <Label size="xs">{s.field}</Label>
+                        <span className="ps-attend__tick" aria-hidden>
+                          {on ? "In" : "Out"}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             ) : (
               <p className="ui-empty">No one is seated at this panel yet. Seat its board from your floor with Edit board.</p>
             )}
-            <p className="ps-note">To change who sits on this board, use Edit board on the panel on your floor.</p>
+            <p className="ps-note">Click someone to bring them in or leave them out of this meeting. To change the panel&apos;s board itself, use Edit board on your floor.</p>
           </div>
 
           <div className="ps-row">
@@ -149,7 +155,7 @@ export function Setup({
           )}
 
           <div className="ps-actions">
-            <Button variant="create" size="lg" disabled={!value.projectId || !value.boardId || busy} onClick={onStart}>
+            <Button variant="create" size="lg" disabled={!value.projectId || !value.boardId || value.attendeeIds.length === 0 || busy} onClick={onStart}>
               {capture === "live" ? "Start presenting" : "Continue"}
             </Button>
           </div>

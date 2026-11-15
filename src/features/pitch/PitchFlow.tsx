@@ -13,6 +13,7 @@ import { boardQuestions, endQandA, finishPitch, lastSavedTranscript, saveTranscr
 import type { Phase, PitchSetupData } from "./types";
 import { SessionFrame } from "./components/SessionFrame";
 import { Setup, type SetupValue } from "./components/Setup";
+import { meetingBoard } from "./meetingBoard";
 import { Listening } from "./components/Listening";
 import { TypedTranscript } from "./components/TypedTranscript";
 import { Conferring } from "./components/Conferring";
@@ -34,6 +35,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const [setup, setSetup] = useState<SetupValue>({
     projectId: initialProject?.id ?? null,
     boardId: initialProject?.boardId ?? null,
+    attendeeIds: data.boards.find((b) => b.id === initialProject?.boardId)?.seats.map((s) => s.id) ?? [],
     questionCount: data.defaultQuestionCount,
     mode: data.defaultMode,
     capture: "live",
@@ -67,7 +69,17 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const finishingRef = useRef(false);
 
   const board = data.boards.find((b) => b.id === setup.boardId);
-  const seats = board?.seats ?? [];
+  // Only the people chosen for this meeting take part.
+  const seats = (board?.seats ?? []).filter((s) => setup.attendeeIds.includes(s.id));
+
+  /** The panel's board, or a one-off board of just the people chosen for this meeting. */
+  const meetingBoardId = useCallback(async (): Promise<string | null> => {
+    const all = board?.seats.map((s) => s.id) ?? [];
+    if (!setup.boardId || (all.length === setup.attendeeIds.length && all.every((id) => setup.attendeeIds.includes(id)))) return setup.boardId;
+    const res = await meetingBoard(`${board?.name ?? "Board"} · meeting`, setup.attendeeIds);
+    if (!res.ok) throw new Error(res.error);
+    return res.boardId;
+  }, [board, setup.boardId, setup.attendeeIds]);
   const live = joinTranscript(rec.finalText, rec.interim);
   const seconds = rec.startedAt && now ? Math.max(0, (now - Date.parse(rec.startedAt)) / 1000) : 0;
 
@@ -126,7 +138,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       rec.reset();
       const s = await startPitchSession({
         projectId: setup.projectId,
-        boardId: setup.boardId,
+        boardId: await meetingBoardId(),
         questionCount: setup.questionCount,
         mode: setup.mode,
         conditions: setup.conditions,
@@ -143,7 +155,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     } finally {
       setBusy(false);
     }
-  }, [setup, canListen, rec]);
+  }, [setup, canListen, rec, meetingBoardId]);
 
   // ---------- Finish (button or "thank you") ----------
 
@@ -262,7 +274,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       if (!s) {
         s = await startPitchSession({
           projectId: setup.projectId,
-          boardId: setup.boardId,
+          boardId: await meetingBoardId(),
           questionCount: setup.questionCount,
           mode: setup.mode,
           conditions: setup.conditions,
@@ -281,7 +293,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     } finally {
       setBusy(false);
     }
-  }, [setup, typedText, typedLength, confer]);
+  }, [setup, typedText, typedLength, confer, meetingBoardId]);
 
   // Hidden control: Ctrl/⌘ + Shift + L loads the last saved transcript.
   const loadLast = useCallback(async () => {
