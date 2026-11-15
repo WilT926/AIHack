@@ -1,54 +1,70 @@
 /*
- * TEMPORARY (Lane 2): style variables for the review screen.
- * Names follow docs/plan/README.md ("Style variable names") plus the brand
- * names from the Panel brand sheet; values come from the brand sheet.
- * When Lane 3's src/styles lands, delete this theme block and import theirs.
+ * Lane 2 (review, intake, project setup): Tailwind names for the shared
+ * Panel tokens in src/styles/tokens.css (design/DESIGN_SYSTEM.md §3–§5).
+ *
+ * Everything here is `@theme inline`, so it only names existing tokens and
+ * never redefines a variable on :root (the root layout loads tokens.css).
+ * No colours, fonts or sizes are invented here.
  */
 @import "tailwindcss";
 
-@theme {
-  /* Brand */
-  --color-ink: #111111;
-  --color-paper: #f4f3f0;
-  --color-graphite: #8a8a8a;
-  --color-rule: #e6e6e6;
-  --color-critique-tint: #ffe9e1;
-  --color-question-tint: #f1f0ec;
-  --color-praise-tint: #f6f6f4;
-  --color-dot: #d6d4ce;
+@theme inline {
+  /* §3 Colour */
+  --color-ink: var(--ink);
+  --color-white: var(--paper);
+  --color-surface: var(--paper);
+  --color-orange: var(--orange);
+  --color-orange-halo: var(--orange-halo);
+  --color-grey-900: var(--grey-900);
+  --color-grey-700: var(--grey-700);
+  --color-grey-500: var(--grey-500);
+  --color-grey-400: var(--grey-400);
+  --color-grey-300: var(--grey-300);
+  --color-grey-250: var(--grey-250);
+  --color-grey-200: var(--grey-200);
+  --color-grey-150: var(--grey-150);
+  --color-grey-100: var(--grey-100);
+  --color-grey-50: var(--grey-50);
+  --color-grey-25: var(--grey-25);
 
-  /* Shared names from the plan */
-  --color-bg: #f4f3f0;
-  --color-surface: #ffffff;
-  --color-text: #111111;
-  --color-text-muted: #8a8a8a;
-  --color-border: #e6e6e6;
-  --color-accent: #ff5d2b;
-  --color-accent-contrast: #ffffff;
-  --color-focus: #ff5d2b;
-
-  /* Type */
-  --font-display: var(--font-inter), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1.3;
-  --text-body: 0.9375rem;
+  /* §4 Type */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+  --text-label: 11px;
+  --text-label--line-height: 1.2;
+  --text-label-sm: 10px;
+  --text-label-sm--line-height: 1.2;
+  --text-chip: 13px; /* §9 chips and segmented controls */
+  --text-chip--line-height: 1.2;
+  --text-small: 12px;
+  --text-small--line-height: 1.4;
+  --text-body: 14px;
   --text-body--line-height: 1.5;
-  --text-reading: 1rem;
+  --text-reading: 15px;
   --text-reading--line-height: 1.65;
-  --text-title: 1.25rem;
-  --text-title--line-height: 1.3;
-  --text-display: 2.375rem;
-  --text-display--line-height: 1.1;
-  --tracking-label: 0.1em;
-  --tracking-heading: -0.01em;
+  --text-h3: 16px;
+  --text-h3--line-height: 1.15;
+  --text-h3-lg: 20px;
+  --text-h3-lg--line-height: 1.15;
+  --text-h2: 26px;
+  --text-h2--line-height: 1.02;
+  --text-h1: 30px;
+  --text-h1--line-height: 1.02;
+  --text-display: 44px;
+  --text-display--line-height: 1;
+  --tracking-label: 0.04em;
+  --tracking-h3: -0.01em;
+  --tracking-h2: -0.02em;
+  --tracking-h1: -0.025em;
+  --tracking-display: -0.035em;
 
-  /* Shape */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1.625rem; /* 26px, as on the Figma cards */
-  --radius-xl: 1.875rem; /* 30px canvases */
+  /* §5 Shape */
+  --radius-paper: 7px;
+  --radius-row: 16px;
+  --radius-card-sm: 22px;
+  --radius-card: 26px;
+  --radius-sheet: 32px;
 
   /* Layout */
   --container-rail: 35.5rem;
@@ -61,7 +77,7 @@
 
 /* Named grid layouts, so components never carry raw widths. */
 @utility grid-cols-paragraph {
-  grid-template-columns: 2rem 1fr 2rem; /* ¶ number · text · commenter avatars */
+  grid-template-columns: 2.25rem 1fr 2.5rem; /* anchor disc · text · commenter avatars */
 }
 @utility grid-cols-numbered {
   grid-template-columns: 2.5rem 1fr;
@@ -79,25 +95,55 @@
   grid-template-columns: 30rem 1fr;
 }
 @utility w-table-surface {
-  width: 49%; /* the table inside the round-table canvas */
-}
-@utility bubble-anchor {
-  top: 7%;
-  right: 4%;
+  width: 46%; /* the focused table inside a table canvas */
 }
 @utility grid-cols-label-value {
   grid-template-columns: 10rem 1fr;
 }
 
-/* Dotted grid canvas, as in the "Your floor" / round-table explorations. */
-@utility bg-dots {
-  background-color: var(--color-paper);
-  background-image: radial-gradient(var(--color-dot) 1px, transparent 1.2px);
-  background-size: 24px 24px;
+/* §5 Floor background: white with the 28px dot grid. Only on table canvases. */
+@utility bg-floor {
+  background: var(--floor-grid), var(--paper);
 }
 
-body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-body);
+/* §5 Line: the single 1.5px stroke. */
+@utility border-line {
+  border-width: var(--line-width);
+}
+
+/* Mono label on a black surface (the shared .ui-label has no inverse tone). */
+.ui-label.lane2-label-inverse {
+  color: var(--paper);
+}
+
+/* §9 AI state "Reading": three ink dots that fill left to right. */
+@keyframes lane2-reading {
+  0%,
+  20% {
+    background: transparent;
+  }
+  40%,
+  100% {
+    background: currentColor;
+  }
+}
+.lane2-reading i {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-round);
+  border: var(--line-width) solid currentColor;
+  box-sizing: border-box;
+  animation: lane2-reading 1.4s steps(1, end) infinite;
+}
+.lane2-reading i:nth-child(2) {
+  animation-delay: 0.35s;
+}
+.lane2-reading i:nth-child(3) {
+  animation-delay: 0.7s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lane2-reading i {
+    animation: none;
+    background: currentColor;
+  }
 }

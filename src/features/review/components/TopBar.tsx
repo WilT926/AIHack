@@ -1,6 +1,6 @@
 import type { Assessor, ReviewView } from "../types";
 import { formatNumber, formatShortDate, shortChapter } from "../lib";
-import { Logo } from "../ui/Logo";
+import { Logo } from "@/components/ui";
 import { Label } from "../ui/Label";
 import { Pill } from "../ui/Pill";
 import { AvatarStack } from "../ui/Avatar";
@@ -10,9 +10,9 @@ function livePillText(view: ReviewView): string | undefined {
   const { live, board } = view;
   if (!live) return undefined;
   if (live.status === "reviewing") {
-    return `Reviewing · ${live.doneAssessorIds.length} of ${board.assessorIds.length} read`;
+    return `In session · ${live.doneAssessorIds.length} of ${board.assessorIds.length} read`;
   }
-  if (live.status === "deliberating") return "Board deliberating";
+  if (live.status === "deliberating") return "The board is conferring";
   return undefined;
 }
 
@@ -38,14 +38,14 @@ export function TopBar({
   const pill = livePillText(view);
 
   return (
-    <header className="relative flex h-topbar shrink-0 items-center gap-6 border-b border-rule bg-surface px-7">
-      <Logo name="Panel" />
-      <div className="h-7 w-px bg-rule" />
+    <header className="relative flex h-topbar shrink-0 items-center gap-6 bg-white px-8">
+      <Logo />
+      <div className="h-8 w-px bg-grey-100" />
       <div className="flex min-w-0 flex-col gap-0.5">
         <Label tone="ink" className="truncate">
           {crumbs.join("  /  ")}
         </Label>
-        <span className="truncate font-mono text-label text-text-muted">{meta.join(" · ")}</span>
+        <Label className="truncate">{meta.join(" · ")}</Label>
       </div>
 
       {pill && (
@@ -61,7 +61,7 @@ export function TopBar({
         <AvatarStack
           people={boardMembers}
           size="md"
-          ringFor={(id) => (live?.reading?.some((r) => r.assessorId === id) ? "accent" : "ink")}
+          ringFor={(id) => (live?.reading?.some((r) => r.assessorId === id) ? "accent" : "none")}
         />
         <div className="w-3" />
         <Button variant="outline" onClick={onUpload}>

@@ -6,7 +6,7 @@ import type { Assessor } from "../review/types";
 import type { ProjectDraft, TemplateId } from "./types";
 import { draftFromTemplate } from "./templates";
 import { missingFor, toReviewContext } from "./context";
-import { Logo } from "../review/ui/Logo";
+import { Logo } from "@/components/ui";
 import { Label } from "../review/ui/Label";
 import { Button } from "../review/ui/Button";
 import { IntakeScreen } from "../review/intake/IntakeScreen";
@@ -85,12 +85,12 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
-      <header className="grid h-topbar shrink-0 grid-cols-centred items-center border-b border-rule px-7">
-        <Logo name="Panel" />
+      <header className="grid h-topbar shrink-0 grid-cols-centred items-center bg-white px-8">
+        <Logo />
         <Stepper current={current.steps} />
         <Link
-          href="/review"
-          className="justify-self-end font-mono text-label uppercase tracking-label text-text-muted hover:text-ink"
+          href="/"
+          className="justify-self-end font-mono text-label uppercase tracking-label text-grey-700 hover:text-ink"
         >
           ✕ Close
         </Link>
@@ -100,8 +100,8 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
         <Label tone="accent">
           New project · {current.steps.length > 1 ? `Steps ${current.steps[0]}–${current.steps.at(-1)}` : `Step ${current.steps[0]}`} of 5
         </Label>
-        <h1 className="mt-2 text-display font-extrabold tracking-heading text-ink">{current.title}</h1>
-        <p className="mt-2 max-w-2xl text-reading text-text-muted">{current.intro}</p>
+        <h1 className="mt-2 font-display text-display font-semibold tracking-display text-ink">{current.title}</h1>
+        <p className="mt-2 max-w-2xl text-reading text-grey-700">{current.intro}</p>
 
         <div className="mt-9">
           {screen === "template" && <TemplateStep selected={draft?.template} assessors={assessors} onSelect={chooseTemplate} />}
@@ -111,7 +111,7 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
         </div>
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 border-t border-rule bg-surface">
+      <footer className="fixed inset-x-0 bottom-0 border-t border-grey-100 bg-white">
         <div className="mx-auto grid w-full max-w-page grid-cols-centred items-center px-8 py-4">
           <div>
             <Button variant="outline" onClick={back} disabled={index === 0}>
@@ -119,14 +119,16 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
             </Button>
           </div>
           {error ? (
-            <p role="alert" className="text-body font-medium text-accent">
+            <p role="alert" className="text-body font-semibold text-ink">
               {error}
             </p>
           ) : (
             <Label>You can change all of this later</Label>
           )}
           <div className="justify-self-end">
-            <Button onClick={next}>{screen === "start" ? "Start review →" : "Continue →"}</Button>
+            <Button variant={screen === "start" ? "create" : "primary"} onClick={next}>
+              {screen === "start" ? "Start review →" : "Continue →"}
+            </Button>
           </div>
         </div>
       </footer>

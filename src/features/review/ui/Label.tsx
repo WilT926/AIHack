@@ -1,27 +1,23 @@
-import { cn } from "./cn";
+import { Label as SharedLabel, cn } from "@/components/ui";
 
 type Tone = "muted" | "accent" | "ink" | "inverse";
 
-const toneClass: Record<Tone, string> = {
-  muted: "text-text-muted",
-  accent: "text-accent",
-  ink: "text-ink",
-  inverse: "text-surface",
-};
-
-/** Mono, capitals, wide tracking: labels and meta ("IN SESSION · 18 MIN"). */
+/** Mono label (§4): JetBrains Mono 500, 11px, capitals. */
 export function Label({
   tone = "muted",
+  size = "md",
   className,
   children,
 }: {
   tone?: Tone;
+  size?: "md" | "sm" | "xs";
   className?: string;
   children: React.ReactNode;
 }) {
+  const shared = tone === "accent" ? "orange" : tone === "ink" ? "ink" : "grey";
   return (
-    <span className={cn("font-mono text-label uppercase tracking-label", toneClass[tone], className)}>
+    <SharedLabel tone={shared} size={size} className={cn(tone === "inverse" && "lane2-label-inverse", className)}>
       {children}
-    </span>
+    </SharedLabel>
   );
 }

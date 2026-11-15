@@ -1,11 +1,16 @@
 import type { Assessor, CommentKind } from "../types";
-import { Pill } from "../ui/Pill";
+import { Chip } from "@/components/ui";
 import { Label } from "../ui/Label";
 import { Avatar } from "../ui/Avatar";
 
-const KINDS: (CommentKind | "all")[] = ["all", "critique", "question", "praise"];
+const KINDS: { id: CommentKind | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "critique", label: "Critique" },
+  { id: "question", label: "Question" },
+  { id: "praise", label: "Praise" },
+];
 
-/** Filter the comment rail (and the document highlights) by kind and by assessor. */
+/** Filter chips (§9): by kind and by assessor. They narrow the rail and the anchors. */
 export function CommentFilters({
   kind,
   onKind,
@@ -20,25 +25,27 @@ export function CommentFilters({
   onToggleAssessor: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2 pb-1" aria-label="Filter comments">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-2.5 pb-1" aria-label="Filter comments">
+      <div className="flex flex-wrap items-center gap-1.5">
         <Label className="w-12">Show</Label>
         {KINDS.map((k) => (
-          <Pill key={k} variant={kind === k ? "ink" : "outline"} onClick={() => onKind(k)} pressed={kind === k}>
-            {k}
-          </Pill>
+          <Chip key={k.id} active={kind === k.id} onClick={() => onKind(k.id)}>
+            {k.label}
+          </Chip>
         ))}
       </div>
       {assessors.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Label className="w-12">From</Label>
           {assessors.map((a) => {
             const on = selected.has(a.id);
             return (
-              <Pill key={a.id} variant={on ? "ink" : "outline"} onClick={() => onToggleAssessor(a.id)} pressed={on} title={a.name}>
-                <Avatar avatar={a.avatar} name={a.name} size="sm" className="-my-1 -ml-1.5" />
-                {a.name.split(" ").at(-1)}
-              </Pill>
+              <Chip key={a.id} active={on} onClick={() => onToggleAssessor(a.id)} title={a.name}>
+                <span className="inline-flex items-center gap-1.5">
+                  <Avatar avatar={a.avatar} name={a.name} size="sm" invert={on} className="-my-1.5" />
+                  {a.name.split(" ").at(-1)}
+                </span>
+              </Chip>
             );
           })}
         </div>

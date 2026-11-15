@@ -11,7 +11,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 3,
     focus: ["mark scheme", "handbook requirements"],
     personality: "Marks against the mark scheme and your notes.",
-    avatar: "module-lead",
+    avatar: "avatar-006",
   },
   {
     id: "methodologist",
@@ -21,7 +21,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 4,
     focus: ["sample size", "controls", "analysis"],
     personality: "\u201cHow did you actually find this?\u201d Rigour first.",
-    avatar: "methodologist",
+    avatar: "avatar-012",
   },
   {
     id: "literature-hawk",
@@ -31,7 +31,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 3,
     focus: ["citations", "novelty"],
     personality: "Related work and novelty. Knows what you missed.",
-    avatar: "literature-hawk",
+    avatar: "avatar-008",
   },
   {
     id: "communicator",
@@ -41,7 +41,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 2,
     focus: ["structure", "flow", "clarity"],
     personality: "Structure, flow and clarity. Can a reader follow it?",
-    avatar: "communicator",
+    avatar: "avatar-014",
   },
   {
     id: "outsider",
@@ -51,7 +51,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 3,
     focus: ["cost", "adoption", "market"],
     personality: "The industry view. Who pays, and why would they care?",
-    avatar: "outsider",
+    avatar: "avatar-016",
   },
   {
     id: "sceptic",
@@ -61,7 +61,7 @@ export const presetAssessors: Assessor[] = [
     harshness: 5,
     focus: ["weakest claim", "bias"],
     personality: "Goes straight for your weakest claim and pushes.",
-    avatar: "sceptic",
+    avatar: "avatar-004",
   },
 ];
 
