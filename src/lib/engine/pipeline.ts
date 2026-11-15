@@ -93,3 +93,13 @@ export async function runIntegrityPipeline<T, U = T, R = undefined>(input: {
   const value = input.check ? input.check(checkedOutput.value) : checkedOutput.value as unknown as U;
   return { value, events, escalations: guardrailEscalations(events) };
 }
+
+/** Clinical limits need human confirmation even if a faster synthesis omits that handoff. */
+export function clinicalSafetyEscalations(material: string, concerns: string[]) {
+  const clinical = /\b(?:clinical|patients?|ulcers?|sub-bandage|compression wrap|medical device)\b/i.test(material);
+  const unresolvedSafety = concerns.some((s) => /\b(?:safety|safe (?:pressure|limits?)|pressure limits?|adverse (?:events?|effects?)|alarm thresholds?|ischaemia)\b/i.test(s));
+  return clinical && unresolvedSafety ? [{
+    reason: "The assessors raised clinical safety concerns. Safe limits, adverse-event monitoring and ethics requirements need human confirmation; the board cannot set them from this material.",
+    whoToAsk: "Your supervisor or ethics panel, with clinical input",
+  }] : [];
+}

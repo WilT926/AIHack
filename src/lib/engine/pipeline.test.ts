@@ -3,7 +3,7 @@ import { documents, projects, reviews } from "@/lib/data";
 import { runAssessor } from "./run";
 import { behaviorFor } from "./eventStore";
 import { assessorInput, reviewWithAssessor, deliberateAndSave } from "./service";
-import { checkInput, checkOutput, runIntegrityPipeline } from "./pipeline";
+import { checkInput, checkOutput, clinicalSafetyEscalations, runIntegrityPipeline } from "./pipeline";
 import type { ModelCaller } from "./claude";
 
 beforeEach(() => {
@@ -88,4 +88,10 @@ it("persists assessor events on the server and attaches them to the feedback rep
   const finished = await deliberateAndSave({ projectId: p.id, documentId: "guard-doc", reviewId: "guard-review", results: [{ assessorId: result.assessorId, status: result.status, comments: result.status === "done" ? result.comments : [], replySource: "sample" }] });
   expect(finished.report?.behavior?.guardrailEvents.some((e) => e.rule === "reviewer-instruction")).toBe(true);
   expect((await behaviorFor("guard-review")).guardrailEvents.length).toBeGreaterThan(0);
+});
+
+it("preserves a human handoff for clinical safety without escalating unrelated design notes", () => {
+  expect(clinicalSafetyEscalations("A compression wrap study with patients.", ["Safety: pressure limits were not stated."])[0].whoToAsk).toContain("clinical input");
+  expect(clinicalSafetyEscalations("An offline timetable organiser.", ["Consider safety in the design."])).toEqual([]);
+  expect(clinicalSafetyEscalations("A compression wrap study with patients.", ["Justify the sample size."])).toEqual([]);
 });

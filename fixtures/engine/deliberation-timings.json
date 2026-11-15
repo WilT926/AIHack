@@ -1,0 +1,98 @@
+[
+  {
+    "provenance": "Real Claude effort benchmark on the frozen invented comments in guarded-real-review.json; same complete input for each effort",
+    "verifiedAt": "2026-11-15T03:25:39.168Z",
+    "effort": "high",
+    "totalMs": 60175,
+    "apiMs": 60168,
+    "localMs": 8,
+    "inputTokens": 8957,
+    "outputTokens": 14323,
+    "thinkingTokens": 9607,
+    "approximateVisibleTokens": 4716,
+    "quality": {
+      "criteria": [
+        "Analysis",
+        "Methods",
+        "Writing"
+      ],
+      "boardVerdicts": 6,
+      "actions": 6,
+      "anchoredActions": true,
+      "coverage": {
+        "sampleRationale": true,
+        "randomisationOrCarryover": true,
+        "missingData": true,
+        "comfortThreshold": true,
+        "calibration": true
+      },
+      "hasEscalations": true,
+      "dropped": 0,
+      "guardrailEvents": []
+    }
+  },
+  {
+    "provenance": "Real Claude effort benchmark on the frozen invented comments in guarded-real-review.json; same complete input for each effort",
+    "verifiedAt": "2026-11-15T03:25:07.197Z",
+    "effort": "medium",
+    "totalMs": 28188,
+    "apiMs": 28183,
+    "localMs": 5,
+    "inputTokens": 8957,
+    "outputTokens": 6722,
+    "thinkingTokens": 2368,
+    "approximateVisibleTokens": 4354,
+    "quality": {
+      "criteria": [
+        "Analysis",
+        "Methods",
+        "Writing"
+      ],
+      "boardVerdicts": 6,
+      "actions": 6,
+      "anchoredActions": true,
+      "coverage": {
+        "sampleRationale": true,
+        "randomisationOrCarryover": true,
+        "missingData": true,
+        "comfortThreshold": true,
+        "calibration": true
+      },
+      "hasEscalations": true,
+      "dropped": 0,
+      "guardrailEvents": []
+    }
+  },
+  {
+    "provenance": "Real Claude effort benchmark on the frozen invented comments in guarded-real-review.json; same complete input for each effort",
+    "verifiedAt": "2026-11-15T03:25:00.988Z",
+    "effort": "low",
+    "totalMs": 21978,
+    "apiMs": 21964,
+    "localMs": 14,
+    "inputTokens": 8957,
+    "outputTokens": 5057,
+    "thinkingTokens": 1578,
+    "approximateVisibleTokens": 3479,
+    "quality": {
+      "criteria": [
+        "Analysis",
+        "Methods",
+        "Writing"
+      ],
+      "boardVerdicts": 6,
+      "actions": 6,
+      "anchoredActions": true,
+      "coverage": {
+        "sampleRationale": true,
+        "randomisationOrCarryover": true,
+        "missingData": true,
+        "comfortThreshold": true,
+        "calibration": true
+      },
+      "hasEscalations": true,
+      "dropped": 0,
+      "guardrailEvents": []
+    }
+  }
+]

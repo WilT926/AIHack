@@ -13,7 +13,7 @@ export const models = {
 /** The assessor engine (lane-1.md step 1.2). */
 export const engine = {
   /** Effort per call kind; set explicitly (Opus 5.5 and Haiku 5.5 default to medium). */
-  effort: { review: "medium", deliberation: "high", questions: "low", followUp: "low", pitchReport: "medium", router: "low", utterance: "low" },
+  effort: { review: "medium", deliberation: "low", questions: "low", followUp: "low", pitchReport: "medium", router: "low", utterance: "low" },
   /** Reply length cap per call. Non-streaming, so kept within SDK timeouts. */
   maxTokens: { review: 16000, deliberation: 16000, questions: 8000, followUp: 2000, pitchReport: 16000, router: 1000, utterance: 1500 },
   /** Random focus angles added to each assessor's prompt per run. */

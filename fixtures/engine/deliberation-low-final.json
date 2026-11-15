@@ -1,0 +1,253 @@
+{
+  "provenance": "Real Claude effort benchmark on the frozen invented comments in guarded-real-review.json; same complete input for each effort",
+  "verifiedAt": "2026-11-15T03:28:36.526Z",
+  "effort": "low",
+  "totalMs": 17100,
+  "apiMs": 17086,
+  "localMs": 14,
+  "inputTokens": 9298,
+  "outputTokens": 3590,
+  "thinkingTokens": 1458,
+  "approximateVisibleTokens": 2132,
+  "quality": {
+    "criteria": [
+      "Methods",
+      "Analysis",
+      "Writing"
+    ],
+    "boardVerdicts": 6,
+    "actions": 6,
+    "anchoredActions": true,
+    "coverage": {
+      "sampleRationale": true,
+      "randomisationOrCarryover": true,
+      "missingData": true,
+      "comfortThreshold": true,
+      "calibration": true,
+      "writing": true
+    },
+    "hasEscalations": true,
+    "safetyEscalation": true,
+    "dropped": 0,
+    "guardrailEvents": []
+  },
+  "outcome": {
+    "deliberation": {
+      "summary": "The assessors agree the chapter is clear in outline but leaves the sample size, the two-point threshold, withdrawals, carryover and the analysis model unjustified. Pressure safety limits are unstated and need human input.",
+      "agreements": [
+        "The sample of twelve, the two-point comfort threshold and the withdrawals need justification.",
+        "The crossover design and the objective pressure measurement are sound and should be kept.",
+        "The analysis, including the ordinal comfort outcome, needs its model and assumptions stated."
+      ],
+      "disagreements": []
+    },
+    "report": {
+      "kind": "report",
+      "verdict": "The methods are clearly described and suitable in outline, but the sample, threshold, withdrawals and analysis need justifying before the design can be judged.",
+      "criteria": [
+        {
+          "criterion": "Methods",
+          "rating": "adequate",
+          "evidence": "The crossover design, randomised order and objective pressure logging are clear. Sample size, washout, randomisation, blinding, calibration accuracy and clinic effects are not justified."
+        },
+        {
+          "criterion": "Analysis",
+          "rating": "weak",
+          "evidence": "The repeated-measures ANOVA is not matched to the crossover design, the ordinal comfort outcome is not justified, no primary outcome is named and no effect sizes or intervals are reported."
+        },
+        {
+          "criterion": "Writing",
+          "rating": "adequate",
+          "evidence": "Sentences on the procedure are readable, but there is no roadmap, technical terms are undefined, the comparison is unexplained in plain terms and ethics sits late."
+        }
+      ],
+      "strengths": [
+        "The randomised within-participant design is sound and clearly stated.",
+        "Objective pressure logging at two sites every ten minutes gives a reproducible outcome.",
+        "Ethics review and written consent are stated."
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "what": "Justify the sample of twelve with a power calculation or a feasibility rationale tied to the outcomes. State the source of the two-point threshold, whether it was set before data collection, and how results look under a different threshold.",
+          "why": "Without this, readers cannot tell whether the study could detect the change that matters.",
+          "raisedBy": [
+            "module-lead",
+            "methodologist",
+            "sceptic",
+            "literature-hawk"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2",
+              "p5"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a2",
+          "what": "Report how many participants completed each variant, the reasons for withdrawal or state they are unknown, and which population the main analysis uses. Add a sensitivity analysis that includes the partial data.",
+          "why": "Attrition could bias every comparison and the conclusions depend on it.",
+          "raisedBy": [
+            "module-lead",
+            "methodologist",
+            "sceptic",
+            "outsider"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p7"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a3",
+          "what": "Describe the washout interval, how randomisation was generated and concealed, whether assessors were blinded, and how order, period and clinic effects were checked or modelled. Discuss carryover as a threat to the conclusions.",
+          "why": "Carryover and order effects are plausible alternative explanations for any difference.",
+          "raisedBy": [
+            "methodologist",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a4",
+          "what": "Name the primary outcome and the model terms, including order and participant. Justify the test for an ordinal comfort score, state the assumptions checked, and report effect sizes with confidence intervals, with a non-parametric or mixed-effects alternative considered.",
+          "why": "The analysis choice could produce a null or positive result by artefact.",
+          "raisedBy": [
+            "methodologist",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p6"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a5",
+          "what": "Report calibration accuracy, repeatability and drift checks, and how sensor placement was standardised. Cite validation work for printed capacitive sensors and name the closest prior compression wraps to show what is new.",
+          "why": "Measurement noise and novelty cannot be judged without this support.",
+          "raisedBy": [
+            "methodologist",
+            "literature-hawk",
+            "communicator"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p4",
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a6",
+          "what": "Add a roadmap sentence, define sub-bandage pressure and the comparison in plain terms, and state the intended users and how the healed-ulcer sample relates to them. Move the ethics statement earlier, near recruitment.",
+          "why": "Readers outside the field need to follow the design and see who it serves.",
+          "raisedBy": [
+            "communicator",
+            "outsider",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2",
+              "p3",
+              "p6",
+              "p8"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        }
+      ],
+      "assessorVerdicts": [
+        {
+          "assessorId": "module-lead",
+          "line": "Sample size and pressure safety are not justified here; the handbook expects both."
+        },
+        {
+          "assessorId": "methodologist",
+          "line": "Carryover, clinic effects and the analysis model all need explicit treatment before results can be trusted."
+        },
+        {
+          "assessorId": "literature-hawk",
+          "line": "Position the wrap against prior work and cite the threshold and sensor validation."
+        },
+        {
+          "assessorId": "communicator",
+          "line": "The sequence is easy to follow, but terms, signposting and ethics placement need work."
+        },
+        {
+          "assessorId": "outsider",
+          "line": "Real-world testing is useful, but the intended users and withdrawal reasons are unclear."
+        },
+        {
+          "assessorId": "sceptic",
+          "line": "Unsourced threshold, attrition and analysis choices weaken the comfort conclusions."
+        }
+      ],
+      "escalations": [
+        {
+          "reason": "Safe sub-bandage pressure limits, alarm thresholds and adverse-event monitoring for healed venous ulcers cannot be set from this excerpt.",
+          "whoToAsk": "Your supervisor and the departmental ethics panel, with clinical input."
+        }
+      ],
+      "sinceLastTime": null,
+      "likelyQuestions": [
+        {
+          "assessorId": "module-lead",
+          "question": "What effect size would n=12 detect, and why is that the difference that matters?"
+        },
+        {
+          "assessorId": "methodologist",
+          "question": "How did you check for order and period effects across the three one-week wears?"
+        },
+        {
+          "assessorId": "literature-hawk",
+          "question": "Which earlier compression wraps are closest to yours, and what does yours change?"
+        },
+        {
+          "assessorId": "communicator",
+          "question": "Where in the thesis are the partial data for the two withdrawn participants reported?"
+        },
+        {
+          "assessorId": "outsider",
+          "question": "Who would buy or prescribe this wrap, and do your participants match them?"
+        },
+        {
+          "assessorId": "sceptic",
+          "question": "Do the comfort conclusions still hold if the threshold is set at a different value?"
+        }
+      ],
+      "delivery": null,
+      "questionReview": null
+    },
+    "dropped": 0,
+    "since": {
+      "improved": [],
+      "raisedAgain": []
+    },
+    "guardrailEvents": []
+  }
+}

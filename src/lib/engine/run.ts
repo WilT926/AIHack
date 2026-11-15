@@ -6,7 +6,7 @@ import { pickAngles } from "./angles";
 import { checkComments, checkDeliberation } from "./check";
 import { callWithRetry, EngineError, type CallLogger, type ModelCaller } from "./claude";
 import { assessorPrompt, deliberationPrompt, type SharedContext } from "./prompts";
-import { checkInput, runIntegrityPipeline } from "./pipeline";
+import { checkInput, clinicalSafetyEscalations, runIntegrityPipeline } from "./pipeline";
 import { assessorReplySchema, deliberationReplySchema } from "./replies";
 
 export type EngineDeps = { call: ModelCaller; log: CallLogger; random?: () => number };
@@ -84,7 +84,11 @@ export async function runDeliberation(
   const checked = checkDeliberation(pipeline.value, input.context.document, input.board.map((b) => b.id));
   return {
     ...checked.value,
-    report: { ...checked.value.report, escalations: [...checked.value.report.escalations, ...pipeline.escalations] },
+    report: { ...checked.value.report, escalations: [
+      ...pipeline.escalations,
+      ...clinicalSafetyEscalations(input.context.document.paragraphs.map((p) => p.text).join("\n"), input.results.flatMap((r) => r.comments.filter((c) => c.severity !== "praise").map((c) => `${c.category} ${c.text} ${c.suggestion}`))),
+      ...checked.value.report.escalations,
+    ].slice(0, 10) },
     dropped: checked.dropped,
     since: pipeline.value.sinceLastTime ?? null,
     guardrailEvents: pipeline.events,

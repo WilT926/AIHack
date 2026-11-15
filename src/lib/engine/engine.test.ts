@@ -139,3 +139,15 @@ describe("failure handling", () => {
     await expect(runDeliberation({ context, board: [sceptic], results: [] }, { call: call as unknown as ModelCaller, log: vi.fn() })).rejects.toThrow(/nothing to deliberate/);
   });
 });
+
+it("keeps the clinical safety handoff when the synthesis omits escalations", async () => {
+  const reply = structuredClone(sampleDeliberationReply);
+  reply.report.escalations = [];
+  const call: ModelCaller = async (req) => ({ output: req.schema.parse(reply), model: "fake", inputTokens: 0, outputTokens: 0 });
+  const result = await runDeliberation({
+    context,
+    board: [sceptic, methodologist],
+    results: [{ assessorId: sceptic.id, comments: [{ id: "safety", assessorId: sceptic.id, paragraphId: "p4", quote: null, severity: "major", category: "Safety", text: "Safe pressure limits are not stated.", suggestion: "Confirm the monitoring plan.", done: false }] }],
+  }, { call, log: async () => {} });
+  expect(result.report.escalations.some((e) => e.reason.includes("clinical safety") && e.whoToAsk.includes("clinical input"))).toBe(true);
+});

@@ -26,7 +26,7 @@ export type StructuredRequest<S extends z.ZodType> = {
   maxTokens: number;
 };
 
-export type CallResult<T> = { output: T; model: string; inputTokens: number; outputTokens: number };
+export type CallResult<T> = { output: T; model: string; inputTokens: number; outputTokens: number; thinkingTokens?: number | null };
 
 /** Anything that can answer a structured request. The real one calls Claude; tests pass a fake. */
 export type ModelCaller = <S extends z.ZodType>(req: StructuredRequest<S>) => Promise<CallResult<z.infer<S>>>;
@@ -98,6 +98,7 @@ export const callClaude: ModelCaller = async (req) => {
     model: response.model,
     inputTokens: response.usage.input_tokens + (response.usage.cache_read_input_tokens ?? 0) + (response.usage.cache_creation_input_tokens ?? 0),
     outputTokens: response.usage.output_tokens,
+    thinkingTokens: response.usage.output_tokens_details?.thinking_tokens ?? null,
   };
 };
 
