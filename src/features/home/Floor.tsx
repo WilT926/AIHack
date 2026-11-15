@@ -37,7 +37,7 @@ const serverSize = () => "";
  * scaled to fill the main area left of it, between the top bar and the dock.
  * `center` is the main area's middle, where the search pill and the dock sit.
  */
-function fit(size: string, panelContent: number) {
+function fit(size: string) {
   if (!size) return { scale: 0, spread: 1, x: 0, y: 0, panel: PANEL.width, panelK: 1, panelH: PANEL.height, center: 0 };
   const [w, h] = size.split("x").map(Number);
   const room = h - PANEL.top - PANEL.bottom;
@@ -45,7 +45,8 @@ function fit(size: string, panelContent: number) {
   /** Shortest design height: scaled by baseK it reaches PANEL.bottom from the window's bottom edge. */
   const panelH = Math.round(room / baseK);
   /** When the content is taller than that, scale a little further so all of it fits: no scrollbar, nothing cut off. */
-  const panelK = panelContent > panelH ? room / panelContent : baseK;
+  // Every panel is the same fixed size and text size; content scrolls inside it.
+  const panelK = baseK;
   const panel = Math.round(PANEL.width * panelK);
   const left = CHROME.gutter;
   const right = w - CHROME.gutter - panel - PANEL.gap;
@@ -93,20 +94,7 @@ export function Floor({ model }: { model: FloorModel }) {
     if (res.ok) router.refresh();
   };
   const size = useSyncExternalStore(subscribeResize, readSize, serverSize);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [panelContent, setPanelContent] = useState(0);
-  const { scale, spread, x: stageX, y: stageY, panelK, panelH, center } = fit(size, panelContent);
-
-  // The side panel's natural height (unscaled), so it can be scaled to fit whole.
-  useEffect(() => {
-    const aside = panelRef.current?.querySelector<HTMLElement>(".fl-panel");
-    if (!aside) return;
-    const measure = () => setPanelContent(aside.offsetHeight);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(aside);
-    return () => ro.disconnect();
-  }, []);
+  const { scale, spread, x: stageX, y: stageY, panelK, panelH, center } = fit(size);
   const reduced = useSyncExternalStore(subscribeReduced, readReduced, serverReduced);
 
   const [focus, setFocus] = useState(() => Math.min(model.initialFocus, Math.max(0, n - 1)));
@@ -327,7 +315,7 @@ export function Floor({ model }: { model: FloorModel }) {
 
 
       </div>
-      <div ref={panelRef} className="fl-panel-slot">
+      <div className="fl-panel-slot">
       <SidePanel
         key={table?.id ?? "none"}
         table={table}

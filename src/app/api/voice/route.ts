@@ -7,15 +7,15 @@ import { hasElevenLabs, speak, VoiceError } from "@/lib/voice/elevenlabs";
 
 export const maxDuration = 30;
 
-const body = z.object({ assessorId: z.string().min(1).max(100), text: z.string().min(1).max(2000) });
+const body = z.object({ assessorId: z.string().min(1).max(100), text: z.string().min(1).max(2000), tone: z.enum(["coaching", "exam"]).optional() });
 
 export async function POST(req: Request) {
   if (!hasElevenLabs()) return NextResponse.json({ fallback: true, reason: "ElevenLabs is switched off." }, { status: 503 });
   try {
-    const { assessorId, text } = body.parse(await req.json());
+    const { assessorId, text, tone } = body.parse(await req.json());
     const a = await assessors.get(assessorId);
     if (!a?.voiceId) return NextResponse.json({ fallback: true, reason: "This assessor has no voice yet." }, { status: 503 });
-    const audio = await speak(text, a.voiceId);
+    const audio = await speak(text, a.voiceId, tone);
     return new NextResponse(audio, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } });
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json({ error: "The request was not valid." }, { status: 400 });

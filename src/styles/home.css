@@ -81,12 +81,18 @@
 /* Laid out at its design size and scaled as one piece from the top-right corner,
    so the layout inside is the original's at any window size. */
 .fl-panel {
-  position: fixed; right: var(--gutter); top: 104px; width: 358px; min-height: var(--panel-h, 768px); z-index: 25; box-sizing: border-box;
+  position: fixed; right: var(--gutter); top: 104px; width: 358px; height: var(--panel-h, 768px); z-index: 25; box-sizing: border-box;
   transform: scale(var(--panel-k, 1)); transform-origin: top right;
   background: var(--paper); border: var(--line); border-radius: var(--radius-sheet); padding: 24px;
   display: flex; flex-direction: column; gap: 18px; overflow: hidden;
-  /* Grows to its content; Floor.tsx scales it so the whole of it fits the window (no scrollbar, nothing cut off). */
+  /* The same fixed size for every panel. Busy sections scroll inside in whole lines (useWholeLines). */
 }
+.fl-panel__footer { margin-top: auto; }
+[data-lines] { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; scroll-snap-type: y proximity; }
+[data-lines]::-webkit-scrollbar { width: 0; }
+[data-lines]:hover, [data-lines]:focus-within { scrollbar-width: thin; scrollbar-color: var(--grey-300) transparent; }
+[data-lines]:hover::-webkit-scrollbar, [data-lines]:focus-within::-webkit-scrollbar { width: 4px; }
+[data-lines]::-webkit-scrollbar-thumb { background: var(--grey-300); border-radius: 4px; }
 .fl-panel-slot { display: contents; }
 .fl-panel > * { flex-shrink: 0; }
 .fl-panel__top { display: flex; justify-content: space-between; align-items: center; }
@@ -289,7 +295,7 @@
 .fl-feedback__count { font: 600 9.5px/1 var(--font-mono); color: var(--grey-700); min-width: 22px; text-align: right; }
 
 /* At this table: wraps after four; scrolls (no bar) past two rows. */
-.fl-people-scroll { max-height: 236px; overflow-y: auto; scrollbar-width: none; }
+.fl-people-scroll { }
 .fl-people-scroll::-webkit-scrollbar { display: none; }
 .fl-person-slot { position: relative; width: 25%; box-sizing: border-box; padding: 6px 2px 0; display: flex; }
 .fl-person-slot > .fl-person { width: 100%; }
@@ -313,7 +319,7 @@
 
 /* Previous attempts and suggested actions: a set height, scroll (no bar) only if needed. */
 .fl-list {
-  height: 112px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 6px;
   border: var(--line-width) solid var(--grey-100); border-radius: var(--radius-row); padding: var(--space-2); box-sizing: border-box;
 }
 .fl-list::-webkit-scrollbar { display: none; }
@@ -348,3 +354,4 @@ a.fl-list__row:hover { background: var(--grey-50); }
 .fl-desk-group__empty { grid-column: 1 / -1; margin: 0; font: var(--text-body); color: var(--grey-700); }
 .fl-desk-card__type { display: flex; align-items: center; gap: var(--space-2); }
 .fl-desk-card__paper--small { transform: scale(0.5); transform-origin: left center; margin-right: -12px; }
+[data-lines] > *, [data-lines] .fl-person-slot { scroll-snap-align: start; }

@@ -33,7 +33,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const initialProject = data.projects.find((p) => p.id === data.initialProjectId) ?? data.projects.find((p) => p.isPitch) ?? data.projects[0];
   const [setup, setSetup] = useState<SetupValue>({
     projectId: initialProject?.id ?? null,
-    boardId: initialProject?.boardId ?? data.boards[0]?.id ?? null,
+    boardId: initialProject?.boardId ?? null,
     questionCount: data.defaultQuestionCount,
     mode: data.defaultMode,
     capture: "live",

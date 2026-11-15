@@ -131,7 +131,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
       <footer className="fixed inset-x-0 bottom-0 border-t border-grey-100 bg-white">
         <div className="mx-auto grid w-full max-w-page grid-cols-centred items-center px-8 py-4">
           <div>
-            <Button variant="secondary" onClick={back} disabled={index === 0}>
+            <Button variant="secondary" onClick={index === 0 ? () => router.push("/") : back}>
               Back
             </Button>
           </div>

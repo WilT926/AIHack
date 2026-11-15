@@ -11,6 +11,7 @@ import type { PitchSession, QaMode, QaTurn } from "@/lib/schemas";
 import { joinTranscript } from "@/lib/voice/transcript";
 import { recognitionErrorText, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { useSpeaker } from "@/lib/voice/useSpeaker";
+import { OPENING_LINE } from "@/lib/voice/tone";
 import type { LiveAvatar } from "@/lib/voice/useLiveAvatar";
 import { submitAnswer } from "../actions";
 import type { PitchSeat } from "../types";
@@ -47,7 +48,10 @@ export function QandA({
   onSession: (s: PitchSession) => void;
   onEnd: () => void;
 }) {
-  const speaker = useSpeaker({ useElevenLabs: elevenLabs });
+  const tone = session.settings.conditions === "exam" ? "exam" : "coaching";
+  const speaker = useSpeaker({ useElevenLabs: elevenLabs, tone });
+  /** The opening line is said once, before the first question. */
+  const openedRef = useRef(false);
   const rec = useSpeechRecognition();
   const spoken = session.settings.mode === "spoken";
 
@@ -71,13 +75,22 @@ export function QandA({
       setTyped("");
       const seat = seats.find((s) => s.id === t.assessorId);
       if (spoken && seat) {
-        let said = false;
-        if (live?.ready && seat.interactiveId) {
-          setLiveSeat(seat.id);
-          said = await live.say(seat.interactiveId, t.text, seat.liveVoiceId);
-          setLiveSeat(null);
+        /** Say a line in this assessor's voice: the live avatar if it is up, else ElevenLabs or the browser. */
+        const sayLine = async (text: string) => {
+          let said = false;
+          if (live?.ready && seat.interactiveId) {
+            setLiveSeat(seat.id);
+            said = await live.say(seat.interactiveId, text, seat.liveVoiceId);
+            setLiveSeat(null);
+          }
+          if (!said && !endedRef.current) await speaker.say(seat.id, text, seat.voiceIndex);
+        };
+        // Coaching and exam open differently, and sound different (src/lib/voice/tone.ts).
+        if (!openedRef.current) {
+          openedRef.current = true;
+          await sayLine(OPENING_LINE[tone]);
         }
-        if (!said && !endedRef.current) await speaker.say(seat.id, t.text, seat.voiceIndex);
+        if (!endedRef.current) await sayLine(t.text);
       }
       if (endedRef.current) return;
       if (t.kind === "pause") {
@@ -87,7 +100,7 @@ export function QandA({
       setStep("answering");
       if (canListen) rec.start();
     },
-    [rec, seats, speaker, spoken, canListen, live],
+    [rec, seats, speaker, spoken, canListen, live, tone],
   );
 
   // The board comes back: a short pause, then the opening question.

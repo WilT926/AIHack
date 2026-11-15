@@ -59,7 +59,7 @@ export function Setup({
                 <Chip
                   key={p.id}
                   active={p.id === value.projectId}
-                  onClick={() => onChange({ ...value, projectId: p.id, boardId: p.boardId ?? value.boardId })}
+                  onClick={() => onChange({ ...value, projectId: p.id, boardId: p.boardId ?? null })}
                 >
                   {p.title}
                 </Chip>
@@ -67,16 +67,15 @@ export function Setup({
             </div>
           </div>
 
+          {/* The board is the panel's own; it is changed on the floor with Edit board, not here. */}
           <div className="ps-field">
             <Label>Board</Label>
-            <div className="ps-chips">
-              {data.boards.map((b) => (
-                <Chip key={b.id} active={b.id === value.boardId} onClick={() => onChange({ ...value, boardId: b.id })}>
-                  {b.name} · {b.seats.length}
-                </Chip>
-              ))}
-            </div>
-            {board && <BoardRow seats={board.seats} />}
+            {board && board.seats.length > 0 ? (
+              <BoardRow seats={board.seats} />
+            ) : (
+              <p className="ui-empty">No one is seated at this panel yet. Seat its board from your floor with Edit board.</p>
+            )}
+            <p className="ps-note">To change who sits on this board, use Edit board on the panel on your floor.</p>
           </div>
 
           <div className="ps-row">

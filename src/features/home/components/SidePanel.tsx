@@ -5,10 +5,11 @@
 // feedback, who sits at the table (editable), previous attempts, suggested
 // actions, and the table's main buttons.
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, Button, DotRating, Label } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
+import { useWholeLines } from "../useWholeLines";
 import { saveBoardSeats } from "../actions";
 import type { FloorAssessor, FloorTable } from "../model";
 
@@ -36,6 +37,8 @@ export function SidePanel({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const panelRef = useRef<HTMLElement>(null);
+  useWholeLines(panelRef, [table?.id, editing]);
   const [draft, setDraft] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +84,7 @@ export function SidePanel({
     });
 
   return (
-    <aside className="fl-panel" aria-label={`${table.name}, focused panel`}>
+    <aside ref={panelRef} className="fl-panel" aria-label={`${table.name}, focused panel`}>
       <div className="fl-panel__top">
         <Label tone="quiet">{table.lastReviewed}</Label>
         <span className="fl-panel__nav">
@@ -114,7 +117,7 @@ export function SidePanel({
         {table.feedback.every((f) => f.score === null) ? (
           <div className="fl-empty-note">No feedback yet. {table.kind === "pitch" ? "Practise the presentation" : "Run a review"} to hear from the board.</div>
         ) : (
-          <ul className="fl-feedback">
+          <ul className="fl-feedback" data-lines>
             {table.feedback.map((f) => (
               <li key={f.assessorId} className="fl-feedback__row">
                 <Avatar avatar={f.avatar} size="xs" />
@@ -141,7 +144,7 @@ export function SidePanel({
         {seated.length === 0 && !editing ? (
           <div className="fl-empty-note">No assessors seated. Press Edit board to seat some.</div>
         ) : (
-          <div className="fl-people-scroll">
+          <div className="fl-people-scroll" data-lines data-lines-items=".fl-person-slot">
             <div className="fl-people" data-editing={editing}>
               {seated.map((s) => (
                 <div key={s.id} className="fl-person-slot">
@@ -178,7 +181,7 @@ export function SidePanel({
 
       <section className="fl-panel__section" aria-label="Previous attempts">
         <Label>Previous attempts</Label>
-        <div className="fl-list">
+        <div className="fl-list" data-lines>
           {table.attempts.length === 0 ? (
             <p className="fl-list__empty">Nothing yet. Each finished {table.kind === "pitch" ? "practice" : "review"} appears here.</p>
           ) : (
@@ -203,7 +206,7 @@ export function SidePanel({
 
       <section className="fl-panel__section" aria-label="Suggested actions">
         <Label>Suggested actions</Label>
-        <div className="fl-list">
+        <div className="fl-list" data-lines>
           {table.actions.length === 0 ? (
             <p className="fl-list__empty">No actions yet. The board suggests what to do next after each session.</p>
           ) : (

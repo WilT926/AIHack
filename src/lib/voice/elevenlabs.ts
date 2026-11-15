@@ -4,6 +4,7 @@ import "server-only";
 //   header xi-api-key, JSON { text, model_id }. Returns the audio file.
 // Server only: the key never reaches the browser.
 import { features, voice } from "@/config";
+import { ELEVENLABS_SETTINGS, type Tone } from "./tone";
 
 const API = "https://api.elevenlabs.io";
 
@@ -21,13 +22,13 @@ export class VoiceError extends Error {
 }
 
 /** Turn text into MP3 audio in the given voice. Throws VoiceError; callers fall back to the browser voice. */
-export async function speak(text: string, voiceId: string): Promise<ArrayBuffer> {
+export async function speak(text: string, voiceId: string, tone: Tone = "coaching"): Promise<ArrayBuffer> {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!features.elevenLabs || !key) throw new VoiceError("ElevenLabs is switched off.", 503);
   const res = await fetch(`${API}/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": key, "content-type": "application/json", accept: "audio/mpeg" },
-    body: JSON.stringify({ text: text.slice(0, voice.maxSpokenChars), model_id: voice.elevenLabsModel }),
+    body: JSON.stringify({ text: text.slice(0, voice.maxSpokenChars), model_id: voice.elevenLabsModel, voice_settings: ELEVENLABS_SETTINGS[tone] }),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) {

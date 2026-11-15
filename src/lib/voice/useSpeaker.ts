@@ -5,6 +5,7 @@
 // different one per assessor. Exposes the loudness of the audio as it plays
 // (0 to 1) for the call stage.
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BROWSER_SETTINGS, type Tone } from "./tone";
 
 export type VoiceSource = "elevenlabs" | "browser" | "caption";
 
@@ -19,7 +20,7 @@ function englishVoices(): SpeechSynthesisVoice[] {
   return [...gb, ...en.filter((v) => !gb.includes(v))];
 }
 
-export function useSpeaker({ useElevenLabs }: { useElevenLabs: boolean }) {
+export function useSpeaker({ useElevenLabs, tone = "coaching" }: { useElevenLabs: boolean; tone?: Tone }) {
   const [speaking, setSpeaking] = useState(false);
   const [loudness, setLoudness] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -55,7 +56,7 @@ export function useSpeaker({ useElevenLabs }: { useElevenLabs: boolean }) {
     async (assessorId: string, text: string): Promise<boolean> => {
       let res: Response;
       try {
-        res = await fetch("/api/voice", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ assessorId, text }) });
+        res = await fetch("/api/voice", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ assessorId, text, tone }) });
       } catch {
         return false;
       }
@@ -96,7 +97,7 @@ export function useSpeaker({ useElevenLabs }: { useElevenLabs: boolean }) {
       setSource("elevenlabs");
       return true;
     },
-    [finish],
+    [finish, tone],
   );
 
   const playBrowser = useCallback(
@@ -110,8 +111,9 @@ export function useSpeaker({ useElevenLabs }: { useElevenLabs: boolean }) {
       const u = new SpeechSynthesisUtterance(text);
       u.voice = voices[voiceIndex % voices.length];
       u.lang = u.voice.lang;
-      u.pitch = 0.9 + ((voiceIndex * 7) % 5) * 0.05; // a little variety when voices repeat
-      u.rate = 1;
+      // A little variety when voices repeat, then the condition's pace and pitch.
+      u.pitch = 0.9 + ((voiceIndex * 7) % 5) * 0.05 + BROWSER_SETTINGS[tone].pitchShift;
+      u.rate = BROWSER_SETTINGS[tone].rate;
       let pulse = 0;
       const decay = () => {
         pulse *= 0.9;
@@ -135,7 +137,7 @@ export function useSpeaker({ useElevenLabs }: { useElevenLabs: boolean }) {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     },
-    [finish],
+    [finish, tone],
   );
 
   /**
