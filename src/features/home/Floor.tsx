@@ -297,10 +297,7 @@ export function Floor({ model }: { model: FloorModel }) {
               setPlus("closed");
             } else focusTable(i);
           }}
-          onNewTable={() => {
-            setSheet(null);
-            setPlus((p) => (p === "closed" ? "menu" : "closed"));
-          }}
+          onNewTable={() => router.push("/projects/new")}
         />
 
         <AssessorsSheet

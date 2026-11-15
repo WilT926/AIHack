@@ -58,6 +58,9 @@ function PlusMenu({ tables, newProjectHref, focusId }: { tables: PlusTable[]; ne
             </Button>
           ),
         )}
+        <Button variant="secondary" href={newProjectHref}>
+          New panel
+        </Button>
       </div>
     );
   }
