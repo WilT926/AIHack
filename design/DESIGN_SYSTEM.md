@@ -282,6 +282,7 @@ Respect `prefers-reduced-motion`: replace every movement with a 150ms cross-fade
 ## 9. Components
 
 ### Bubble dock (app shell bottom navigation)
+- Keep the floor's five buttons and the profile/settings area's three buttons and their original destinations. On the floor, Assessors opens the carousel sheet; in the profile/settings area it opens the full gallery. Across those layouts the dock glides to its next position over 550ms, with a constant 56px height and 22px bottom clearance. It is outside the scaled floor canvas, so screen size cannot stretch it. Respect reduced motion.
 - Five 56px black circles at a 62px pitch, gooey-merged with a 28px bridge. Order: **Floor** (two dots) · **Desk** (paper icon with an orange count badge) · **Assessors** (three dots) · **Avatar** (head-and-shoulders glyph) · **Settings** (ring).
 - What each one opens: **Floor** is home. **Desk** holds every document and feedback report, and its badge counts open actions. **Assessors** holds the gallery, each assessor's profile and their notes. **Avatar** is the student's own profile: university, course, level and avatar. **Settings** is minimal in v1.
 - Active state: a white 44px circle slides under the active icon, and that icon turns ink. Inactive icons are `#9A9A96`.
@@ -308,10 +309,21 @@ Respect `prefers-reduced-motion`: replace every movement with a 150ms cross-fade
 - **Selected** card: inverted (black fill, white text, inverted avatar, orange button). Selecting also filters the floor to that assessor's tables and adds an orange dot under their seat.
 - The first card is dashed: **New assessor**. In v1 it copies an existing assessor, which the student then renames and adjusts.
 - Opening a card shows the **assessor profile**: who they are, then their notes. After the two session screens this is the most important screen in the product, because notes are what make a board specific to the student's own markers. Notes are a plain list, each with a mono source label (`LECTURE`, `HANDBOOK`, `OTHER`), above an add-note pill input and a large dashed drop zone for pasting a lecture transcript.
+- Profiles and notes use a readable 760px maximum width. The illustrated portrait is 180px on a laptop; the short note uses a single-line pill, source chips and an Add note button. Keep 24px between note sections. The separate dashed transcript form starts at six rows and can be resized vertically.
+- Student-created profiles offer a quiet **Remove this assessor** action with a confirmation naming the assessor and explaining that board membership and notes are removed. Built-in assessors have no removal action. Saved feedback stays.
 
 ### Desk sheet (documents and reports)
+- Use a 352px sheet so a full first row and its scroll controls fit. Keep a footer visible with mono document/report counts and a quiet **MORE BELOW ↓** pill that scrolls one viewport; at the bottom it becomes **BACK TO TOP ↑**. Use this control as the visible scroll affordance, with no scrollbar beside the cards. Wheel, trackpad and keyboard scrolling remain available; the grid has a visible keyboard focus state.
+- Clicking a side table focuses it; clicking the centre table opens its Desk sheet. Default to that table's documents and reports, with **This table / All tables** chips to switch scope. Changing the focused table updates its contents and project-specific upload link. Close either Desk or Assessors by clicking outside it, using its close button, or pressing Escape.
 - Four-column grid of cards. Document cards: paper glyph, title, project code, open actions in orange mono. Feedback report cards: session-state dot, title, project code, date.
 - A dashed **Review a report** card starts a new review.
+- Document cards and the focused table's document rows open the document's latest saved review on Comments. An unreviewed document opens its saved text with an explicit Start review action. Opening a card never starts an AI call. Missing sample text is explained; Upload a new version keeps the project selected.
+- Feedback cards open the Feedback report tab directly; the tab is retained on reload. A report's paragraph links return to Comments and select the document evidence.
+
+### Likely-question bubbles (home floor)
+- Anchor the bubble's small outlined tail beside the assessor who would ask the question. Keep the dot off-centre on the larger pill, like a thought bubble. Choose an available side of that seat, keep the bubble within the floor, and avoid covering other seats and table text where possible.
+- Show an exact excerpt of at most 68 characters in a bounded 280×64px pill, wrapping to two lines. An ellipsis marks an excerpt; the full question and speaker are available on hover or keyboard focus, and in the feedback report.
+- Rotate every three seconds. Pause on hover or focus, while a sheet or menu is open, and during table transitions. Reset to the first question when focusing a table. With reduced motion, keep the first question steady.
 
 ### Command palette (⌘K or /)
 - The page behind fades to 82% white. A 560px card with a 30px radius: input row, then results with a 34px state circle (orange = live table, outline = table, black = assessor, dashed = doc), label, sub-label and mono kind.

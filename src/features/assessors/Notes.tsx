@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Chip, Label, TextArea } from "@/components/ui";
+import { Button, Chip, Label, TextArea, TextInput } from "@/components/ui";
 import type { AssessorNote } from "@/lib/schemas";
 import { deleteAssessorNote, saveAssessorNote } from "./actions";
 
@@ -14,9 +14,9 @@ function Sources({ value, onChange }: { value: Source; onChange: (value: Source)
 
 export function Notes({ assessorId, notes }: { assessorId: string; notes: AssessorNote[] }) {
   return <section className="as-notes" aria-labelledby="assessor-notes">
-    <h2 id="assessor-notes">Their notes</h2>
-    <p className="as-quiet">What this marker wants, from lectures, the handbook or your own observations. Only this assessor receives these notes.</p>
-    {notes.length ? <ul className="as-note-list">{notes.map((note) => <Note key={`${note.id}-${note.text}-${note.source}`} note={note} />)}</ul> : <p className="ui-empty">No notes yet. Add something your marker has said they look for.</p>}
+    <div className="as-notes__heading"><h2 id="assessor-notes">Their notes</h2>
+    <p className="as-quiet">What this marker wants, from lectures, the handbook or your own observations. Only this assessor receives these notes.</p></div>
+    {notes.length ? <ul className="as-note-list">{notes.map((note) => <Note key={`${note.id}-${note.text}-${note.source}`} note={note} />)}</ul> : <p className="as-notes__empty">No notes yet. Add something your marker has said they look for.</p>}
     <NewNote assessorId={assessorId} />
     <NewNote assessorId={assessorId} transcript />
   </section>;
@@ -35,9 +35,11 @@ function NewNote({ assessorId, transcript = false }: { assessorId: string; trans
       setText(""); setMessage("Note saved. It will be included in this assessor's next review."); router.refresh();
     });
   }}>
-    <TextArea id={transcript ? "lecture-transcript" : "new-assessor-note"} label={transcript ? "Paste a lecture transcript" : "Add a note"} hint={transcript ? "Paste up to 20,000 characters. Saved as a lecture note for this assessor." : undefined} rows={transcript ? 10 : 2} maxLength={20000} value={text} required onChange={(e) => setText(e.target.value)} />
-    {!transcript && <Sources value={source} onChange={setSource} />}
-    <Button type="submit" disabled={pending || !text.trim()}>{pending ? "Saving…" : transcript ? "Save lecture transcript" : "Add note"}</Button>
+    {transcript ? <TextArea id="lecture-transcript" label="Paste a lecture transcript" hint="Up to 20,000 characters. Saved as a lecture note for this assessor." rows={6} maxLength={20000} value={text} required placeholder="Paste the transcript here…" onChange={(e) => setText(e.target.value)} /> : <TextInput id="new-assessor-note" label="Add a note" placeholder="Something this marker looks for…" maxLength={20000} value={text} required onChange={(e) => setText(e.target.value)} />}
+    <div className="as-note-actions">
+      {!transcript && <Sources value={source} onChange={setSource} />}
+      <Button type="submit" disabled={pending || !text.trim()}>{pending ? "Saving…" : transcript ? "Save lecture transcript" : "Add note"}</Button>
+    </div>
     {message && <p role="status" className="as-message">{message}</p>}
   </form>;
 }

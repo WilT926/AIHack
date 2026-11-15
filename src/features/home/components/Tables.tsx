@@ -2,19 +2,21 @@
 // derived from the polar geometry each frame (§13.5): no per-element CSS
 // animation.
 import { Avatar, RimDot } from "@/components/ui";
-import { COMPACT, DIM_OPACITY } from "@/styles/floor";
-import { compactNameSize, isFull, paperBox, quoteAnchor, rimDots, seatBoxes, toPoint, type Point, type Polar } from "../geometry";
+import { COMPACT, DIM_OPACITY, TABLE_R } from "@/styles/floor";
+import { isFull, paperBox, questionExcerpt, quoteAnchor, rimDots, seatBoxes, toPoint, type Point, type Polar } from "../geometry";
 import type { FloorTable } from "../model";
 
 /** The likely question cycling beside the seat of the assessor who would ask it. */
-function speechBubble(t: FloorTable | undefined, points: Point[], focus: number, anim: boolean, tick: number) {
+function speechBubble(tables: FloorTable[], points: Point[], focus: number, anim: boolean, tick: number) {
+  const t = tables[focus];
   const g = points[focus];
   if (!t || !g || anim || !isFull(g.r) || t.questions.length === 0) return null;
   const q = t.questions[tick % t.questions.length];
   const k = t.seats.findIndex((s) => s.assessorId === q.assessorId);
   if (k < 0) return null;
   const seat = seatBoxes(g, t.seats.length)[k];
-  return { ...quoteAnchor(seat, q.text, points, focus), text: q.text, key: `${t.id}-${tick}` };
+  const neighbors = tables.flatMap((table, i) => seatBoxes(points[i], table.seats.length));
+  return { ...quoteAnchor(seat, points, focus, neighbors), text: questionExcerpt(q.text), fullText: q.text, name: t.seats[k].name, key: `${t.id}-${tick}` };
 }
 
 export function Tables({
@@ -28,6 +30,8 @@ export function Tables({
   fadeKey,
   onFocus,
   onNewTable,
+  onQuotePause,
+  deskOpen,
 }: {
   tables: FloorTable[];
   cur: Polar[];
@@ -39,19 +43,21 @@ export function Tables({
   fadeKey: number;
   onFocus: (i: number) => void;
   onNewTable: () => void;
+  onQuotePause: (paused: boolean) => void;
+  deskOpen: boolean;
 }) {
   const points = cur.map(toPoint);
-  const quote = speechBubble(tables[focus], points, focus, anim, quoteTick);
+  const quote = speechBubble(tables, points, focus, anim, quoteTick);
 
   const layers = tables.map((t, i) => {
     const g = points[i];
     if (!g) return null;
     const focused = i === focus;
     const op = matches[i] ? 1 : DIM_OPACITY;
-    const full = isFull(g.r);
+    const detail = Math.max(0, Math.min(1, (g.r - TABLE_R.side) / (TABLE_R.focus - TABLE_R.side)));
     const seats = seatBoxes(g, t.seats.length);
     const paper = t.docs.length ? paperBox(g) : null;
-    const rim = focused ? rimDots(g, t.sessions.length) : [];
+    const rim = rimDots(g, t.sessions.length);
 
     return (
       <div key={t.id}>
@@ -59,6 +65,9 @@ export function Tables({
           type="button"
           className="fl-table"
           aria-pressed={focused}
+          aria-expanded={focused ? deskOpen : undefined}
+          aria-controls={focused ? "floor-desk" : undefined}
+          title={focused ? "Open the documents and feedback on this table" : undefined}
           aria-label={`${t.name} · ${t.status.replace("● ", "")}`}
           onClick={() => onFocus(i)}
           style={{
@@ -68,27 +77,18 @@ export function Tables({
             height: g.r * 2,
             zIndex: g.z,
             opacity: op,
-            paddingInline: full ? COMPACT.padFull : COMPACT.padCompact,
           }}
         >
-          {full ? (
-            <>
-              <span className="fl-table__status">{t.status}</span>
-              <span className="fl-table__name">{t.name}</span>
-              <span className="fl-table__line">{t.line}</span>
-            </>
-          ) : (
-            <>
-              <span className="fl-table__cname" style={{ fontSize: compactNameSize(g.r) }}>
-                {t.name}
-              </span>
-              {g.r >= COMPACT.statusMinR && <span className="fl-table__short">{t.short}</span>}
-            </>
-          )}
+          <span className="fl-table__content" style={{ width: TABLE_R.focus * 2 - COMPACT.padFull * 2, marginTop: -detail * COMPACT.titleLift, transform: `translate(-50%, -50%) scale(${g.r / TABLE_R.focus})` }}>
+            <span className="fl-table__status" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.status}</span>
+            <span className="fl-table__name">{t.name}</span>
+            <span className="fl-table__line" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.line}</span>
+            <span className="fl-table__short" style={{ opacity: 1 - detail }} aria-hidden={detail === 1}>{t.short}</span>
+          </span>
         </button>
 
         {rim.map((p, k) => (
-          <RimDot key={k} state={t.sessions[k].state} style={{ position: "absolute", left: p.x, top: p.y, zIndex: g.z + 1, pointerEvents: "none" }} />
+          <RimDot key={k} state={t.sessions[k].state} style={{ position: "absolute", left: p.x, top: p.y, zIndex: g.z + 1, pointerEvents: "none", opacity: op * detail }} />
         ))}
 
         {paper && (
@@ -135,8 +135,8 @@ export function Tables({
       {layers}
 
       {q && (
-        <div className="fl-quote" data-side={q.side} style={{ left: q.left, top: q.top }} aria-live="polite">
-          <span className="fl-quote__tail" aria-hidden />
+        <div className="fl-quote" data-side={q.side} style={{ left: q.left, top: q.top }} role="note" tabIndex={0} aria-label={`${q.name} might ask: ${q.fullText}`} title={`${q.name}: ${q.fullText}`} onMouseEnter={() => onQuotePause(true)} onMouseLeave={() => onQuotePause(false)} onFocus={() => onQuotePause(true)} onBlur={() => onQuotePause(false)}>
+          <span className="fl-quote__tail" style={{ left: q.tailLeft, top: q.tailTop }} aria-hidden />
           <span className="fl-quote__text" key={q.key}>
             {q.text}
           </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { Assessor, CommentSeverity, ReviewView } from "./types";
 import { commentsByParagraph, indexAssessors, paragraphLabel, paragraphOrder, sortByParagraph } from "./lib";
@@ -15,7 +15,7 @@ import { ExitBubble } from "./ui/ExitBubble";
 import { CommentFilters } from "./components/CommentFilters";
 
 /** §10: two tabs across the top, Comments and Feedback report. */
-type RailTab = "comments" | "report";
+export type RailTab = "comments" | "report";
 type ScrollRequest = { kind: "paragraph" | "comment"; id: string; nonce: number };
 
 export function ReviewScreen({
@@ -25,6 +25,8 @@ export function ReviewScreen({
   onRetryDeliberation,
   onCommentDone,
   onActionDone,
+  initialTab = "comments",
+  startControl,
 }: {
   view: ReviewView;
   onUpload?: () => void;
@@ -34,12 +36,21 @@ export function ReviewScreen({
   onCommentDone?: (commentId: string) => void;
   /** Saves a tick on a feedback report action (saved reviews only). */
   onActionDone?: (actionId: string, done: boolean) => void;
+  initialTab?: RailTab;
+  startControl?: ReactNode;
 }) {
   const router = useRouter();
   const { review, board, live } = view;
   const doc = view.document;
 
-  const [tab, setTab] = useState<RailTab>("comments");
+  const [tab, setTab] = useState<RailTab>(initialTab);
+  const chooseTab = (next: RailTab) => {
+    setTab(next);
+    const url = new URL(window.location.href);
+    if (next === "report") url.searchParams.set("tab", "report");
+    else url.searchParams.delete("tab");
+    window.history.replaceState(null, "", url);
+  };
   const [resolved, setResolved] = useState<Set<string>>(
     () => new Set(review.comments.filter((c) => c.done).map((c) => c.id)),
   );
@@ -101,6 +112,7 @@ export function ReviewScreen({
 
   /** Comment -> its paragraph. */
   const showParagraph = (paragraphId: string, fromCommentId?: string) => {
+    chooseTab("comments");
     setSelectedParagraphId(paragraphId);
     setSelectedCommentIds(new Set(fromCommentId ? [fromCommentId] : []));
     requestScroll("paragraph", paragraphId);
@@ -110,7 +122,7 @@ export function ReviewScreen({
   const showCommentsFor = (paragraphId: string) => {
     const onParagraph = visibleByParagraph.get(paragraphId) ?? [];
     if (onParagraph.length === 0) return;
-    setTab("comments");
+    chooseTab("comments");
     setSelectedParagraphId(paragraphId);
     setSelectedCommentIds(new Set(onParagraph.map((c) => c.id)));
     requestScroll("comment", onParagraph[0].id);
@@ -152,7 +164,7 @@ export function ReviewScreen({
       <TopBar
         view={view}
         boardMembers={boardMembers}
-        onUpload={onUpload ?? (() => router.push("/review/new"))}
+        onUpload={onUpload ?? (() => router.push(`/review/new?project=${encodeURIComponent(view.project.id)}`))}
       />
 
       <main className="flex min-h-0 flex-1 gap-6 px-14">
@@ -170,11 +182,12 @@ export function ReviewScreen({
         </section>
 
         <aside className="flex w-full max-w-rail shrink-0 flex-col pt-6" aria-label="Board feedback">
-          <Tabs items={tabs} active={tab} onChange={setTab} />
+          <Tabs items={tabs} active={tab} onChange={chooseTab} />
 
           <div key={tab} className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
             {tab === "comments" && (
               <div className="flex flex-col gap-3">
+                {startControl}
                 {isLive && live && (live.status === "reviewing" || live.status === "deliberating") && (
                   <BoardLiveCard
                     board={boardMembers}
@@ -243,7 +256,7 @@ export function ReviewScreen({
                   />
                 )}
 
-                {openComments.length === 0 && stillReading === 0 && failed.length === 0 && (
+                {!startControl && !isLive && openComments.length === 0 && stillReading === 0 && failed.length === 0 && (
                   <EmptyState
                     title={review.comments.length > 0 ? "Everything is marked done" : "No comments yet"}
                     body={

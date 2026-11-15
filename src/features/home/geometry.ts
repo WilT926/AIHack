@@ -49,7 +49,7 @@ export function focusPath(cur: Polar[], focus: number): { from: Polar[]; to: Pol
   const from = cur.map((c) => ({ ...c }));
   const to = slots(cur.length, focus, from);
   to.forEach((t, k) => {
-    if (from[k].d < 0.5 && t.d > 0.5) from[k].a = t.a - SWING_OUT;
+    if (Math.abs(from[k].d) < 1e-6 && t.d > 0.5) from[k].a = t.a - SWING_OUT;
     t.a = from[k].a + ((((t.a - from[k].a) % 360) + 540) % 360) - 180;
   });
   return { from, to };
@@ -116,30 +116,31 @@ function overlapDepth(x: number, y: number, w: number, h: number, c: { x: number
 }
 
 /**
- * Where the speech bubble sits next to a seat. Prefers the prototype's spot
- * (up and to the right), then left, above and below: the first that covers no
- * table and stays on the floor, otherwise the one that covers least, counting
- * the focused table (whose text matters most) three times over.
+ * Keep a bounded bubble beside its speaker. Only slide perpendicular to the
+ * tail so it still points at that person's seat when avoiding the floor edge.
  */
 export function quoteAnchor(
   seat: { cx: number; cy: number; size: number },
-  text: string,
   tables: Point[],
   focus: number,
-): { left: number; top: number; side: QuoteSide } {
-  const w = text.length * QUOTE.charWidth + QUOTE.chrome;
+  neighbors: { cx: number; cy: number; size: number }[] = [],
+): { left: number; top: number; side: QuoteSide; tailLeft: number; tailTop: number } {
+  const w = QUOTE.width;
   const h = QUOTE.height;
   const s = seat.size;
-  const top = seat.cy + s * QUOTE.dy;
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+  const top = clamp(seat.cy - h * QUOTE.tailDown, FLOOR_BOUNDS.top, FLOOR_BOUNDS.bottom - h);
+  const left = clamp(seat.cx - w * QUOTE.tailAcross, FLOOR_BOUNDS.left, FLOOR_BOUNDS.right - w);
   const options: { left: number; top: number; side: QuoteSide }[] = [
-    { left: seat.cx + s * QUOTE.dx, top, side: "right" },
-    { left: seat.cx - s * QUOTE.dx - w, top, side: "left" },
-    { left: seat.cx - w / 2, top: seat.cy - s / 2 - h - QUOTE.gap, side: "above" },
-    { left: seat.cx - w / 2, top: seat.cy + s / 2 + QUOTE.gap, side: "below" },
+    { left: seat.cx + s / 2 + QUOTE.gap, top, side: "right" },
+    { left: seat.cx - s / 2 - QUOTE.gap - w, top, side: "left" },
+    { left, top: seat.cy - s / 2 - h - QUOTE.gap, side: "above" },
+    { left, top: seat.cy + s / 2 + QUOTE.gap, side: "below" },
   ];
   const circles = [
     ...tables.map((t, i) => ({ x: t.x, y: t.y, r: t.r, weight: i === focus ? 3 : 1 })),
     { x: NEW_TABLE.cx, y: NEW_TABLE.cy, r: NEW_TABLE.r, weight: 1 },
+    ...neighbors.filter((n) => n.cx !== seat.cx || n.cy !== seat.cy).map((n) => ({ x: n.cx, y: n.cy, r: n.size / 2, weight: 3 })),
   ];
   const cost = (o: { left: number; top: number }) => {
     const outside =
@@ -147,14 +148,30 @@ export function quoteAnchor(
       Math.max(0, o.left + w - FLOOR_BOUNDS.right) +
       Math.max(0, FLOOR_BOUNDS.top - o.top) +
       Math.max(0, o.top + h - FLOOR_BOUNDS.bottom);
-    return outside * 3 + circles.reduce((n, c) => n + c.weight * overlapDepth(o.left, o.top, w, h, c), 0);
+    if (outside > 0) return Infinity;
+    return circles.reduce((n, c) => n + c.weight * overlapDepth(o.left, o.top, w, h, c), 0);
   };
   let best = options[0];
   let bestCost = Infinity;
   for (const o of options) {
     const c = cost(o);
-    if (c === 0) return o;
     if (c < bestCost) [best, bestCost] = [o, c];
+    if (c === 0) break;
   }
-  return best;
+  const halfDot = QUOTE.tailSize / 2;
+  const horizontal = best.side === "right" || best.side === "left";
+  return {
+    ...best,
+    tailLeft: horizontal ? (best.side === "right" ? -QUOTE.gap / 2 : w + QUOTE.gap / 2) - halfDot : seat.cx - best.left - halfDot,
+    tailTop: horizontal ? seat.cy - best.top - halfDot : (best.side === "above" ? h + QUOTE.gap / 2 : -QUOTE.gap / 2) - halfDot,
+  };
+}
+
+/** An exact excerpt, never an invented paraphrase of the assessor's question. */
+export function questionExcerpt(text: string): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= QUOTE.maxCharacters) return clean;
+  const cut = clean.slice(0, QUOTE.maxCharacters - 1);
+  const wordEnd = cut.lastIndexOf(" ");
+  return `${wordEnd > 0 ? cut.slice(0, wordEnd) : cut}…`;
 }

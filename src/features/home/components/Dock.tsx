@@ -1,5 +1,6 @@
 // Bubble dock with the orange "+" (§9).
-import { useState } from "react";
+import { useId, useState } from "react";
+import { DockMotion } from "@/components/ui/DockMotion";
 import { features } from "@/config";
 import { Button } from "@/components/ui";
 import { DOCK } from "@/styles/floor";
@@ -30,6 +31,7 @@ export function Dock({
   onSettings: () => void;
   onPlus: (p: PlusState) => void;
 }) {
+  const gooId = useId();
   const [hover, setHover] = useState(-1);
   const active = sheet === "desk" ? 1 : sheet === "assessors" ? 2 : 0;
 
@@ -54,8 +56,14 @@ export function Dock({
   const choices = tables.filter((t) => t.kind === plus);
 
   return (
-    <div className="fl-dock">
-      <div className="fl-dock__goo" aria-hidden>
+    <DockMotion className="fl-dock">
+      <svg width={0} height={0} style={{ position: "absolute" }} aria-hidden>
+        <defs><filter id={gooId} x="-20%" y="-40%" width="140%" height="180%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation={6} result="b" />
+          <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" />
+        </filter></defs>
+      </svg>
+      <div className="fl-dock__goo" style={{ filter: `url("#${gooId}")` }} aria-hidden>
         {items.map((_, k) => (
           <i key={k} style={{ left: k * DOCK.pitch }} />
         ))}
@@ -123,6 +131,6 @@ export function Dock({
           </Button>
         </div>
       )}
-    </div>
+    </DockMotion>
   );
 }

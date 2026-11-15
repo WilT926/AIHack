@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DockMotion } from "./DockMotion";
 import type { ReactNode } from "react";
 import { Logo, cn } from "./index";
 
@@ -45,7 +46,7 @@ export function PageFrame({
           </filter>
         </defs>
       </svg>
-      <nav className="ui-dock" aria-label="Main">
+      <DockMotion className="ui-dock"><nav aria-label="Main">
         <div className="ui-dock__goo" aria-hidden>
           {NAV.map((n) => (
             <i key={n.id} />
@@ -67,7 +68,7 @@ export function PageFrame({
             </li>
           ))}
         </ul>
-      </nav>
+      </nav></DockMotion>
     </div>
   );
 }
