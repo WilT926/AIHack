@@ -22,6 +22,15 @@ describe("pitch prompts and checks", () => {
     expect(p.system.context).toMatch(/None supplied\. Do not invent any\./);
   });
 
+  it("includes every routed follow-up in the final report prompt", () => {
+    const p = pitchReportPrompt(ctx, [], { lengthSeconds: 60, wordsPerMinute: 100 }, [
+      { questionId: "q1", text: "What is the evidence?", answer: "A pilot." },
+      { questionId: "q1", text: "What baseline did you use?", answer: "A generic chatbot." },
+    ]);
+    expect(p.user).toContain("What baseline did you use?");
+    expect(p.user).toContain("A generic chatbot.");
+  });
+
   it("passes length and pace measured in code", () => {
     const p = pitchReportPrompt(ctx, [], { lengthSeconds: 187, wordsPerMinute: 142 });
     expect(p.user).toMatch(/length 3 min 7 s, 142 words per minute/);

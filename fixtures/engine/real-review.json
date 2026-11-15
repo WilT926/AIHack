@@ -1,0 +1,885 @@
+{
+  "provenance": "Real Claude replies on invented sample-document.ts; not student work",
+  "verifiedAt": "2026-11-15T02:31:04.619Z",
+  "review": {
+    "id": "74301c8d-b26d-4e8d-8857-d47829751236",
+    "projectId": "proj-mt",
+    "documentId": "doc-mt-ch3",
+    "createdAt": "2026-11-15T02:31:04.611Z",
+    "status": "done",
+    "assessorResults": [
+      {
+        "assessorId": "module-lead",
+        "status": "done",
+        "comments": [
+          {
+            "id": "module-lead-c1",
+            "assessorId": "module-lead",
+            "paragraphId": "p2",
+            "quote": "tested it with twelve participants across two clinics",
+            "category": "Sample size",
+            "severity": "major",
+            "text": "The handbook requires the methods to justify the sample size, and this paragraph gives the number of participants without any reasoning. A second marker would have no basis for judging whether twelve participants across three variants can support the conclusions.",
+            "suggestion": "Add a short justification, such as a power calculation using an effect size from the literature or your pilot data, and state the assumed effect size, alpha and power. If the sample was constrained by recruitment, say so and discuss the consequences.",
+            "done": false
+          },
+          {
+            "id": "module-lead-c2",
+            "assessorId": "module-lead",
+            "paragraphId": "p4",
+            "quote": "Sub-bandage pressure was logged at the ankle and calf every ten minutes",
+            "category": "Safety",
+            "severity": "major",
+            "text": "Logging sub-bandage pressure is a sensible measurement, but the methods never say what pressure limit was set for the wraps or what happened if it was exceeded. Given that the wrap is applied to a healing venous ulcer, the design should show that safety was considered, as the module expects.",
+            "suggestion": "State the maximum permitted sub-bandage pressure, the action taken if a reading exceeds it, and how participants were monitored for signs of ischaemia or skin damage during each one-week wear period.",
+            "done": false
+          },
+          {
+            "id": "module-lead-c3",
+            "assessorId": "module-lead",
+            "paragraphId": "p4",
+            "quote": "Sub-bandage pressure was logged at the ankle and calf every ten minutes using printed capacitive sensors calibrated before each session.",
+            "category": "Measurement",
+            "severity": "praise",
+            "text": "Calibrating the sensors before each session and logging at two sites gives a clear, repeatable measurement procedure. A reader can see how the pressure data were obtained.",
+            "suggestion": "",
+            "done": false
+          },
+          {
+            "id": "module-lead-c4",
+            "assessorId": "module-lead",
+            "paragraphId": "p5",
+            "quote": "We treat a two-point change as clinically meaningful.",
+            "category": "Justification",
+            "severity": "minor",
+            "text": "The threshold for a clinically meaningful change is stated as a fact, with no source or rationale. Because the sample is small, a second marker will want to know where the threshold came from before accepting the comfort results.",
+            "suggestion": "Cite the source for the two-point threshold from your literature review, or explain how it was derived, and say whether a two-point change was the criterion used for the comparisons.",
+            "done": false
+          },
+          {
+            "id": "module-lead-c5",
+            "assessorId": "module-lead",
+            "paragraphId": "p8",
+            "quote": "The study was reviewed by the departmental ethics panel.",
+            "category": "Handbook requirements",
+            "severity": "minor",
+            "text": "The ethics review is mentioned but not identified, so a reader cannot confirm approval or its scope. Nothing here covers adverse event reporting, which is relevant to a study of a compression device.",
+            "suggestion": "Give the ethics approval reference and date, and add one sentence on how adverse events were recorded and reported during the study.",
+            "done": false
+          }
+        ]
+      },
+      {
+        "assessorId": "methodologist",
+        "status": "done",
+        "comments": [
+          {
+            "id": "methodologist-c1",
+            "assessorId": "methodologist",
+            "paragraphId": "p2",
+            "quote": "tested it with twelve participants across two clinics",
+            "category": "Sample size",
+            "severity": "major",
+            "text": "No justification is given for the choice of twelve participants, and no power calculation or precision target is stated. With three variants and a repeated-measures design, the study may be too small to detect a meaningful difference, and the reader cannot judge that from the text.",
+            "suggestion": "Add a sample size justification in the Methods, giving the expected effect size, its source, the target power and alpha, and the calculation used. If the sample was fixed by practical constraints, say so and state the minimum detectable effect.",
+            "done": false
+          },
+          {
+            "id": "methodologist-c2",
+            "assessorId": "methodologist",
+            "paragraphId": "p2",
+            "quote": "in a randomised order",
+            "category": "Controls",
+            "severity": "major",
+            "text": "The randomisation procedure is not described, and there is no washout period between the one-week periods, so carryover between variants is possible. Without these details, the design cannot be repeated from the text alone and order effects cannot be separated from wrap effects.",
+            "suggestion": "State how the sequence was generated (for example, a permuted block scheme with the seed or allocation method given), who generated it, and whether a washout or order check was used. Report the sequence allocation and test for order effects.",
+            "done": false
+          },
+          {
+            "id": "methodologist-c3",
+            "assessorId": "methodologist",
+            "paragraphId": "p3",
+            "quote": "Inclusion criteria were adults with a healed venous leg ulcer in the past two years and no arterial disease.",
+            "category": "Controls",
+            "severity": "major",
+            "text": "There is no comparator condition in the design described, so the wrap's effect cannot be separated from time or from the natural course of the condition. Participant characteristics that could confound comfort and pressure, such as age, ulcer history, body mass index and recurrence, are also not reported.",
+            "suggestion": "Describe the comparator (a standard bandage or the existing care) and justify it. Add a table of baseline participant characteristics by variant or by sequence group, and state which confounders were measured and how they were handled in the analysis.",
+            "done": false
+          },
+          {
+            "id": "methodologist-c4",
+            "assessorId": "methodologist",
+            "paragraphId": "p6",
+            "quote": "Results were compared with a repeated-measures ANOVA, with Bonferroni correction across the three variants.",
+            "category": "Analysis",
+            "severity": "major",
+            "text": "The analysis reports no effect sizes, no confidence intervals, and no check of repeated-measures assumptions such as sphericity. The choice between this and a mixed or random-effects model is not justified, and with twelve participants the Bonferroni correction is likely to be very conservative.",
+            "suggestion": "Report effect sizes with 95% confidence intervals for each pairwise comparison, such as mean differences in pressure and comfort. State how sphericity was checked and corrected, and justify ANOVA over a mixed-effects model, or state the model you used instead.",
+            "done": false
+          },
+          {
+            "id": "methodologist-c5",
+            "assessorId": "methodologist",
+            "paragraphId": "p7",
+            "quote": "Their partial data are reported separately.",
+            "category": "Analysis",
+            "severity": "major",
+            "text": "Handling of the two withdrawals is left vague. Reporting their data separately rather than in the main analysis suggests a per-protocol approach, which can bias the comparison between variants, and the reason for withdrawal is not given.",
+            "suggestion": "State the analysis population and why. Report the main analysis on all randomised participants, using a mixed model that handles missing data, and give a sensitivity analysis with the partial data. Record the reasons for withdrawal and whether they relate to any variant.",
+            "done": false
+          },
+          {
+            "id": "methodologist-c6",
+            "assessorId": "methodologist",
+            "paragraphId": "p4",
+            "quote": "calibrated before each session",
+            "category": "Methods",
+            "severity": "praise",
+            "text": "Logging sub-bandage pressure every ten minutes with sensors calibrated before each session is a sound measurement protocol. It makes the primary outcome repeatable and gives enough data points to characterise the pressure profile over time.",
+            "suggestion": "Keep this level of detail. Add the calibration method and tolerance, and the sensor model, so another group could reproduce the measurement.",
+            "done": false
+          }
+        ]
+      },
+      {
+        "assessorId": "literature-hawk",
+        "status": "done",
+        "comments": [
+          {
+            "id": "literature-hawk-c1",
+            "assessorId": "literature-hawk",
+            "paragraphId": "p2",
+            "quote": "We designed a graded compression wrap and tested it with twelve participants across two clinics.",
+            "category": "Novelty",
+            "severity": "major",
+            "text": "The chapter does not yet say what this wrap does that existing graded compression products or published designs do not. Without that contrast, a reader cannot judge the contribution, and the work reads as a description rather than a claim.",
+            "suggestion": "Add a short paragraph before or within the methods that names the closest prior wraps or designs, states the specific gap, and says in one sentence how this wrap differs from them.",
+            "done": false
+          },
+          {
+            "id": "literature-hawk-c2",
+            "assessorId": "literature-hawk",
+            "paragraphId": "p5",
+            "quote": "We treat a two-point change as clinically meaningful.",
+            "category": "Citation",
+            "severity": "major",
+            "text": "This threshold drives the comfort analysis, but no source is given for it. A reader will ask whether two points on a ten-point scale is an established minimum clinically important difference for this population or an assumption you have made.",
+            "suggestion": "Cite the source for the two-point threshold, or state that it is an assumption and justify it against published minimal clinically important difference work for compression comfort scales.",
+            "done": false
+          },
+          {
+            "id": "literature-hawk-c3",
+            "assessorId": "literature-hawk",
+            "paragraphId": "p4",
+            "quote": "printed capacitive sensors calibrated before each session",
+            "category": "Citation",
+            "severity": "minor",
+            "text": "Using printed capacitive sensors to measure sub-bandage pressure is a methodological choice that needs support. The chapter gives no reference for the sensor type or its validity against a reference pressure measurement.",
+            "suggestion": "Cite prior validation of this sensor type for sub-bandage pressure, or briefly report your own calibration accuracy against a reference device.",
+            "done": false
+          },
+          {
+            "id": "literature-hawk-c4",
+            "assessorId": "literature-hawk",
+            "paragraphId": "p3",
+            "quote": "Inclusion criteria were adults with a healed venous leg ulcer in the past two years and no arterial disease.",
+            "category": "Citation",
+            "severity": "minor",
+            "text": "The definitions of a healed venous leg ulcer and of arterial disease are clinical constructs that readers will want anchored to a standard. Without a reference, the population is harder to compare with other studies.",
+            "suggestion": "Cite the guideline or consensus document used to define healed venous ulcer and to exclude arterial disease, and state the test used, such as ankle-brachial index and its cut-off.",
+            "done": false
+          },
+          {
+            "id": "literature-hawk-c5",
+            "assessorId": "literature-hawk",
+            "paragraphId": "p3",
+            "quote": "Participants were recruited through clinic referral.",
+            "category": "Praise",
+            "severity": "praise",
+            "text": "The inclusion criteria are stated explicitly and concisely, which makes the study population clear to the reader. Keep this level of explicitness throughout the chapter.",
+            "suggestion": "Retain this explicit style and extend it to the definitions of the variants and outcomes.",
+            "done": false
+          }
+        ]
+      },
+      {
+        "assessorId": "communicator",
+        "status": "done",
+        "comments": [
+          {
+            "id": "communicator-c1",
+            "assessorId": "communicator",
+            "paragraphId": "p2",
+            "quote": "We designed a graded compression wrap and tested it with twelve participants across two clinics.",
+            "category": "Structure",
+            "severity": "minor",
+            "text": "The opening states what was done but does not tell the reader what the chapter will cover or in what order. A reader arriving from the introduction has no map of the methods that follow.",
+            "suggestion": "Add a short roadmap sentence after the first, for example stating that the chapter covers recruitment, sensor measurement, outcome measures, the analysis and ethical approval, in that order.",
+            "done": false
+          },
+          {
+            "id": "communicator-c2",
+            "assessorId": "communicator",
+            "paragraphId": "p3",
+            "quote": "Inclusion criteria were adults with a healed venous leg ulcer in the past two years and no arterial disease.",
+            "category": "Clarity",
+            "severity": "praise",
+            "text": "The eligibility criteria are stated plainly and specifically, so the reader knows exactly who the sample represents. Keep this level of precision in the rest of the chapter.",
+            "suggestion": "",
+            "done": false
+          },
+          {
+            "id": "communicator-c3",
+            "assessorId": "communicator",
+            "paragraphId": "p4",
+            "quote": "printed capacitive sensors calibrated before each session",
+            "category": "Jargon",
+            "severity": "minor",
+            "text": "Sub-bandage pressure and capacitive sensors are not defined, and a reader outside the device field may not know how the measurement works. A sentence of explanation would make this paragraph self-contained.",
+            "suggestion": "Define sub-bandage pressure in one clause on first use and briefly describe how the printed capacitive sensors register pressure, or cite the device description in an earlier chapter.",
+            "done": false
+          },
+          {
+            "id": "communicator-c4",
+            "assessorId": "communicator",
+            "paragraphId": "p5",
+            "quote": "We treat a two-point change as clinically meaningful.",
+            "category": "Clarity",
+            "severity": "minor",
+            "text": "The threshold is stated without saying what it is relative to, such as a baseline or a change from the previous day. The sentence also reads as a claim without an anchor, so the reader cannot tell where the threshold comes from.",
+            "suggestion": "Say what the two-point change is measured against and whether the threshold is taken from a prior study or set for this work.",
+            "done": false
+          },
+          {
+            "id": "communicator-c5",
+            "assessorId": "communicator",
+            "paragraphId": "p6",
+            "quote": "repeated-measures ANOVA",
+            "category": "Jargon",
+            "severity": "minor",
+            "text": "The analysis is named without a short explanation of what it compares or why it suits a three-condition, within-participant design. Bonferroni correction is also used without definition, which will slow readers who are not statisticians.",
+            "suggestion": "Add a brief clause after the test name explaining what it compares, and define the Bonferroni correction in a few words where it first appears.",
+            "done": false
+          },
+          {
+            "id": "communicator-c6",
+            "assessorId": "communicator",
+            "paragraphId": "p7",
+            "quote": "Their partial data are reported separately.",
+            "category": "Flow",
+            "severity": "minor",
+            "text": "The sentence tells the reader that partial data exist but not where to find them. Without a pointer, the reader has to search the rest of the thesis to locate the withdrawn participants' results.",
+            "suggestion": "Add a cross-reference to the section or table where the partial data appear, and state in one clause what was recorded for those participants.",
+            "done": false
+          }
+        ]
+      },
+      {
+        "assessorId": "outsider",
+        "status": "done",
+        "comments": [
+          {
+            "id": "outsider-c1",
+            "assessorId": "outsider",
+            "paragraphId": "p2",
+            "quote": "We designed a graded compression wrap and tested it with twelve participants across two clinics.",
+            "category": "Adoption",
+            "severity": "major",
+            "text": "Nothing in the chapter says what the wrap would cost per patient, how it would be made, or who would pay for it. A clinician or payer reading this would have no basis for judging whether the design could realistically reach patients, so the methods should at least state the intended unit cost or the commercial route.",
+            "suggestion": "Add a short paragraph stating the target cost per wrap, the intended manufacturing approach, and the intended payer or purchasing route, even if these are provisional assumptions.",
+            "done": false
+          },
+          {
+            "id": "outsider-c2",
+            "assessorId": "outsider",
+            "paragraphId": "p3",
+            "quote": "Inclusion criteria were adults with a healed venous leg ulcer in the past two years and no arterial disease.",
+            "category": "Adoption",
+            "severity": "major",
+            "text": "The population is patients whose ulcers have already healed, but a compression wrap is usually sold to treat active or recurrent ulcers and to prevent recurrence. The chapter does not explain why this group is the right proxy for the intended users, and an outsider would reasonably question whether the results transfer to the market the device is aimed at.",
+            "suggestion": "State explicitly who the intended users are and justify why recently healed patients represent them, or acknowledge the mismatch as a limitation of who was recruited.",
+            "done": false
+          },
+          {
+            "id": "outsider-c3",
+            "assessorId": "outsider",
+            "paragraphId": "p2",
+            "quote": "Each participant wore three wrap variants for one week each, in a randomised order.",
+            "category": "Real-world use",
+            "severity": "minor",
+            "text": "One week per variant is a short period compared with how long compression is worn in practice, and it does not show how the wrap would hold up over months of daily reapplication. The chapter does not say whether this duration was chosen for practical or clinical reasons.",
+            "suggestion": "Explain why one-week wear periods were chosen and state what real-world wear duration the design is intended to support.",
+            "done": false
+          },
+          {
+            "id": "outsider-c4",
+            "assessorId": "outsider",
+            "paragraphId": "p7",
+            "quote": "Two participants withdrew in week two.",
+            "category": "Adoption",
+            "severity": "minor",
+            "text": "Withdrawal of two of twelve participants is a real signal about how tolerable the wrap was in daily life, and the chapter gives no reasons. For someone outside the field, that reason is the most useful information about whether patients would actually keep using the product.",
+            "suggestion": "Give the stated reasons for withdrawal, even briefly, and say whether they relate to comfort, handling or the wrap itself.",
+            "done": false
+          },
+          {
+            "id": "outsider-c5",
+            "assessorId": "outsider",
+            "paragraphId": "p5",
+            "quote": "We treat a two-point change as clinically meaningful.",
+            "category": "Market",
+            "severity": "minor",
+            "text": "The chapter presents a two-point comfort change as meaningful without saying where that threshold comes from. A reader in industry would ask whether a difference of that size would matter to patients or to a purchaser choosing between products.",
+            "suggestion": "Give the source or rationale for the two-point threshold, or state that it is an assumption and what a commercially meaningful difference would look like.",
+            "done": false
+          }
+        ]
+      },
+      {
+        "assessorId": "sceptic",
+        "status": "done",
+        "comments": [
+          {
+            "id": "sceptic-c1",
+            "assessorId": "sceptic",
+            "paragraphId": "p2",
+            "quote": "twelve participants across two clinics",
+            "category": "Sample size",
+            "severity": "major",
+            "text": "Twelve participants across two sites is a very small sample for a three-arm comparison, and the chapter gives no reason for this number. Without a power calculation or a stated minimum detectable difference, a reader cannot tell whether a null result reflects no effect or simply an underpowered study.",
+            "suggestion": "Add a justification for n=12, such as a power calculation or an explicit statement that the study is a feasibility study, and state which effect sizes it could realistically detect.",
+            "done": false
+          },
+          {
+            "id": "sceptic-c2",
+            "assessorId": "sceptic",
+            "paragraphId": "p3",
+            "quote": "adults with a healed venous leg ulcer in the past two years",
+            "category": "Bias",
+            "severity": "major",
+            "text": "Recruiting people with a healed ulcer, through clinic referral, selects a group who are likely to be more adherent and more responsive to treatment than people with active ulcers. The wrap is meant for active venous ulcers, so the findings may not generalise to the intended population, and the chapter does not discuss this.",
+            "suggestion": "Describe how referrals were made and how many eligible patients declined or were not referred, and add a limitation paragraph on the gap between the recruited population and the intended one.",
+            "done": false
+          },
+          {
+            "id": "sceptic-c3",
+            "assessorId": "sceptic",
+            "paragraphId": "p5",
+            "quote": "We treat a two-point change as clinically meaningful.",
+            "category": "Weakest claim",
+            "severity": "major",
+            "text": "This threshold is asserted without any source or rationale, yet the comfort outcome rests on it. Because participants know which wrap they are wearing and rate comfort themselves, the outcome is also open to expectation effects, and nothing in the methods addresses this.",
+            "suggestion": "Give a source or validation study for the two-point threshold, or state clearly that it is a chosen criterion, and describe whether participants or assessors were blinded to the variant.",
+            "done": false
+          },
+          {
+            "id": "sceptic-c4",
+            "assessorId": "sceptic",
+            "paragraphId": "p6",
+            "quote": "with Bonferroni correction across the three variants",
+            "category": "Analysis",
+            "severity": "major",
+            "text": "A repeated-measures ANOVA on a ten-point comfort scale assumes interval-level data and approximately normal residuals, which may not hold for ordinal ratings from twelve people. The chapter does not mention checking these assumptions or reporting effect sizes, so any reported significance is hard to interpret.",
+            "suggestion": "State how the normality and sphericity assumptions were checked, consider a non-parametric or ordinal model for comfort, and report effect sizes with confidence intervals alongside the corrected p-values.",
+            "done": false
+          },
+          {
+            "id": "sceptic-c5",
+            "assessorId": "sceptic",
+            "paragraphId": "p7",
+            "quote": "Their partial data are reported separately.",
+            "category": "Attrition",
+            "severity": "major",
+            "text": "Two of twelve participants withdrew in week two, which is about 17% of the sample and removes a meaningful share of the data. Reporting their data separately, without stating whether the withdrawal was related to the wrap or its discomfort, leaves open whether the remaining results are biased.",
+            "suggestion": "Report the reasons for withdrawal, state which analysis populations were used, and add a sensitivity analysis or explicit discussion of whether the missing data could be non-random.",
+            "done": false
+          },
+          {
+            "id": "sceptic-c6",
+            "assessorId": "sceptic",
+            "paragraphId": "p4",
+            "quote": "calibrated before each session",
+            "category": "Measurement",
+            "severity": "praise",
+            "text": "Logging sub-bandage pressure every ten minutes at two sites and calibrating the sensors before each session is a careful measurement design that gives the pressure data a sound basis. This is a strength worth keeping.",
+            "suggestion": "Keep this level of detail and add the calibration method or tolerance so that the reliability of the readings can be checked.",
+            "done": false
+          }
+        ]
+      }
+    ],
+    "deliberation": {
+      "summary": "All six assessors read the same short methods chapter. They agree that the sub-bandage pressure protocol is careful and that the eligibility criteria are explicit. They also agree on four main gaps: the sample of twelve is not justified, the two-point comfort threshold is unsourced, the withdrawals are handled vaguely, and the analysis reports no effect sizes or assumption checks. Smaller gaps concern the safety limit, randomisation, the comparator, the ethics reference and the link between the recruited patients and the intended users. Most of these can be closed by writing and reporting. The sample size and attrition cannot be repaired after data collection and will need to be framed honestly as limitations.",
+      "agreements": [
+        "The sample of twelve across three variants is not justified (module-lead, methodologist, sceptic).",
+        "The two-point comfort threshold is asserted without a source or rationale (module-lead, literature-hawk, outsider, sceptic, communicator).",
+        "The handling of the two withdrawals is vague and may bias the comparison between variants (methodologist, sceptic, outsider).",
+        "The analysis reports no effect sizes, confidence intervals or assumption checks (methodologist, sceptic).",
+        "The sub-bandage pressure measurement protocol, with calibrated sensors logged at two sites, is careful and repeatable (module-lead, methodologist, sceptic).",
+        "The explicit eligibility criteria are a strength (literature-hawk, communicator).",
+        "The recruited population of recently healed patients may not represent the intended users of a wrap for active ulcers (sceptic, outsider)."
+      ],
+      "disagreements": [
+        {
+          "topic": "Purpose of the study: confirmatory test or feasibility study",
+          "views": [
+            {
+              "assessorId": "methodologist",
+              "view": "The study needs a power calculation with an expected effect size, target power and alpha, so that it can be judged as an inferential comparison of variants."
+            },
+            {
+              "assessorId": "sceptic",
+              "view": "The study could be framed as a feasibility study, which needs no power calculation, but it must then drop claims that the variants differ."
+            }
+          ],
+          "advice": "Decide the purpose before anything else and state it in the aim. If the aim is to compare variants, justify the sample with a power calculation or minimum detectable difference. If the study is a feasibility study, say so and avoid claiming differences between variants. Either way, state which effect sizes the study could realistically detect."
+        },
+        {
+          "topic": "Choice of analysis model for comfort",
+          "views": [
+            {
+              "assessorId": "methodologist",
+              "view": "Justify repeated-measures ANOVA over a mixed-effects model, check sphericity, and use a mixed model for the main analysis so that missing data are handled."
+            },
+            {
+              "assessorId": "sceptic",
+              "view": "Ten-point comfort ratings from twelve people are ordinal and may not be normally distributed, so an ordinal or non-parametric model should be considered."
+            }
+          ],
+          "advice": "Choose the model before reading the comfort results and say why. A mixed model with a suitable link for ordinal ratings can address both points. Report the ANOVA as a sensitivity analysis, and report effect sizes with confidence intervals for each model."
+        }
+      ]
+    },
+    "report": {
+      "kind": "report",
+      "verdict": "The chapter describes a careful, repeatable measurement protocol and explicit eligibility criteria, which a reader can follow. The methods do not yet justify the sample size, the randomisation, the comfort threshold or the analysis choices, and the safety and ethics details that the module expects are missing. Most gaps can be closed by writing and reporting, but the sample size and attrition will need to be framed honestly as limitations.",
+      "criteria": [
+        {
+          "criterion": "Methods",
+          "rating": "weak",
+          "evidence": "Sub-bandage pressure is logged at the ankle and calf every ten minutes with sensors calibrated before each session (p4), and the eligibility criteria are explicit (p3). However, the sample of twelve is unjustified (p2), the randomisation procedure and washout are not described (p2), no comparator or baseline characteristics are reported (p3), and the maximum permitted pressure, the safety monitoring and the ethics reference are absent (p4, p8)."
+        },
+        {
+          "criterion": "Analysis",
+          "rating": "weak",
+          "evidence": "A repeated-measures ANOVA with Bonferroni correction is named (p6), but no effect sizes, confidence intervals, sphericity or normality checks are reported, and the choice over a mixed-effects model is not justified. The two withdrawals are reported separately (p7), which suggests a per-protocol approach and leaves possible bias unaddressed. The two-point comfort threshold has no source (p5)."
+        },
+        {
+          "criterion": "Writing",
+          "rating": "adequate",
+          "evidence": "Sentences are short and direct, and the inclusion criteria are stated plainly (p3). Sub-bandage pressure, capacitive sensors, repeated-measures ANOVA and Bonferroni correction are used without definition (p4, p6). The chapter has no roadmap (p2), and the partial data have no cross-reference (p7)."
+        }
+      ],
+      "strengths": [
+        "Sub-bandage pressure is logged at two sites every ten minutes, with sensors calibrated before each session, giving a clear measurement procedure (p4).",
+        "Inclusion criteria are explicit and specific, so the sample is clearly described (p3).",
+        "Participants gave written consent and the study was reviewed by the departmental ethics panel (p8)."
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "what": "State and justify the sample size. Give the study purpose, the expected effect size and its source, alpha, target power, the calculation used and the minimum detectable difference. If the study is a feasibility study, say so in the aim.",
+          "why": "Without this, a reader cannot tell whether a null result reflects no effect or an underpowered design. It is the concern raised most often in this review.",
+          "raisedBy": [
+            "module-lead",
+            "methodologist",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a2",
+          "what": "Report effect sizes with 95 per cent confidence intervals for each comparison, check sphericity and normality or ordinal assumptions, and justify repeated-measures ANOVA against a mixed-effects or ordinal model.",
+          "why": "With twelve participants and ordinal comfort ratings, significance alone cannot be interpreted, and a second reader needs a defensible model choice.",
+          "raisedBy": [
+            "methodologist",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p6"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a3",
+          "what": "State the analysis population. Run the main analysis on all randomised participants with a model that handles missing data, add a sensitivity analysis using the partial data, and report the reasons for withdrawal and whether they relate to any variant. Add a cross-reference to where the partial data appear.",
+          "why": "Two of twelve participants withdrew, which removes a large share of the data. Reporting their data separately risks bias in the comparison between variants.",
+          "raisedBy": [
+            "methodologist",
+            "sceptic",
+            "outsider",
+            "communicator"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p7"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a4",
+          "what": "State the maximum permitted sub-bandage pressure, the action taken if a reading exceeds it, how participants were monitored for ischaemia or skin damage during each week, and how adverse events were recorded and reported.",
+          "why": "A compression device applied to a healing ulcer needs a stated safety limit and monitoring plan, and the module expects to see them.",
+          "raisedBy": [
+            "module-lead"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p4"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        },
+        {
+          "id": "a5",
+          "what": "Cite a source for the two-point comfort threshold, or state it as an assumption with its rationale. Say what the change is measured against and whether it was the criterion used in the comparisons. Describe whether participants were blinded to the variant and discuss possible expectation effects.",
+          "why": "The comfort outcome rests on this threshold, and participants know which wrap they are wearing, so the result may be open to expectation effects.",
+          "raisedBy": [
+            "module-lead",
+            "literature-hawk",
+            "outsider",
+            "sceptic",
+            "communicator"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p5"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a6",
+          "what": "Describe how the randomisation sequence was generated, who generated it, the allocation method, and whether a washout or order check was used. Report the sequence allocation and test for order effects.",
+          "why": "Without this, the design cannot be repeated from the text, and order effects cannot be separated from wrap effects.",
+          "raisedBy": [
+            "methodologist"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a7",
+          "what": "Describe the comparator and justify it. Add a table of baseline characteristics by variant or sequence group, including age, ulcer history, body mass index and recurrence, and state how confounders were handled in the analysis.",
+          "why": "Without a comparator or baseline data, the wrap's effect cannot be separated from time or from the natural course of the condition.",
+          "raisedBy": [
+            "methodologist"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p3"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a8",
+          "what": "Describe how referrals were made and how many eligible patients declined or were not referred. State who the intended users are, justify why recently healed patients represent them, and add a limitation paragraph on the gap between the two.",
+          "why": "Recently healed patients may be more adherent and responsive than people with active ulcers, so the findings may not transfer. This also gives the Discussion concrete material to address.",
+          "raisedBy": [
+            "sceptic",
+            "outsider"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p3"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a9",
+          "what": "Name the closest prior graded compression wraps or published designs, state the specific gap they leave, and say in one sentence how this wrap differs from them.",
+          "why": "Without a contrast, the work reads as a description rather than a claim, and a reader cannot judge its contribution.",
+          "raisedBy": [
+            "literature-hawk"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a10",
+          "what": "Cite prior validation of printed capacitive sensors for sub-bandage pressure, or report your own calibration accuracy against a reference device. Cite the guideline used to define a healed venous ulcer and to exclude arterial disease, and state the test and cut-off used, such as the ankle-brachial index.",
+          "why": "A reader cannot judge the validity of the sensor or compare the population with other studies without these anchors.",
+          "raisedBy": [
+            "literature-hawk"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p3",
+              "p4"
+            ],
+            "quote": null
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a11",
+          "what": "Define sub-bandage pressure in one clause on first use, briefly explain how the printed capacitive sensors register pressure, and give the sensor model, the calibration method and its tolerance.",
+          "why": "A reader outside the device field cannot follow the measurement without this, and another group cannot reproduce it.",
+          "raisedBy": [
+            "methodologist",
+            "communicator",
+            "sceptic"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p4"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        },
+        {
+          "id": "a12",
+          "what": "Give the ethics approval reference and date, and confirm the scope of the approval.",
+          "why": "A reader cannot confirm that the study was approved, or what the approval covered, without the reference.",
+          "raisedBy": [
+            "module-lead"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p8"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        },
+        {
+          "id": "a13",
+          "what": "Explain why one-week wear periods were chosen, and state the real-world wear duration the design is intended to support.",
+          "why": "A reader will question whether one week shows how the wrap performs in daily use over months.",
+          "raisedBy": [
+            "outsider"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        },
+        {
+          "id": "a14",
+          "what": "Add a roadmap sentence after the opening that states the chapter covers recruitment, sensor measurement, outcome measures, the analysis and ethical approval, in that order.",
+          "why": "A reader arriving from the introduction has no map of the methods that follow.",
+          "raisedBy": [
+            "communicator"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p2"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        },
+        {
+          "id": "a15",
+          "what": "Add a short clause after repeated-measures ANOVA explaining what it compares and why it suits a three-condition, within-participant design, and define Bonferroni correction where it first appears.",
+          "why": "Readers who are not statisticians will otherwise struggle with the analysis.",
+          "raisedBy": [
+            "communicator"
+          ],
+          "evidence": {
+            "paragraphIds": [
+              "p6"
+            ],
+            "quote": null
+          },
+          "effort": "quick",
+          "done": false
+        }
+      ],
+      "assessorVerdicts": [
+        {
+          "assessorId": "module-lead",
+          "line": "The measurement is sound, but the sample size, safety limit and ethics reference must be justified and stated before I can accept the methods."
+        },
+        {
+          "assessorId": "methodologist",
+          "line": "The sensor protocol is repeatable, but twelve participants, an unstated randomisation and an unreported analysis model leave the design impossible to reproduce from the text."
+        },
+        {
+          "assessorId": "literature-hawk",
+          "line": "The chapter needs to say what is new and to cite its thresholds and definitions before a reader can place it in the literature."
+        },
+        {
+          "assessorId": "communicator",
+          "line": "The writing is clear and specific where it matters, but it needs a roadmap, definitions on first use and a pointer to where the partial data sit."
+        },
+        {
+          "assessorId": "outsider",
+          "line": "I cannot yet tell whether this wrap could reach patients, because the intended users, the wear period and the reasons for withdrawal are not explained."
+        },
+        {
+          "assessorId": "sceptic",
+          "line": "With twelve participants, an unsourced comfort threshold and two withdrawals, I cannot tell a real null result from an underpowered one until the study's purpose and analysis are stated."
+        }
+      ],
+      "escalations": [
+        {
+          "reason": "Whether a study of twelve participants with no sample size rationale can support confirmatory conclusions cannot be settled from the text, and the sample cannot be enlarged after data collection.",
+          "whoToAsk": "Your supervisor, who can decide whether the study should be framed as a feasibility study and how the limitation should be worded."
+        },
+        {
+          "reason": "The intended cost per wrap, manufacturing approach and payer route are not methods questions and cannot be settled by the board. They may belong in the introduction or discussion.",
+          "whoToAsk": "Your supervisor, to decide where this material belongs and what provisional assumptions are acceptable."
+        },
+        {
+          "reason": "The board cannot confirm the ethics approval reference, date or scope from the chapter.",
+          "whoToAsk": "Your supervisor, who can confirm the approval details with the departmental ethics panel."
+        }
+      ],
+      "sinceLastTime": null,
+      "likelyQuestions": [
+        {
+          "assessorId": "module-lead",
+          "question": "What maximum sub-bandage pressure did you set, and what would you have done if a reading exceeded it?"
+        },
+        {
+          "assessorId": "methodologist",
+          "question": "How was the randomisation sequence generated, and what was the carryover risk without a washout period?"
+        },
+        {
+          "assessorId": "literature-hawk",
+          "question": "How does your wrap differ from the closest published graded compression designs?"
+        },
+        {
+          "assessorId": "communicator",
+          "question": "Where in the thesis are the results of the two withdrawn participants reported?"
+        },
+        {
+          "assessorId": "outsider",
+          "question": "Would a clinician expect a wrap worn for one week to hold up over months of daily reapplication?"
+        },
+        {
+          "assessorId": "sceptic",
+          "question": "Was the study designed to detect a difference between variants, or only to test feasibility?"
+        }
+      ],
+      "delivery": null,
+      "questionReview": null
+    },
+    "replySource": "claude"
+  },
+  "calls": [
+    {
+      "id": "bac92312-f32d-44ce-aa7f-3f38a942954f",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.438Z",
+      "durationMs": 11034,
+      "inputTokens": 1863,
+      "outputTokens": 2006,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "d4e6b199-08be-42a0-8489-5123bd4be267",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.450Z",
+      "durationMs": 11316,
+      "inputTokens": 1798,
+      "outputTokens": 1927,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "c6b071c4-72e9-4c95-b718-0238a701a151",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.451Z",
+      "durationMs": 10532,
+      "inputTokens": 1739,
+      "outputTokens": 1767,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "2e97ac08-5f04-480b-9692-2f108956b1fd",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.451Z",
+      "durationMs": 11061,
+      "inputTokens": 1737,
+      "outputTokens": 1938,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "7bf4bd13-ba1d-4272-bc36-038a3a2ce26a",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.452Z",
+      "durationMs": 9366,
+      "inputTokens": 1736,
+      "outputTokens": 1575,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "1fbf9a15-613c-46ec-bcb1-a437e8d7acaf",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:29:52.452Z",
+      "durationMs": 11373,
+      "inputTokens": 1740,
+      "outputTokens": 1937,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "e386c0a6-e45a-411d-9ddb-5b2e37c596dd",
+      "kind": "deliberation",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:30:03.832Z",
+      "durationMs": 60776,
+      "inputTokens": 8801,
+      "outputTokens": 15033,
+      "ok": true,
+      "error": null
+    }
+  ]
+}
