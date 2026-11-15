@@ -65,11 +65,12 @@ async function loadContext(s: PitchSession): Promise<PitchContext> {
   const boardId = s.settings.boardId ?? project.boardId;
   const board = boardId ? await boards.get(boardId) : null;
   if (!board || board.assessorIds.length === 0) throw new EngineError("No one is seated at this board.", "invalid_reply", false);
+  const memory = { attempts: project.memory.attempts.filter((a) => replySource() !== "claude" || a.replySource === "claude") };
   const [members, notes] = await Promise.all([Promise.all(board.assessorIds.map((id) => assessors.get(id))), assessorNotes.list()]);
   return {
     project,
-    memory: memoryForBoard(project.memory, s.id),
-    lastOpen: stillOpen(project.memory, s.id),
+    memory: memoryForBoard(memory, s.id),
+    lastOpen: stillOpen(memory, s.id),
     transcript: s.transcript,
     board: members
       .filter((a) => a !== null)
@@ -306,7 +307,7 @@ export async function finishQandA(sessionId: string): Promise<PitchSession> {
     wordsPerMinute: wpm,
   });
   const project = await projects.get(s.projectId);
-  const memory = project?.memory ?? { attempts: [] };
+  const memory = { attempts: (project?.memory.attempts ?? []).filter((a) => source !== "claude" || a.replySource === "claude") };
   const behavior = await behaviorFor(s.id, s);
   const report = {
     ...checked,

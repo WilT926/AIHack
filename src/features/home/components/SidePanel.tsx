@@ -1,6 +1,7 @@
 // Side panel for the focused table (§9).
 import Link from "next/link";
 import { Avatar, Button, Label, StateBead } from "@/components/ui";
+import { BoardMemory } from "./BoardMemory";
 import type { FloorTable } from "../model";
 
 export function SidePanel({
@@ -102,6 +103,8 @@ export function SidePanel({
           </>
         )}
       </section>
+
+      <BoardMemory memory={table.memory} />
 
       <section className="fl-panel__section" aria-label="At this table">
         <Label>At this table</Label>

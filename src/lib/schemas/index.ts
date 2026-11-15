@@ -97,6 +97,7 @@ const memoryRatingSchema = z.enum(["strong", "adequate", "weak"]);
 /** One finished attempt, as the board remembers it. */
 export const memoryAttemptSchema = z.object({
   sessionId: id,
+  replySource: z.enum(["claude", "sample"]).default("sample"),
   kind: z.enum(["report", "pitch"]),
   at: timestamp,
   title: z.string().max(300),

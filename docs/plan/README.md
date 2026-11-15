@@ -67,9 +67,8 @@ All demo set-up is done through the app's own screens, so it can be done after t
 | A real university problem | The gap between the mark scheme and what the marker says they want |
 | Specialised agent roles | The board of assessors |
 | Real-time interaction | Live voiced Q&A |
-| Session state | Saved boards, projects, reviews and the Q&A conversation |
-| Guardrail pipelines | Every assessor reply is checked; assessors stay in their field; uploads are treated as material, not instructions |
-| Dynamic mode-switching | Report review or pitch practice; live or written questions |
+| Session state and memory | Per-project remembered attempts, assessor points, criterion trends and action ticks; every later call receives earlier feedback, and the report shows Since last time |
+| Guardrails and mode switching | One integrity pipeline checks input, routes intent, chooses an assessor mode, checks output and escalates; the report shows ordered mode shifts and counted events with reasons |
 | Human-in-the-loop escalation | The board flags "take this to your supervisor" when it cannot agree or the point is outside its field |
 
 ## Figma prize
@@ -105,12 +104,14 @@ Lane 1 defines these once in `src/lib/schemas`. Everyone builds against them. On
 - **Assessor:** id, name, field, role (one line), personality, harshness (1–5), focusAreas (list), avatar (illustrated), portrait (realistic, optional), idleClip and talkingClip (optional), voiceId, isPreset, basedOn (optional id).
 - **AssessorNote:** id, assessorId, text, source (lecture, handbook, other), createdAt.
 - **Board:** id, name, assessorIds.
-- **Project:** id, title, template (masters-report, lab-report, pitch), brief (what it is, topic, what is graded, goal), deadline (optional), markSchemeText, weakSpots, boardId.
+- **Project:** id, memory (BoardMemory, defaults to no attempts), title, template (masters-report, lab-report, pitch), brief (what it is, topic, what is graded, goal), deadline (optional), markSchemeText, weakSpots, boardId.
+- **BoardMemory:** attempts (oldest first, capped at 30); each attempt has sessionId, replySource (claude/sample; legacy attempts default to sample), kind, at, title, verdict, raised (assessorId and points), actions (id, what, done, raisedBy), and criteria (criterion and strong/adequate/weak rating). Prompt context uses the last three earlier attempts and excludes the current session. Saved on session completion and updated when an action is ticked. Sample attempts are labelled and excluded from real-Claude comparisons. Without a database this memory is temporary and labelled sample data.
+- **GuardrailEvent:** rule (reviewer-instruction, rewriting, grade-prediction, unobservable-delivery, unsupplied-citation, instruction-disclosure), stage (input/output), action (ignored/dropped/trimmed), location, reason and count. Never contains the ignored text. Server records add id, sessionId and createdAt in engine_events; parallel assessor events are appended independently.
 - **Document:** id, projectId, title, paragraphs (list of id such as "p1", and text).
 - **Comment:** id, assessorId, paragraphId, quote (optional exact words from that paragraph), category, severity (praise, minor, major), text, suggestion.
 - **Review:** id, projectId, documentId, createdAt, status, assessorResults (list of assessorId, status, comments), deliberation, report (a FeedbackReport).
 - **Deliberation:** summary, agreements, disagreements (topic, each assessor's view, advice).
-- **PitchSession:** id, projectId, transcript, startedAt, endedAt, settings (questionCount 1–5, spoken or text), questions (id, assessorId, text, reason, answerTranscript, followUp), report (a FeedbackReport).
+- **PitchSession:** id, projectId, transcript, startedAt, endedAt, qa (mode, struggle count, turns with assessments/modes/timings, escalations), settings (questionCount 1–5, spoken or text), questions (id, assessorId, text, reason, answerTranscript, followUp), report (a FeedbackReport).
 - **FeedbackReport** (the same form closes both a report review and a pitch):
   - kind (report or pitch) and verdict (two or three sentences).
   - criteria: each marking criterion from the mark scheme, a rating of strong, adequate or weak, and the evidence for it.
@@ -118,9 +119,10 @@ Lane 1 defines these once in `src/lib/schemas`. Everyone builds against them. On
   - actions, ranked: what to do, why it matters, which assessors raised it, the evidence (paragraph ids or a transcript quote), and effort (quick, moderate, substantial).
   - assessorVerdicts: one line from each assessor.
   - escalations: reason and who to ask.
-  - sinceLastTime, optional: what improved and what is still weak.
+  - sinceLastTime, optional: improved and raisedAgain points from the board; stillOpen from the previous attempt's unticked actions, calculated in code.
+  - behavior, optional for older reports: modeShifts (turnId, mode, reason, in order) and guardrailEvents. Modes: pressing, probing, coaching, steering, holding-the-line, paused. The router returns answerQuality and studentIntent; code chooses the mode. Clear direct-request rules override classification; ordinary mentions of trigger phrases do not. Exam conditions use probing instead of coaching. Multiple output boundary removals add a human escalation.
   - Report only: likelyQuestions (assessorId, question).
-  - Pitch only: delivery (length, words per minute, notes on structure and clarity) and questionReview (for each question: how well it was answered, and an outline of a stronger answer).
+  - Pitch only: delivery (length, words per minute, notes on structure and clarity) and questionReview (for each question: how well it was answered, and strongerAnswer, a list of points a stronger answer would cover, with no copyable wording).
 - **CallLog:** id, kind, model, startedAt, durationMs, inputTokens, outputTokens, ok, error.
 
 ## Style variable names (shared with Figma)

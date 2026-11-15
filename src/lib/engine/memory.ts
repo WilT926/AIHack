@@ -29,6 +29,7 @@ const SEVERITY_ORDER = { major: 0, minor: 1, praise: 2 } as const;
 export function attemptFromReview(review: Review, title: string): MemoryAttempt {
   return {
     sessionId: review.id,
+    replySource: review.replySource,
     kind: "report",
     at: review.createdAt,
     title,
@@ -57,6 +58,7 @@ export function attemptFromPitch(session: PitchSession): MemoryAttempt {
   }
   return {
     sessionId: session.id,
+    replySource: session.replySource,
     kind: "pitch",
     at: session.endedAt ?? session.createdAt,
     title: "Presentation practice",

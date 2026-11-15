@@ -10,6 +10,7 @@ vi.mock("@/config", async (original) => {
 });
 import { finishPitch, startPitchSession } from "@/features/pitch/actions";
 import { setActionDone } from "@/features/feedback/actions";
+import { memoryAttemptSchema } from "@/lib/schemas";
 import { documents, projects } from "@/lib/data";
 import { assessorPrompt } from "./prompts";
 import { questionsPrompt } from "./pitch";
@@ -33,6 +34,19 @@ async function runReview(projectId: string, documentId: string) {
 }
 
 describe("memory across report reviews", () => {
+  it("labels legacy memory as sample and excludes invented attempts from real calls", async () => {
+    const project = (await projects.get("proj-mt"))!;
+    const attempt = project.memory.attempts[0];
+    expect(memoryAttemptSchema.parse({ ...attempt, replySource: undefined }).replySource).toBe("sample");
+    process.env.ANTHROPIC_API_KEY = "test-only-not-a-key"; // context assembly only; no call
+    const input = await assessorInput({ projectId: project.id, documentId: "doc-mt-ch3", assessorId: "sceptic" });
+    expect(input.earlierSummary).toBeNull();
+    await projects.save({ ...project, memory: { attempts: [{ ...attempt, replySource: "claude", raised: [{ assessorId: "sceptic", points: ["Check the sample-size rationale."] }] }] } });
+    const real = await assessorInput({ projectId: project.id, documentId: "doc-mt-ch3", assessorId: "sceptic" });
+    expect(real.earlierSummary).toContain("Check the sample-size rationale.");
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+
   it("a second review's assessor call receives the first review's memory", async () => {
     await projects.save({ ...(await projects.get("proj-lr"))!, memory: { attempts: [] } });
     await documents.save({
