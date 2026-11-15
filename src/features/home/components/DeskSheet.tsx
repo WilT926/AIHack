@@ -1,8 +1,18 @@
 // Desk sheet: every document and feedback report (§9).
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Button, Card, Chip, IconButton, Label } from "@/components/ui";
+import { Button, Chip, IconButton, Label } from "@/components/ui";
 import type { FloorModel, FloorTable } from "../model";
+
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+/** Mono date and time, e.g. "5 NOV · 14:30" (UTC, so server and browser agree). */
+function dateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} · ${hh}:${mm}`;
+}
 
 export function DeskSheet({
   open,
@@ -28,10 +38,10 @@ export function DeskSheet({
   const bottom = position.scope === scope && position.bottom;
   const moreRows = docs.length + reports.length + (reviewHref ? 1 : 0) > 4;
   return (
-    <section id="floor-desk" className="fl-sheet fl-sheet--desk" data-open={open} aria-hidden={!open} aria-label="Your desk" inert={!open}>
+    <section id="floor-desk" className="fl-sheet fl-sheet--desk" data-open={open} aria-hidden={!open} aria-label="Past sessions and uploads" inert={!open}>
       <div className="fl-sheet__head">
         <div className="fl-sheet__titles">
-          <h2 className="fl-sheet__title">Your desk</h2>
+          <h2 className="fl-sheet__title">Past sessions and uploads</h2>
           <span className="fl-sheet__sub">{allTables || !table ? "Every panel" : table.name} · documents and feedback</span>
         </div>
         <div className="fl-sheet__actions">
@@ -45,37 +55,30 @@ export function DeskSheet({
         const el = event.currentTarget;
         setPosition({ scope, bottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 2 });
       }}>
-        {docs.length === 0 && reports.length === 0 && <Card dashed className="fl-desk-empty"><Label>Nothing here yet</Label><p>Upload a report or finish a session to add documents and feedback to this panel.</p></Card>}
-        {docs.map((d) => (
-          <Link key={d.id} href={d.href} className="fl-desk-card">
-            <div className="fl-desk-card__paper" aria-hidden>
-              <i />
-              <i />
-              <i />
-            </div>
-            <span className="fl-desk-card__title">{d.title}</span>
-            <span className="fl-desk-card__sub">
-              {d.project} · {d.code}
-            </span>
-            <span className="fl-desk-card__count" data-open={d.open > 0}>
-              {d.open ? `${d.open} OPEN ${d.open === 1 ? "ACTION" : "ACTIONS"}` : "NOTHING OPEN"}
-            </span>
-          </Link>
-        ))}
-
+        <div className="fl-desk-group">
+          <Label tone="ink">Feedback reports · {reports.length}</Label>
+        </div>
+        {reports.length === 0 && <p className="fl-desk-group__empty">No feedback reports yet. Finish a review or a presentation practice.</p>}
         {reports.map((r) => {
           const body = (
             <>
-              <i className={`ui-state ui-state--rim ui-state--${r.state}`} aria-hidden />
-              <span className="fl-desk-card__title">{r.title}</span>
-              <span className="fl-desk-card__sub">Feedback report · {r.code}</span>
+              <span className="fl-desk-card__type">
+                <i className={`ui-state ui-state--rim ui-state--${r.state}`} aria-hidden />
+                <Label size="sm">Feedback report</Label>
+                {r.sample && <Label size="sm" tone="orange">Sample</Label>}
+              </span>
+              <span className="fl-desk-card__title">Attempt {r.attempt} · {r.kind}</span>
+              <span className="fl-desk-card__sub">{r.verdict}</span>
               <Label size="sm" tone="quiet" className="fl-desk-card__date">
-                {r.date}
+                {dateTime(r.at)} · {r.code}
               </Label>
+              <span className="fl-desk-card__count" data-open={r.open > 0}>
+                {r.open} open
+              </span>
             </>
           );
           return r.href ? (
-            <Link key={r.id} href={r.href} className="fl-desk-card">
+            <Link key={r.id} href={r.href} className="fl-desk-card" aria-label={`Feedback report, attempt ${r.attempt}, ${r.kind}`}>
               {body}
             </Link>
           ) : (
@@ -84,6 +87,28 @@ export function DeskSheet({
             </div>
           );
         })}
+
+        <div className="fl-desk-group">
+          <Label tone="ink">Uploads · {docs.length}</Label>
+        </div>
+        {docs.length === 0 && <p className="fl-desk-group__empty">No uploads yet. Upload a report to have the board review it.</p>}
+        {docs.map((d) => (
+          <Link key={d.id} href={d.href} className="fl-desk-card" aria-label={`Upload, ${d.title}`}>
+            <span className="fl-desk-card__type">
+              <span className="fl-desk-card__paper fl-desk-card__paper--small" aria-hidden>
+                <i />
+                <i />
+                <i />
+              </span>
+              <Label size="sm">Upload</Label>
+            </span>
+            <span className="fl-desk-card__title">{d.title}</span>
+            <Label size="sm" tone="quiet" className="fl-desk-card__date">
+              {d.at ? `${dateTime(d.at)} · ` : ""}{d.code}
+            </Label>
+            <span className="fl-desk-card__sub">{d.usedBy ? `Used in ${d.usedBy}` : "Not reviewed yet"}</span>
+          </Link>
+        ))}
 
         {reviewHref && (
           <Link href={reviewHref} className="fl-desk-new">
@@ -95,7 +120,7 @@ export function DeskSheet({
         )}
       </div>
       <div className="fl-desk-scroll">
-        <Label>{docs.length} {docs.length === 1 ? "document" : "documents"} · {reports.length} feedback {reports.length === 1 ? "report" : "reports"}</Label>
+        <Label>{reports.length} feedback {reports.length === 1 ? "report" : "reports"} · {docs.length} {docs.length === 1 ? "upload" : "uploads"}</Label>
         {moreRows && <Button variant="quiet" size="sm" onClick={() => {
           const el = grid.current;
           if (!el) return;

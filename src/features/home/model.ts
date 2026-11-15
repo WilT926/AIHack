@@ -20,6 +20,8 @@ export type FloorSession = {
   note: string;
   /** Feedback report link, only when that screen is switched on. */
   reportHref?: string;
+  /** For the desk card of a finished session. */
+  desk?: { attempt: number; kind: "Presentation" | "Report review"; at: string; verdict: string; open: number; sample: boolean };
 };
 
 export type FloorSeat = {
@@ -30,7 +32,7 @@ export type FloorSeat = {
   avatar: string;
 };
 
-export type FloorDoc = { id: string; title: string; open: number; href: string };
+export type FloorDoc = { id: string; title: string; open: number; href: string; at?: string; usedBy?: string | null };
 
 /** One assessor's feedback on the latest finished session. */
 export type FloorFeedback = {
@@ -97,8 +99,8 @@ export type FloorAssessor = {
   tables: string[];
 };
 
-export type DeskReport = { id: string; projectId: string; title: string; code: string; date: string; state: SessionState; href?: string };
-export type DeskDoc = FloorDoc & { projectId: string; code: string; project: string };
+export type DeskReport = { id: string; projectId: string; title: string; code: string; date: string; state: SessionState; href?: string; attempt: number; kind: string; at: string; verdict: string; open: number; sample: boolean };
+export type DeskDoc = FloorDoc & { projectId: string; code: string; project: string; at: string; usedBy: string | null };
 
 export type FloorModel = {
   profile: { name: string; sub: string; avatar: string };
@@ -234,7 +236,9 @@ export function buildFloor(ws: Workspace): FloorModel {
         })),
     ].sort((a, b) => a.at.localeCompare(b.at));
 
+    let attempt = 0;
     const sessions: FloorSession[] = raw.map((s) => {
+      if (s.state === "done") attempt += 1;
       const type = s.kind === "review" ? "Report review" : "Presentation practice";
       let note: string;
       if (s.state === "done") note = s.report ? firstSentence(s.report.verdict) : "Finished";
@@ -254,6 +258,10 @@ export function buildFloor(ws: Workspace): FloorModel {
         date: s.state === "live" ? "NOW" : dateLabel(s.at),
         note: s.sample ? `Sample replies · ${note}` : note,
         reportHref,
+        desk:
+          s.state === "done"
+            ? { attempt, kind: s.kind === "review" ? "Report review" : "Presentation", at: s.at, verdict: s.report ? firstSentence(s.report.verdict) : "Finished", open: s.open, sample: s.sample }
+            : undefined,
       };
     });
 
@@ -281,7 +289,7 @@ export function buildFloor(ws: Workspace): FloorModel {
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map((d) => {
         const latest = latestDocs.find((s) => s.documentId === d.id && s.state === "done");
-        return { id: d.id, title: d.title, open: latest?.open ?? 0, href: `/review?document=${encodeURIComponent(d.id)}` };
+        return { id: d.id, title: d.title, open: latest?.open ?? 0, href: `/review?document=${encodeURIComponent(d.id)}`, at: d.createdAt, usedBy: latest ? `Report review · ${dateLabel(latest.at)}` : null };
       });
 
     // Notifications: what still needs looking at. For a report, the comments
@@ -424,12 +432,17 @@ export function buildFloor(ws: Workspace): FloorModel {
     tables: tables.filter((t) => t.seats.some((s) => s.assessorId === a.id)).map((t) => t.code),
   }));
 
-  const deskDocs: DeskDoc[] = tables.flatMap((t) => t.docs.map((d) => ({ ...d, projectId: t.id, code: t.code, project: t.name })));
+  const deskDocs: DeskDoc[] = tables
+    .flatMap((t) => t.docs.map((d) => ({ ...d, projectId: t.id, code: t.code, project: t.name, at: d.at ?? "", usedBy: d.usedBy ?? null })))
+    .sort((a, b) => b.at.localeCompare(a.at));
   const deskReports: DeskReport[] = tables.flatMap((t) =>
     t.sessions
       .filter((s) => s.state === "done")
-      .map((s) => ({ id: s.id, projectId: t.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
-  );
+      .map((s) => ({
+        id: s.id, projectId: t.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref,
+        attempt: s.desk?.attempt ?? 1, kind: s.desk?.kind ?? s.type, at: s.desk?.at ?? "", verdict: s.desk?.verdict ?? s.note, open: s.desk?.open ?? 0, sample: s.desk?.sample ?? false,
+      })),
+  ).sort((a, b) => b.at.localeCompare(a.at));
 
   const liveIdx = tables.findIndex((t) => t.live);
   let initialFocus = liveIdx;
