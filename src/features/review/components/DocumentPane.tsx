@@ -1,20 +1,20 @@
 import type { Assessor, Comment, Document } from "../types";
-import { dominantKind, plural } from "../lib";
+import { dominantSeverity, plural, quoteRuns } from "../lib";
 import { cn } from "../ui/cn";
 import { Label } from "../ui/Label";
 import { AvatarStack } from "../ui/Avatar";
 
 /**
  * The document, with §9 comment anchors: every commented paragraph gets a
- * numbered disc in the margin. An open critique (major) is an orange disc with
+ * numbered disc in the margin. An open major comment is an orange disc with
  * an ink numeral; other open comments are a white disc with a 1.5px ink line.
- * The selected paragraph's words carry the 1.5px ink underline.
+ * The words a comment quotes carry the 1.5px ink underline.
  */
 export function DocumentPane({
   doc,
   openByParagraph,
   openCommentCount,
-  openQuestionCount,
+  openMajorCount,
   assessors,
   selectedParagraphId,
   onParagraphClick,
@@ -23,7 +23,7 @@ export function DocumentPane({
   doc: Document;
   openByParagraph: Map<string, Comment[]>;
   openCommentCount: number;
-  openQuestionCount: number;
+  openMajorCount: number;
   assessors: Map<string, Assessor>;
   selectedParagraphId?: string;
   onParagraphClick: (paragraphId: string) => void;
@@ -32,7 +32,7 @@ export function DocumentPane({
   const meta = [
     plural(doc.paragraphs.filter((p) => p.type === "paragraph").length, "paragraph", "paragraphs"),
     plural(openCommentCount, "comment", "comments"),
-    plural(openQuestionCount, "open question", "open questions"),
+    plural(openMajorCount, "major point", "major points"),
   ].join(" · ");
 
   return (
@@ -44,11 +44,11 @@ export function DocumentPane({
         <span className="flex items-center gap-3" aria-label="Anchor key">
           <span className="flex items-center gap-1.5">
             <span className="size-3 rounded-full bg-orange" />
-            <Label>Critique</Label>
+            <Label>Major</Label>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-3 rounded-full border-line border-ink bg-white" />
-            <Label>Question or praise</Label>
+            <Label>Minor or praise</Label>
           </span>
         </span>
       </div>
@@ -59,7 +59,8 @@ export function DocumentPane({
         <ol className="mt-6 -ml-12 flex flex-col gap-4">
           {doc.paragraphs.map((p) => {
             const open = openByParagraph.get(p.id) ?? [];
-            const kind = dominantKind(open);
+            const kind = dominantSeverity(open);
+            const runs = quoteRuns(p.text, open.map((c) => c.quote ?? ""));
             const commenters = [...new Set(open.map((c) => c.assessorId))]
               .map((id) => assessors.get(id))
               .filter((a): a is Assessor => Boolean(a));
@@ -77,7 +78,7 @@ export function DocumentPane({
                     className={cn(
                       "mt-0.5 flex size-7 items-center justify-center justify-self-center rounded-full font-mono text-label font-medium text-ink",
                       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange",
-                      kind === "critique" ? "bg-orange" : "border-line border-ink bg-white",
+                      kind === "major" ? "bg-orange" : "border-line border-ink bg-white",
                     )}
                   >
                     {p.index}
@@ -90,10 +91,18 @@ export function DocumentPane({
                   className={cn(
                     p.type === "heading" ? "font-display text-h3-lg font-semibold tracking-h3 text-ink" : "text-reading text-grey-900",
                     kind && "cursor-pointer",
-                    selected && "underline decoration-ink decoration-[1.5px] underline-offset-4",
+                    selected && "rounded-row bg-grey-50",
                   )}
                 >
-                  {p.text}
+                  {runs.map((r, i) =>
+                    r.quoted ? (
+                      <span key={i} className="underline decoration-ink decoration-[1.5px] underline-offset-4">
+                        {r.text}
+                      </span>
+                    ) : (
+                      <span key={i}>{r.text}</span>
+                    ),
+                  )}
                 </Text>
                 <span className="flex justify-center pt-0.5">
                   {commenters.length > 0 && <AvatarStack people={commenters} size="sm" />}

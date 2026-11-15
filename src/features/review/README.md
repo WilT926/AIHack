@@ -8,44 +8,28 @@ them with the foundation.
 
 | Route | What it is |
 |---|---|
-| `/projects/new` | 2.4 project setup: template → brief + weak spots → board → start, then upload and a live review |
-| `/review/new` | 2.2 upload a PDF or paste text, preview the numbered paragraphs, then a live review (sample project) |
-| `/review` | 2.1 the review screen on sample data (`fixtures/review-sample.ts`) |
-| `POST /review/api/assessor` | 2.3 one assessor reads the document and returns comments |
-| `POST /review/api/deliberate` | 2.3 the board compares notes: agreements, splits, fix list, likely questions |
+| `/projects/new` | 2.4 project setup: template → brief + weak spots → board → start. Saves the project and board, then upload and a live review (or `/pitch` for the hackathon template) |
+| `/review/new?project=<id>` | 2.2 upload a PDF or paste text, preview the numbered paragraphs, then a live review for that project |
+| `/review?review=<id>` | A saved review, reopened from the data layer without calling the engine |
+| `/review` | The sample review (`fixtures/review-sample.ts`), labelled as sample |
+
+The engine is Lane 1's: `POST /api/engine/assessor` (one per assessor, in parallel) and `POST /api/engine/deliberate` (saves the review). Without `ANTHROPIC_API_KEY` both return labelled sample replies.
 
 ## Running it
 
-```bash
-npm install
-echo "ANTHROPIC_API_KEY=sk-ant-..." > .env.local   # never commit this
-npm run dev
-npm test        # splitter, PDF layout, reply checking, project context
-```
-
-| Variable | Default | Use |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | none | Server only. Without it every assessor shows a clear "no API key" failure. |
-| `PANEL_REVIEW_MODEL` | `claude-haiku-5-5` | Set `claude-opus-5-5` for rehearsal and judging (also turns on the server-side refusal fallback). |
-| `PANEL_REVIEW_EFFORT` | `medium` | `low` … `max`. |
-| `PANEL_ENGINE_MOCK` | off | `1` returns canned `[mock]` feedback with realistic delays, without calling Claude. A document whose title contains "fail" makes the Sceptic fail, to test the retry. |
+See the root README. `npm test` covers the splitter, PDF layout and project helpers.
 
 ## How a live review runs
 
-1. The screen sends one request per board member, all in parallel (`live/useLiveReview.ts`).
-2. Each route call validates the body (zod, size limits), calls Claude with structured output, and checks the reply (`engine/sanitize.ts`): comments on unknown paragraphs, unknown assessors and one-sided splits are dropped.
-3. Comments appear assessor by assessor; a failed assessor gets a Retry.
-4. When everyone has finished or failed, the deliberation runs once.
+1. "Start review" saves the document and a running review (`actions.ts`), so the floor shows the table in session.
+2. The screen sends one request per board member to `/api/engine/assessor`, all in parallel (`live/useLiveReview.ts`). Each seat shows Reading, then Read or Did not finish with Try again.
+3. Comments appear assessor by assessor.
+4. When everyone has finished or failed, `/api/engine/deliberate` runs once and saves the whole review. The address bar then points at `/review?review=<id>`, so a refresh reopens it without calling the engine.
+5. The Feedback report tab is the shared `src/features/feedback/FeedbackReport.tsx`; its actions link back to their paragraphs.
 
-The engine sits behind `reviewAsAssessor` and `deliberate` in `engine/run.ts`, so Lane 1's engine (step 1.2) can replace it without touching the screen.
+## Temporary stand-ins
 
-## Temporary stand-ins (swap when the shared versions land)
-
-| Here | Replace with |
-|---|---|
-| `src/features/review/types.ts`, `engine/schemas.ts`, `projects/types.ts` (the Lane 2 brief's data shapes) | `src/lib/schemas` (Lane 1's contract: `severity`, `suggestion`, one `paragraphId` per comment, `disagreements` with views) |
-| `src/features/review/engine/config.ts` | `models.review` in `src/config` |
-| Preset assessors in `fixtures/review-sample.ts` | Seeded assessors via `src/lib/data` |
+`ui/` still holds thin wrappers that are not direct swaps for `src/components/ui` (different props or variants): Avatar (name and ring), Card (dark, live, failed variants), Label (inverse tone), Tabs (chip style), TextInput and TextArea (value-based onChange, no visible label), Pill, TextButton, SelectCard, FileDrop, ExitBubble.
 
 ## Design
 
@@ -58,7 +42,6 @@ Follows `design/DESIGN_SYSTEM.md` and uses the shared foundation directly:
 
 ## Not done yet
 
-- Nothing is saved (no database yet): reopening a review re-runs it; refreshing project setup loses it.
 - Mark-scheme upload and editing, and the second run ("Run again", hidden until then): step 2.5.
 - The pitch template goes to report review; it should also offer Lane 1's `/pitch` once that exists.
 

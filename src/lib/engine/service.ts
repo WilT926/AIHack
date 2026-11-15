@@ -49,6 +49,8 @@ export async function reviewWithAssessor(input: {
   if (!assessor) throw new EngineError("That assessor does not exist.", "invalid_reply", false);
 
   if (source === "sample") {
+    // A short pause so the Reading state is visible; sample replies are instant otherwise.
+    await new Promise((r) => setTimeout(r, engine.sampleDelayMs * (1 + Math.random())));
     const checked = checkComments(sampleAssessorReply(context, assessor, assessor.id.length), context.document, assessor.id);
     return { assessorId: assessor.id, status: "done", comments: checked.value, dropped: checked.dropped, angles: [], replySource: "sample" };
   }

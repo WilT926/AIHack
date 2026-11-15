@@ -21,6 +21,8 @@ export const engine = {
    * replySource "sample" and labelled on screen) so the screens still work.
    */
   sampleRepliesWithoutKey: true,
+  /** Sample replies wait this long (plus up to the same again), so the Reading state can be seen. */
+  sampleDelayMs: 900,
 } as const;
 
 export const voice = {

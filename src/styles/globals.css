@@ -4,6 +4,7 @@
 @import "./ui.css";
 @import "./home.css";
 @import "./pitch.css";
+@import "./feedback.css";
 
 html,
 body {

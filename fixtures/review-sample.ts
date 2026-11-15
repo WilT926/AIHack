@@ -1,69 +1,10 @@
-// Sample data for the review screen (Lane 2, step 2.1).
-// Invented, publishable content only. Never the real thesis.
-import type { Assessor, ReviewView } from "../src/features/review/types";
-
-export const presetAssessors: Assessor[] = [
-  {
-    id: "module-lead",
-    name: "Prof. Alan Marsh",
-    role: "Module Lead",
-    field: "Biomedical engineering",
-    harshness: 3,
-    focus: ["mark scheme", "handbook requirements"],
-    personality: "Marks against the mark scheme and your notes.",
-    avatar: "avatar-006",
-  },
-  {
-    id: "methodologist",
-    name: "Dr Raj Patel",
-    role: "Methodologist",
-    field: "Experimental design and statistics",
-    harshness: 4,
-    focus: ["sample size", "controls", "analysis"],
-    personality: "\u201cHow did you actually find this?\u201d Rigour first.",
-    avatar: "avatar-012",
-  },
-  {
-    id: "literature-hawk",
-    name: "Dr Amara Osei",
-    role: "Literature Hawk",
-    field: "Related work in compression therapy",
-    harshness: 3,
-    focus: ["citations", "novelty"],
-    personality: "Related work and novelty. Knows what you missed.",
-    avatar: "avatar-008",
-  },
-  {
-    id: "communicator",
-    name: "Sophie Lang",
-    role: "Communicator",
-    field: "Scientific writing",
-    harshness: 2,
-    focus: ["structure", "flow", "clarity"],
-    personality: "Structure, flow and clarity. Can a reader follow it?",
-    avatar: "avatar-014",
-  },
-  {
-    id: "outsider",
-    name: "Marcus Reid",
-    role: "Outsider",
-    field: "Medical device industry",
-    harshness: 3,
-    focus: ["cost", "adoption", "market"],
-    personality: "The industry view. Who pays, and why would they care?",
-    avatar: "avatar-016",
-  },
-  {
-    id: "sceptic",
-    name: "Dr Nina Volkova",
-    role: "Sceptic",
-    field: "Clinical research methods",
-    harshness: 5,
-    focus: ["weakest claim", "bias"],
-    personality: "Goes straight for your weakest claim and pushes.",
-    avatar: "avatar-004",
-  },
-];
+// Sample review for the review screen (Lane 2, step 2.1), in the shared data
+// shapes. Invented, publishable content only, never the real thesis. Marked
+// replySource "sample": none of it came from Claude.
+import type { Comment, Document, FeedbackReport, Review } from "../src/lib/schemas";
+import type { ReviewView } from "../src/features/review/types";
+import { toViewDocument } from "../src/features/review/lib";
+import { sampleAssessors } from "./home-sample";
 
 const paragraphTexts = [
   "We designed a graded compression wrap and tested it with twelve participants across two clinics. Each participant wore three wrap variants for one week each, in a randomised order.",
@@ -82,123 +23,98 @@ const paragraphTexts = [
   "All code and anonymised sensor data will be released with the thesis so the analysis can be repeated.",
 ];
 
+export const sampleReviewDocument: Document = {
+  id: "doc-sample-ch3",
+  projectId: "proj-mt",
+  title: "Methods",
+  createdAt: "2026-11-14T10:00:00Z",
+  paragraphs: paragraphTexts.map((text, i) => ({ id: `p${i + 1}`, type: "paragraph" as const, text })),
+};
+
+const comment = (c: Omit<Comment, "done" | "category"> & { category?: string }): Comment => ({ category: "General", done: false, ...c });
+
+const comments: Comment[] = [
+  comment({ id: "c1", assessorId: "methodologist", paragraphId: "p2", quote: "Twelve participants", category: "Sample size", severity: "major", text: "Twelve participants with three variants each is thin. Where is your power calculation? Without it I can't tell whether a null result means anything.", suggestion: "Add a power calculation, or frame the study as a feasibility study." }),
+  comment({ id: "c2", assessorId: "literature-hawk", paragraphId: "p4", quote: "following earlier compression studies", category: "Citation", severity: "minor", text: "Which compression studies set the two-point threshold? Cite them here. If they used a different scale, say how you converted it.", suggestion: "Cite the source of the two-point threshold." }),
+  comment({ id: "c3", assessorId: "module-lead", paragraphId: "p5", quote: "a single filament batch", category: "Design", severity: "praise", text: "Good: controlling for print batch is exactly what the handbook asks for. Say this in the abstract too.", suggestion: "" }),
+  comment({ id: "c4", assessorId: "sceptic", paragraphId: "p2", quote: "recruited through clinic referral", category: "Bias", severity: "major", text: "Clinic referral means the clinicians picked who took part. How do you rule out them choosing patients who'd do well?", suggestion: "Say how referral bias was limited, or name it as a limitation." }),
+  comment({ id: "c5", assessorId: "outsider", paragraphId: "p11", quote: null, category: "Adoption", severity: "minor", text: "Putting-on time is a good proxy. What would a clinic pay for this wrap compared with a standard four-layer bandage?", suggestion: "Add one line on cost against current practice." }),
+  comment({ id: "c6", assessorId: "module-lead", paragraphId: "p13", quote: "departmental ethics panel", category: "Handbook", severity: "major", text: "Give the ethics approval reference and date. The handbook makes this a required item in the methods chapter.", suggestion: "Add the approval reference and date." }),
+];
+
+const report: FeedbackReport = {
+  kind: "report",
+  verdict: "A careful methods chapter with one real gap: the sample size is never justified, and referral bias is not addressed.",
+  criteria: [
+    { criterion: "Methods", rating: "adequate", evidence: "Clear design and controls; sample size and recruitment need justifying (¶2)." },
+    { criterion: "Analysis", rating: "strong", evidence: "Appropriate test with correction (¶6)." },
+    { criterion: "Ethics and handbook items", rating: "weak", evidence: "Approval reference missing (¶13)." },
+  ],
+  strengths: ["Controlling for print batch (¶5).", "Blinded skin grading (¶9).", "Open code and data (¶14)."],
+  actions: [
+    { id: "a1", what: "Add a power calculation and justify twelve participants as a feasibility study.", why: "Every marker will ask why twelve.", raisedBy: ["methodologist"], evidence: { paragraphIds: ["p2"], quote: null }, effort: "moderate", done: false },
+    { id: "a2", what: "Explain how referral bias was limited.", why: "Otherwise the results may reflect who was chosen.", raisedBy: ["sceptic"], evidence: { paragraphIds: ["p2"], quote: null }, effort: "quick", done: false },
+    { id: "a3", what: "Give the ethics approval reference and date.", why: "A required handbook item.", raisedBy: ["module-lead"], evidence: { paragraphIds: ["p13"], quote: null }, effort: "quick", done: false },
+    { id: "a4", what: "Cite the source of the two-point comfort threshold.", why: "Unsupported thresholds cost marks.", raisedBy: ["literature-hawk"], evidence: { paragraphIds: ["p4"], quote: null }, effort: "quick", done: false },
+  ],
+  assessorVerdicts: [
+    { assessorId: "module-lead", line: "Solid, but fix the handbook items before anything else." },
+    { assessorId: "methodologist", line: "Justify the numbers." },
+    { assessorId: "literature-hawk", line: "One citation away from fine." },
+    { assessorId: "sceptic", line: "Tell me why referral did not pick the winners." },
+    { assessorId: "outsider", line: "Say what a clinic would pay." },
+  ],
+  escalations: [{ reason: "Whether the ethics approval covers home use is outside the board's fields.", whoToAsk: "Your supervisor or the ethics panel" }],
+  sinceLastTime: null,
+  likelyQuestions: [
+    { assessorId: "methodologist", question: "If you ran this again, how many participants would you need, and why?" },
+    { assessorId: "sceptic", question: "What stops the clinicians choosing patients who'd do well?" },
+    { assessorId: "literature-hawk", question: "Which study is your two-point threshold from?" },
+  ],
+  delivery: null,
+  questionReview: null,
+};
+
+const boardIds = ["module-lead", "methodologist", "literature-hawk", "sceptic", "outsider"];
+
+export const sampleReviewRecord: Review = {
+  id: "rev-sample",
+  projectId: "proj-mt",
+  documentId: sampleReviewDocument.id,
+  createdAt: "2026-11-14T10:05:00Z",
+  status: "done",
+  assessorResults: boardIds.map((id) => ({ assessorId: id, status: "done" as const, comments: comments.filter((c) => c.assessorId === id) })),
+  deliberation: {
+    summary: "The board agrees the design is sound; it splits on whether twelve participants is enough.",
+    agreements: ["Controlling for print batch (¶5) is a real strength and should be kept.", "The two-point comfort threshold (¶4) needs a citation before submission."],
+    disagreements: [
+      {
+        topic: "Is twelve participants enough?",
+        views: [
+          { assessorId: "methodologist", view: "Too few to support a conclusion without a power calculation." },
+          { assessorId: "module-lead", view: "Enough for a feasibility study if it is framed as one." },
+          { assessorId: "outsider", view: "Fine for a first study; say what a full trial would need." },
+        ],
+        advice: "Keep the paragraph. Add a power calculation and one line on why twelve suits a feasibility study.",
+      },
+    ],
+  },
+  report,
+  replySource: "sample",
+};
+
+/** The sample review, ready for the screen. */
 export const sampleReview: ReviewView = {
-  project: { id: "proj-masters", name: "Master's thesis" },
-  board: {
-    id: "board-early-gateway",
-    name: "Early Gateway",
-    assessorIds: ["module-lead", "methodologist", "literature-hawk", "sceptic", "outsider"],
-  },
-  assessors: presetAssessors,
-  run: {
-    id: "run-3",
-    number: 3,
-    uploadedAt: "2026-11-14T10:00:00Z",
-    document: {
-      id: "doc-ch3",
-      title: "Methods",
-      chapter: "Chapter 3",
-      version: 3,
-      wordCount: 2840,
-      paragraphs: paragraphTexts.map((text, i) => ({
-        id: `p${i + 1}`,
-        index: i + 1,
-        type: "paragraph",
-        text,
-      })),
-    },
-    comments: [
-      {
-        id: "c1",
-        assessorId: "methodologist",
-        paragraphIds: ["p2"],
-        kind: "critique",
-        text: "Twelve participants with three variants each is thin. Where is your power calculation? Without it I can't tell whether a null result means anything.",
-      },
-      {
-        id: "c2",
-        assessorId: "literature-hawk",
-        paragraphIds: ["p4"],
-        kind: "question",
-        text: "Which compression studies set the two-point threshold? Cite them here. If they used a different scale, say how you converted it.",
-      },
-      {
-        id: "c3",
-        assessorId: "module-lead",
-        paragraphIds: ["p5"],
-        kind: "praise",
-        text: "Good: controlling for print batch is exactly what the handbook asks for. Say this in the abstract too.",
-      },
-      {
-        id: "c4",
-        assessorId: "sceptic",
-        paragraphIds: ["p2"],
-        kind: "critique",
-        text: "Clinic referral means the clinicians picked who took part. How do you rule out them choosing patients who'd do well?",
-      },
-      {
-        id: "c5",
-        assessorId: "outsider",
-        paragraphIds: ["p11"],
-        kind: "question",
-        text: "Putting-on time is a good proxy. What would a clinic pay for this wrap compared with a standard four-layer bandage?",
-      },
-      {
-        id: "c6",
-        assessorId: "module-lead",
-        paragraphIds: ["p13"],
-        kind: "critique",
-        text: "Give the ethics approval reference and date. The handbook makes this a required item in the methods chapter.",
-      },
-    ],
-    deliberation: {
-      seconds: 40,
-      agreements: [
-        "Controlling for print batch (¶5) is a real strength and should be kept.",
-        "The two-point comfort threshold (¶4) needs a citation before submission.",
-      ],
-      splits: [
-        {
-          paragraphIds: ["p2"],
-          topic: "is twelve participants enough?",
-          approve: ["module-lead", "literature-hawk", "outsider"],
-          object: ["methodologist"],
-          advice:
-            "Keep the paragraph. Add a power calculation and one line on why twelve suits a feasibility study. That satisfies Dr Patel without losing the others.",
-        },
-      ],
-    },
-    fixList: [
-      {
-        rank: 1,
-        text: "Add a power calculation and justify n = 12 as a feasibility study.",
-        paragraphIds: ["p2"],
-        raisedBy: ["methodologist"],
-      },
-      {
-        rank: 2,
-        text: "Explain how referral bias was limited.",
-        paragraphIds: ["p2"],
-        raisedBy: ["sceptic"],
-      },
-      {
-        rank: 3,
-        text: "Cite the source of the two-point comfort threshold.",
-        paragraphIds: ["p4"],
-        raisedBy: ["literature-hawk"],
-      },
-    ],
-    questions: [
-      { assessorId: "methodologist", text: "If you ran this again, how many participants would you need, and why?" },
-      { assessorId: "sceptic", text: "What stops the clinicians choosing patients who'd do well?" },
-      { assessorId: "literature-hawk", text: "Which study is your two-point threshold from?" },
-      { assessorId: "module-lead", text: "How does this method meet the module's ethics requirements?" },
-      { assessorId: "outsider", text: "Could a clinic actually afford to use this wrap?" },
-    ],
-  },
-  live: {
-    status: "reviewing",
-    doneAssessorIds: ["module-lead", "methodologist", "literature-hawk", "outsider"],
-    reading: [{ assessorId: "sceptic", paragraphId: "p5" }],
+  project: { id: "proj-mt", name: "Master's Thesis" },
+  board: { id: "board-sample", name: "Early Gateway", assessorIds: boardIds },
+  assessors: sampleAssessors,
+  document: toViewDocument(sampleReviewDocument, { chapter: "Chapter 3", version: 3 }),
+  review: {
+    id: null,
+    createdAt: sampleReviewRecord.createdAt,
+    comments,
+    deliberation: sampleReviewRecord.deliberation ?? null,
+    report,
+    replySource: "sample",
   },
 };

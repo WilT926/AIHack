@@ -1,10 +1,9 @@
 import type { Assessor, ReviewView } from "../types";
 import { formatNumber, formatShortDate, shortChapter } from "../lib";
-import { Logo } from "@/components/ui";
+import { Button, Logo } from "@/components/ui";
 import { Label } from "../ui/Label";
 import { Pill } from "../ui/Pill";
 import { AvatarStack } from "../ui/Avatar";
-import { Button } from "../ui/Button";
 
 function livePillText(view: ReviewView): string | undefined {
   const { live, board } = view;
@@ -27,12 +26,10 @@ export function TopBar({
   onUpload?: () => void;
   onRunAgain?: () => void;
 }) {
-  const { project, run, live } = view;
-  const doc = run.document;
-  const crumbs = [project.name, [doc.chapter && shortChapter(doc.chapter), doc.title].filter(Boolean).join(" "), `Run ${run.number}`];
+  const { project, document: doc, review, live } = view;
+  const crumbs = [project.name, [doc.chapter && shortChapter(doc.chapter), doc.title].filter(Boolean).join(" ")];
   const meta = [
-    `v${doc.version}`,
-    run.uploadedAt && `uploaded ${formatShortDate(run.uploadedAt)}`,
+    review.createdAt && `reviewed ${formatShortDate(review.createdAt)}`,
     `${formatNumber(doc.wordCount)} words`,
   ].filter(Boolean);
   const pill = livePillText(view);
@@ -58,14 +55,15 @@ export function TopBar({
       )}
 
       <div className="ml-auto flex items-center gap-3">
+        {review.replySource === "sample" && <Label tone="accent">Sample replies</Label>}
         <AvatarStack
           people={boardMembers}
           size="md"
           ringFor={(id) => (live?.reading?.some((r) => r.assessorId === id) ? "accent" : "none")}
         />
         <div className="w-3" />
-        <Button variant="outline" onClick={onUpload}>
-          Upload v{doc.version + 1}
+        <Button variant="secondary" onClick={onUpload}>
+          Upload a new version
         </Button>
         {/* Switched off until step 2.5 (second run) gives it something to do. */}
         {onRunAgain && <Button onClick={onRunAgain}>Run again</Button>}

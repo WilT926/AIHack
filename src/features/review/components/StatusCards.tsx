@@ -3,7 +3,7 @@ import { cn } from "../ui/cn";
 import { Card } from "../ui/Card";
 import { Avatar } from "../ui/Avatar";
 import { Label } from "../ui/Label";
-import { ReadingDots } from "../ui/ReadingDots";
+import { Spinner } from "@/components/ui";
 
 type SeatState = "read" | "reading" | "failed";
 
@@ -13,14 +13,7 @@ function Seat({ assessor, state, onRetry }: { assessor: Assessor; state: SeatSta
     <span className="flex w-24 flex-col items-center gap-1 text-center">
       <Avatar avatar={assessor.avatar} name={assessor.name} size="xl" className={cn(state === "failed" && "opacity-40")} />
       <span className="text-small font-semibold text-ink">{assessor.name.replace(/^(Prof\.|Dr)\s+/, "")}</span>
-      {state === "reading" && (
-        <span className="flex items-center gap-1.5 text-ink">
-          <Label tone="ink" size="sm">
-            Reading
-          </Label>
-          <ReadingDots />
-        </span>
-      )}
+      {state === "reading" && <Spinner label="Reading" />}
       {state === "read" && (
         <Label tone="ink" size="sm">
           ✓ Read

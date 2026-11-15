@@ -126,10 +126,3 @@ export async function endQandA(id: string): Promise<Result<PitchSession>> {
   }
 }
 
-/** Tick or untick an action in this session's feedback report. */
-export async function setPitchActionDone(id: string, actionId: string, done: boolean): Promise<void> {
-  const s = await pitchSessions.get(sessionId.parse(id));
-  if (!s?.report) return;
-  const aid = z.string().min(1).max(20).parse(actionId);
-  await pitchSessions.save({ ...s, report: { ...s.report, actions: s.report.actions.map((a) => (a.id === aid ? { ...a, done: !!done } : a)) } });
-}

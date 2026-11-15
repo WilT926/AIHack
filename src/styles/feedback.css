@@ -1,0 +1,56 @@
+/*
+ * Feedback report (DESIGN_SYSTEM §9), shared by report review and
+ * presentation practice. A container query lets the same report sit in the
+ * review screen's rail or fill a page after a pitch. Class prefix: fb-.
+ */
+.fb-report {
+  container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-8);
+  border: var(--line); border-radius: 28px; padding: var(--space-8); background: var(--paper); color: var(--ink);
+}
+.fb-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.fb-section { display: flex; flex-direction: column; gap: var(--space-3); }
+.fb-h { margin: 0; font: var(--text-h3-lg); letter-spacing: var(--tracking-h3); }
+.fb-verdict { margin: 0; font: 600 26px/1.15 var(--font-display); letter-spacing: var(--tracking-h2); }
+.fb-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-3); }
+.fb-lines li { display: flex; align-items: center; gap: var(--space-3); font: var(--text-body); }
+.fb-quiet { color: var(--grey-700); font: var(--text-body); }
+.fb-p { margin: 0; font: var(--text-body); color: var(--grey-900); }
+.fb-plain li { font: var(--text-body); }
+
+.fb-crit { display: grid; grid-template-columns: minmax(120px, 220px) 60px 1fr; gap: var(--space-3); align-items: baseline; font: var(--text-body); }
+.fb-crit__name { font-weight: 600; }
+
+.fb-actions { gap: 0; }
+.fb-action { display: grid; grid-template-columns: 28px 1fr 28px; gap: var(--space-3); align-items: start; padding: var(--space-3) 0; border-top: var(--line-width) solid var(--grey-100); }
+.fb-action[data-done="true"] .fb-action__body { opacity: 0.5; }
+.fb-action__num { font: 600 13px/1.6 var(--font-mono); color: var(--grey-500); }
+.fb-action__body { display: flex; flex-direction: column; gap: var(--space-1); font: var(--text-body); }
+.fb-action__body b { font-weight: 600; }
+.fb-action__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1-5); margin-top: var(--space-1); }
+.fb-quote { font: var(--text-label); color: var(--grey-700); }
+.fb-para {
+  font: var(--text-label-sm); padding: 3px 8px; border-radius: var(--radius-pill); border: var(--line); background: var(--paper);
+  color: var(--ink); cursor: pointer;
+}
+span.fb-para { cursor: default; }
+.fb-para:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.fb-tick { width: 24px; height: 24px; border-radius: var(--radius-round); border: var(--line); background: var(--paper); cursor: pointer; padding: 0; }
+.fb-tick[aria-pressed="true"] { background: var(--ink); box-shadow: inset 0 0 0 4px var(--paper); }
+.fb-tick:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.fb-ask { display: flex; gap: var(--space-3); align-items: flex-start; }
+.fb-ask__body { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-start; }
+.fb-bubble { padding: 10px 16px; border: var(--line); border-radius: var(--radius-card-sm); font: var(--text-body); }
+
+.fb-qa { display: flex; flex-direction: column; gap: var(--space-1-5); }
+.fb-qa__head { display: flex; align-items: center; gap: var(--space-2); font: var(--text-body); }
+.fb-human { border: var(--line); border-radius: var(--radius-card-sm); padding: var(--space-5-5); display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* In a narrow rail: tighter padding, criteria stack. */
+@container (max-width: 560px) {
+  .fb-report { gap: var(--space-6); }
+  .fb-crit { grid-template-columns: 1fr auto; }
+  .fb-crit .fb-quiet { grid-column: 1 / -1; }
+  .fb-verdict { font-size: 22px; }
+}
+.fb-report--flush { border: none; border-radius: 0; padding: 0; }

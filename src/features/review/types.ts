@@ -1,88 +1,56 @@
-// TEMPORARY (Lane 2): data shapes for the review screen, taken from the Lane 2
-// brief (section 5). Lane 1 owns the shared contract in src/lib/schemas; when
-// it lands, re-export from there and adapt the few extra fields marked below.
+// The review screen's view model, built on the shared data shapes in
+// src/lib/schemas (comments, deliberation and the feedback report are the
+// shared ones). The only additions are what the screen derives: paragraph
+// numbers and a word count.
+import type {
+  Assessor as SharedAssessor,
+  Comment as SharedComment,
+  Deliberation as SharedDeliberation,
+  FeedbackReport,
+  Paragraph as SharedParagraph,
+  ReplySource,
+  Severity,
+} from "@/lib/schemas";
 
-export type ParagraphType = "paragraph" | "heading";
+export type Assessor = SharedAssessor;
+export type Comment = SharedComment;
+export type Deliberation = SharedDeliberation;
+export type CommentSeverity = Severity;
 
-export type Paragraph = {
-  id: string; // "p1", "p2", ... comments reference these
-  index: number; // 1-based, shown as ¶1, ¶2
-  type: ParagraphType;
-  text: string;
-};
+/** A paragraph with its 1-based position, shown as ¶1, ¶2. */
+export type Paragraph = SharedParagraph & { index: number };
 
 export type Document = {
   id: string;
   title: string;
-  chapter?: string; // extra: label above the title, e.g. "Chapter 3"
+  chapter?: string;
   version: number;
   paragraphs: Paragraph[];
   wordCount: number;
 };
 
-export type Harshness = 1 | 2 | 3 | 4 | 5;
-
-export type Assessor = {
-  id: string;
-  name: string;
-  role: string;
-  field: string;
-  harshness: Harshness;
-  focus: string[];
-  personality?: string;
-  notes?: string[];
-  avatar: string; // key for the line-drawn avatar
-};
-
 export type Board = { id: string; name: string; assessorIds: string[] };
-
-export type CommentKind = "critique" | "question" | "praise";
-
-export type Comment = {
-  id: string;
-  assessorId: string;
-  paragraphIds: string[];
-  kind: CommentKind;
-  text: string;
-  criterionId?: string;
-  resolved?: boolean;
-};
-
-export type Split = {
-  paragraphIds: string[];
-  topic: string;
-  approve: string[]; // assessor ids
-  object: string[]; // assessor ids
-  advice: string;
-};
-
-export type Deliberation = { seconds: number; agreements: string[]; splits: Split[] };
-
-export type FixItem = { rank: number; text: string; paragraphIds: string[]; raisedBy: string[] };
-
-export type Question = { assessorId: string; text: string };
-
-export type Run = {
-  id: string;
-  number: number;
-  uploadedAt?: string; // extra: ISO date the document version was uploaded
-  document: Document;
-  comments: Comment[];
-  deliberation?: Deliberation;
-  fixList: FixItem[];
-  questions: Question[];
-  sinceLastTime?: { improved: string[]; stillWeak: string[]; ignored: string[] };
-};
 
 /** Live progress of a run, driven by useLiveReview (step 2.3). */
 export type LiveState = {
   status: "reviewing" | "deliberating" | "done";
   doneAssessorIds: string[];
-  /** Assessors still reading; paragraphId when the engine reports where they are. */
-  reading?: { assessorId: string; paragraphId?: string }[];
+  reading?: { assessorId: string }[];
   failed?: { assessorId: string; message: string }[];
   /** Set when the deliberation call failed. */
   deliberationError?: string;
+};
+
+/** What the board has said so far on this document. */
+export type ReviewResult = {
+  /** Saved review id, once there is one. */
+  id: string | null;
+  createdAt?: string;
+  comments: Comment[];
+  deliberation: Deliberation | null;
+  report: FeedbackReport | null;
+  /** "sample" when the replies were generated without Claude: the screen must say so. */
+  replySource: ReplySource;
 };
 
 /** Everything the review screen needs, in one object. */
@@ -90,6 +58,7 @@ export type ReviewView = {
   project: { id: string; name: string };
   board: Board;
   assessors: Assessor[];
-  run: Run;
+  document: Document;
+  review: ReviewResult;
   live?: LiveState;
 };

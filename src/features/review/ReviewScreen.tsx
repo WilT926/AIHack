@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Assessor, CommentKind, ReviewView } from "./types";
+import type { Assessor, CommentSeverity, ReviewView } from "./types";
 import { commentsByParagraph, indexAssessors, paragraphLabel, paragraphOrder, sortByParagraph } from "./lib";
 import { Tabs, type TabItem } from "./ui/Tabs";
 import { TopBar } from "./components/TopBar";
 import { DocumentPane } from "./components/DocumentPane";
 import { CommentCard } from "./components/CommentCard";
-import { ConsensusCard, DeliberationCard } from "./components/DeliberationCard";
+import { BoardDiscussion } from "./components/DeliberationCard";
 import { BoardLiveCard, EmptyState, FailedCard } from "./components/StatusCards";
-import { FeedbackTab } from "./components/RailTabs";
+import { FeedbackReport } from "@/features/feedback/FeedbackReport";
 import { ExitBubble } from "./ui/ExitBubble";
 import { CommentFilters } from "./components/CommentFilters";
 
@@ -23,24 +23,30 @@ export function ReviewScreen({
   onUpload,
   onRetryAssessor,
   onRetryDeliberation,
+  onCommentDone,
+  onActionDone,
 }: {
   view: ReviewView;
   onUpload?: () => void;
   onRetryAssessor?: (assessorId: string) => void;
   onRetryDeliberation?: () => void;
+  /** Saves "Mark done" on a comment (saved reviews only). */
+  onCommentDone?: (commentId: string) => void;
+  /** Saves a tick on a feedback report action (saved reviews only). */
+  onActionDone?: (actionId: string, done: boolean) => void;
 }) {
   const router = useRouter();
-  const { run, board, live } = view;
-  const doc = run.document;
+  const { review, board, live } = view;
+  const doc = view.document;
 
   const [tab, setTab] = useState<RailTab>("comments");
   const [resolved, setResolved] = useState<Set<string>>(
-    () => new Set(run.comments.filter((c) => c.resolved).map((c) => c.id)),
+    () => new Set(review.comments.filter((c) => c.done).map((c) => c.id)),
   );
   const [selectedParagraphId, setSelectedParagraphId] = useState<string>();
   const [selectedCommentIds, setSelectedCommentIds] = useState<Set<string>>(() => new Set());
   const [scrollRequest, setScrollRequest] = useState<ScrollRequest>();
-  const [kindFilter, setKindFilter] = useState<CommentKind | "all">("all");
+  const [kindFilter, setKindFilter] = useState<CommentSeverity | "all">("all");
   const [assessorFilter, setAssessorFilter] = useState<Set<string>>(() => new Set());
 
   const paragraphEls = useRef(new Map<string, HTMLElement>());
@@ -53,8 +59,8 @@ export function ReviewScreen({
   );
   const order = useMemo(() => paragraphOrder(doc), [doc]);
   const openComments = useMemo(
-    () => sortByParagraph(run.comments.filter((c) => !resolved.has(c.id)), order),
-    [run.comments, resolved, order],
+    () => sortByParagraph(review.comments.filter((c) => !resolved.has(c.id)), order),
+    [review.comments, resolved, order],
   );
   const openByParagraph = useMemo(() => commentsByParagraph(openComments), [openComments]);
   // Filters narrow both the rail and the highlights in the document.
@@ -62,7 +68,7 @@ export function ReviewScreen({
   const visibleComments = useMemo(
     () =>
       openComments.filter(
-        (c) => (kindFilter === "all" || c.kind === kindFilter) && (assessorFilter.size === 0 || assessorFilter.has(c.assessorId)),
+        (c) => (kindFilter === "all" || c.severity === kindFilter) && (assessorFilter.size === 0 || assessorFilter.has(c.assessorId)),
       ),
     [openComments, kindFilter, assessorFilter],
   );
@@ -71,7 +77,7 @@ export function ReviewScreen({
     () => boardMembers.filter((a) => openComments.some((c) => c.assessorId === a.id)),
     [boardMembers, openComments],
   );
-  const openQuestionCount = openComments.filter((c) => c.kind === "question").length;
+  const openMajorCount = openComments.filter((c) => c.severity === "major").length;
 
   // Scroll after the DOM has updated (e.g. after switching back to the Comments tab).
   useEffect(() => {
@@ -112,17 +118,18 @@ export function ReviewScreen({
 
   const resolve = (commentId: string) => {
     setResolved((prev) => new Set(prev).add(commentId));
+    onCommentDone?.(commentId);
     setSelectedCommentIds((prev) => {
       const next = new Set(prev);
       next.delete(commentId);
       return next;
     });
     // Drop the paragraph selection if nothing is left open on it.
-    const comment = run.comments.find((c) => c.id === commentId);
+    const comment = review.comments.find((c) => c.id === commentId);
     if (
       comment &&
       selectedParagraphId &&
-      comment.paragraphIds.includes(selectedParagraphId) &&
+      comment.paragraphId === selectedParagraphId &&
       (openByParagraph.get(selectedParagraphId) ?? []).every((c) => c.id === commentId)
     ) {
       setSelectedParagraphId(undefined);
@@ -134,7 +141,6 @@ export function ReviewScreen({
     { id: "report", label: "Feedback report" },
   ];
 
-  const headlineSplit = run.deliberation?.splits[0];
   const isLive = live && (live.status === "reviewing" || (live.status === "deliberating" && !live.deliberationError));
   const stillReading = (live?.reading ?? []).length;
   const failed = (live?.failed ?? [])
@@ -155,7 +161,7 @@ export function ReviewScreen({
             doc={doc}
             openByParagraph={visibleByParagraph}
             openCommentCount={openComments.length}
-            openQuestionCount={openQuestionCount}
+            openMajorCount={openMajorCount}
             assessors={assessors}
             selectedParagraphId={selectedParagraphId}
             onParagraphClick={showCommentsFor}
@@ -166,7 +172,7 @@ export function ReviewScreen({
         <aside className="flex w-full max-w-rail shrink-0 flex-col pt-6" aria-label="Board feedback">
           <Tabs items={tabs} active={tab} onChange={setTab} />
 
-          <div className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
+          <div key={tab} className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
             {tab === "comments" && (
               <div className="flex flex-col gap-3">
                 {isLive && live && (live.status === "reviewing" || live.status === "deliberating") && (
@@ -179,24 +185,10 @@ export function ReviewScreen({
                   />
                 )}
 
-                {headlineSplit && (
+                {review.deliberation && (
                   <div className="mb-1">
-                    <DeliberationCard
-                      split={headlineSplit}
-                      seconds={run.deliberation?.seconds}
-                      paragraphLabel={headlineSplit.paragraphIds[0] ? paragraphLabel(doc, headlineSplit.paragraphIds[0]) : ""}
-                      assessors={assessors}
-                    />
+                    <BoardDiscussion deliberation={review.deliberation} assessors={assessors} />
                   </div>
-                )}
-
-                {run.deliberation && !headlineSplit && (
-                  <ConsensusCard
-                    seconds={run.deliberation.seconds}
-                    agreements={run.deliberation.agreements}
-                    fixCount={run.fixList.length}
-                    onShowFixes={() => setTab("report")}
-                  />
                 )}
 
                 {!isLive && failed.map((f) => (
@@ -235,10 +227,9 @@ export function ReviewScreen({
                     ref={(el) => registerComment(c.id, el)}
                     comment={c}
                     assessor={assessors.get(c.assessorId)}
-                    paragraphLabels={c.paragraphIds.map((id) => ({ id, label: paragraphLabel(doc, id) }))}
+                    paragraphLabel={paragraphLabel(doc, c.paragraphId)}
                     selected={selectedCommentIds.has(c.id)}
-                    onShowInText={() => c.paragraphIds[0] && showParagraph(c.paragraphIds[0], c.id)}
-                    onShowParagraph={(pid) => showParagraph(pid, c.id)}
+                    onShowInText={() => showParagraph(c.paragraphId, c.id)}
                     onDone={() => resolve(c.id)}
                   />
                 ))}
@@ -254,9 +245,9 @@ export function ReviewScreen({
 
                 {openComments.length === 0 && stillReading === 0 && failed.length === 0 && (
                   <EmptyState
-                    title={run.comments.length > 0 ? "Everything is marked done" : "No comments yet"}
+                    title={review.comments.length > 0 ? "Everything is marked done" : "No comments yet"}
                     body={
-                      run.comments.length > 0
+                      review.comments.length > 0
                         ? "Upload a new version when you're ready for another run."
                         : "Comments appear here as each assessor finishes reading."
                     }
@@ -265,17 +256,22 @@ export function ReviewScreen({
               </div>
             )}
 
-            {tab === "report" && (
-              <FeedbackTab
-                deliberation={run.deliberation}
-                fixList={run.fixList}
-                questions={run.questions}
-                doc={doc}
-                boardOrder={board.assessorIds}
-                assessors={assessors}
-                onShowParagraph={(pid) => showParagraph(pid)}
-              />
-            )}
+            {tab === "report" &&
+              (review.report ? (
+                <FeedbackReport
+                  report={review.report}
+                  people={view.assessors}
+                  sample={review.replySource === "sample"}
+                  paragraphLabel={(pid) => paragraphLabel(doc, pid)}
+                  onShowParagraph={(pid) => showParagraph(pid)}
+                  onToggleAction={onActionDone}
+                />
+              ) : (
+                <EmptyState
+                  title="No feedback report yet"
+                  body="It is written once every assessor has read and the board has compared notes."
+                />
+              ))}
           </div>
         </aside>
       </main>

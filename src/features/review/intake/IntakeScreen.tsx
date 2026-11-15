@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { Document, ReviewView } from "../types";
+import type { Document } from "../types";
 import { buildDocument, titleFromFilename } from "@/lib/documents/split";
-import type { ReviewContext } from "../engine/schemas";
+import type { IntakeContext } from "../load";
+import { startReview, type StartedReview } from "../actions";
 import { extractPdfText, PdfReadError } from "@/lib/documents/pdf";
 import { formatNumber, plural } from "../lib";
 import { cn } from "../ui/cn";
-import { Logo } from "@/components/ui";
+import { Button, Logo, Spinner } from "@/components/ui";
 import { Label } from "../ui/Label";
 import { Card } from "../ui/Card";
 import { Tabs } from "../ui/Tabs";
-import { Button } from "../ui/Button";
 import { TextInput } from "../ui/TextInput";
 import { TextArea } from "../ui/TextArea";
-import { ReadingDots } from "../ui/ReadingDots";
 import { ExitBubble } from "../ui/ExitBubble";
 import { FileDrop } from "../ui/FileDrop";
 import { LiveReview } from "../live/LiveReview";
@@ -24,20 +23,33 @@ type Stage =
   | { kind: "input" }
   | { kind: "reading"; fileName: string; page: number; pages: number }
   | { kind: "preview"; doc: Document; source: string }
-  | { kind: "review"; doc: Document };
+  | { kind: "review"; doc: Document; started: StartedReview };
 
-/** Who reviews and for which project. Step 2.4 (project setup) fills this in. */
-export type IntakeContext = Omit<ReviewView, "run" | "live"> & {
-  /** What every assessor is told about the project. Defaults to just its name. */
-  reviewContext?: ReviewContext;
-};
+export type { IntakeContext };
 
-export function IntakeScreen({ context }: { context: IntakeContext }) {
+export function IntakeScreen({ context, sampleReplies }: { context: IntakeContext; sampleReplies: boolean }) {
   const [mode, setMode] = useState<Mode>("pdf");
   const [stage, setStage] = useState<Stage>({ kind: "input" });
   const [pasteTitle, setPasteTitle] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [error, setError] = useState<string>();
+  const [starting, setStarting] = useState(false);
+
+  const start = async (doc: Document) => {
+    setError(undefined);
+    setStarting(true);
+    const res = await startReview({
+      projectId: context.project.id,
+      title: doc.title.trim() || "Untitled document",
+      paragraphs: doc.paragraphs.map((p) => ({ id: p.id, type: p.type, text: p.text })),
+    });
+    setStarting(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setStage({ kind: "review", doc, started: res.value });
+  };
 
   const readPdf = async (file: File) => {
     setError(undefined);
@@ -69,10 +81,12 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
     return (
       <LiveReview
         project={context.project}
-        board={context.board}
+        board={{ ...context.board, assessorIds: stage.started.boardIds }}
         assessors={context.assessors}
-        context={context.reviewContext ?? { projectName: context.project.name }}
         document={stage.doc}
+        documentId={stage.started.documentId}
+        reviewId={stage.started.reviewId}
+        replySource={stage.started.replySource}
         onUpload={() => setStage({ kind: "input" })}
       />
     );
@@ -95,8 +109,13 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
           <p className="mt-2 text-body text-grey-700">
             {stage.kind === "preview"
               ? "Every paragraph gets a number so the board can point at it. Go back if the split looks wrong."
-              : "Upload a PDF or paste your text. It stays in your browser; we only number the paragraphs."}
+              : "Upload a PDF or paste your text. We number the paragraphs; the text is saved with your project when the review starts."}
           </p>
+          {sampleReplies && (
+            <p className="mt-3">
+              <Label tone="accent">Sample replies: no Anthropic key is set, so the board will use made-up comments</Label>
+            </p>
+          )}
         </div>
 
         {stage.kind === "input" && (
@@ -148,23 +167,28 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
 
         {stage.kind === "reading" && (
           <Card variant="dashed" className="flex flex-col gap-2 p-6">
-            <span className="flex items-center gap-2 text-ink">
-              <Label tone="ink">Reading</Label>
-              <ReadingDots />
-            </span>
+            <Spinner label="Reading" />
             <span className="font-display text-h3-lg font-semibold tracking-h3 text-ink">{stage.fileName}</span>
             <Label>{stage.pages ? `Page ${stage.page} of ${stage.pages}` : "Opening the PDF"}</Label>
           </Card>
         )}
 
         {stage.kind === "preview" && (
-          <Preview
-            doc={stage.doc}
-            source={stage.source}
-            onTitle={(title) => setStage({ ...stage, doc: { ...stage.doc, title } })}
-            onBack={() => setStage({ kind: "input" })}
-            onStart={() => setStage({ kind: "review", doc: stage.doc })}
-          />
+          <>
+            <Preview
+              doc={stage.doc}
+              source={stage.source}
+              starting={starting}
+              onTitle={(title) => setStage({ ...stage, doc: { ...stage.doc, title } })}
+              onBack={() => setStage({ kind: "input" })}
+              onStart={() => void start(stage.doc)}
+            />
+            {error && (
+              <p role="alert" className="rounded-row bg-orange-halo px-4 py-3 text-body text-ink">
+                {error}
+              </p>
+            )}
+          </>
         )}
       </main>
       <ExitBubble />
@@ -175,12 +199,14 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
 function Preview({
   doc,
   source,
+  starting,
   onTitle,
   onBack,
   onStart,
 }: {
   doc: Document;
   source: string;
+  starting: boolean;
   onTitle: (title: string) => void;
   onBack: () => void;
   onStart: () => void;
@@ -212,11 +238,11 @@ function Preview({
       </ol>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="secondary" onClick={onBack}>
           Back
         </Button>
-        <Button variant="create" onClick={onStart}>
-          Start review
+        <Button variant="create" onClick={onStart} disabled={starting}>
+          {starting ? "Starting" : "Start review"}
         </Button>
       </div>
     </Card>

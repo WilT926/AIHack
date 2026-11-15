@@ -1,16 +1,16 @@
-import type { Assessor, CommentKind } from "../types";
+import type { Assessor, CommentSeverity } from "../types";
 import { Chip } from "@/components/ui";
 import { Label } from "../ui/Label";
 import { Avatar } from "../ui/Avatar";
 
-const KINDS: { id: CommentKind | "all"; label: string }[] = [
+const KINDS: { id: CommentSeverity | "all"; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "critique", label: "Critique" },
-  { id: "question", label: "Question" },
+  { id: "major", label: "Major" },
+  { id: "minor", label: "Minor" },
   { id: "praise", label: "Praise" },
 ];
 
-/** Filter chips (§9): by kind and by assessor. They narrow the rail and the anchors. */
+/** Filter chips (§9): by severity and by assessor. They narrow the rail and the anchors. */
 export function CommentFilters({
   kind,
   onKind,
@@ -18,8 +18,8 @@ export function CommentFilters({
   selected,
   onToggleAssessor,
 }: {
-  kind: CommentKind | "all";
-  onKind: (kind: CommentKind | "all") => void;
+  kind: CommentSeverity | "all";
+  onKind: (kind: CommentSeverity | "all") => void;
   assessors: Assessor[];
   selected: Set<string>;
   onToggleAssessor: (id: string) => void;

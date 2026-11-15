@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Assessor } from "../review/types";
 import type { ProjectDraft, TemplateId } from "./types";
 import { draftFromTemplate } from "./templates";
-import { missingFor, toReviewContext } from "./context";
-import { Logo } from "@/components/ui";
+import { missingFor } from "./context";
+import { createProjectFromDraft } from "./actions";
+import { Button, Logo } from "@/components/ui";
 import { Label } from "../review/ui/Label";
-import { Button } from "../review/ui/Button";
 import { IntakeScreen } from "../review/intake/IntakeScreen";
 import { Stepper } from "./components/Stepper";
 import { BoardStep, BriefStep, StartStep, TemplateStep } from "./components/Steps";
@@ -42,21 +43,24 @@ const SCREENS: { id: Exclude<Screen, "intake">; steps: number[]; title: string; 
   },
 ];
 
-export function ProjectSetup({ presets }: { presets: Assessor[] }) {
+export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; sampleReplies: boolean }) {
+  const router = useRouter();
   const [screen, setScreen] = useState<Screen>("template");
+  const [saved, setSaved] = useState<{ projectId: string; boardId: string } | null>(null);
+  const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<ProjectDraft | undefined>();
   const [error, setError] = useState<string>();
   const assessors = useMemo(() => new Map(presets.map((a) => [a.id, a])), [presets]);
 
-  if (screen === "intake" && draft) {
+  if (screen === "intake" && draft && saved) {
     return (
       <IntakeScreen
         context={{
-          project: { id: `proj-${draft.template}`, name: draft.name.trim() },
-          board: { id: "board-project", name: `${draft.name.trim()} board`, assessorIds: draft.boardIds },
+          project: { id: saved.projectId, name: draft.name.trim() },
+          board: { id: saved.boardId, name: `${draft.name.trim()} board`, assessorIds: draft.boardIds },
           assessors: presets,
-          reviewContext: toReviewContext(draft),
         }}
+        sampleReplies={sampleReplies}
       />
     );
   }
@@ -75,7 +79,16 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
     const missing = screen === "brief" ? missingFor("brief", draft) : screen === "board" ? missingFor("board", draft) : undefined;
     if (missing) return setError(missing);
     setError(undefined);
-    setScreen(screen === "start" ? "intake" : SCREENS[index + 1].id);
+    if (screen !== "start") return setScreen(SCREENS[index + 1].id);
+    // Save the project and its board, then upload (or practise, for a pitch).
+    setSaving(true);
+    void createProjectFromDraft(draft).then((res) => {
+      setSaving(false);
+      if (!res.ok) return setError(res.error);
+      if (res.template === "pitch") return router.push(`/pitch?project=${encodeURIComponent(res.projectId)}`);
+      setSaved({ projectId: res.projectId, boardId: res.boardId });
+      setScreen("intake");
+    });
   };
 
   const back = () => {
@@ -114,7 +127,7 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
       <footer className="fixed inset-x-0 bottom-0 border-t border-grey-100 bg-white">
         <div className="mx-auto grid w-full max-w-page grid-cols-centred items-center px-8 py-4">
           <div>
-            <Button variant="outline" onClick={back} disabled={index === 0}>
+            <Button variant="secondary" onClick={back} disabled={index === 0}>
               Back
             </Button>
           </div>
@@ -126,8 +139,8 @@ export function ProjectSetup({ presets }: { presets: Assessor[] }) {
             <Label>You can change all of this later</Label>
           )}
           <div className="justify-self-end">
-            <Button variant={screen === "start" ? "create" : "primary"} onClick={next}>
-              {screen === "start" ? "Start review →" : "Continue →"}
+            <Button variant={screen === "start" ? "create" : "primary"} onClick={next} disabled={saving}>
+              {screen === "start" ? (draft?.template === "hackathon-pitch" ? "Practise the pitch →" : "Start review →") : "Continue →"}
             </Button>
           </div>
         </div>

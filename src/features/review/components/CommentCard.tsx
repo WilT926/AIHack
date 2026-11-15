@@ -1,33 +1,32 @@
 import { forwardRef } from "react";
-import type { Assessor, Comment, CommentKind } from "../types";
+import type { Assessor, Comment, CommentSeverity } from "../types";
 import { Card } from "../ui/Card";
 import { Avatar } from "../ui/Avatar";
 import { Label } from "../ui/Label";
 import { Pill, type PillVariant } from "../ui/Pill";
 import { TextButton } from "../ui/TextButton";
 
-const kindPill: Record<CommentKind, PillVariant> = {
-  critique: "accent",
-  question: "outline",
+const severityPill: Record<CommentSeverity, PillVariant> = {
+  major: "accent",
+  minor: "outline",
   praise: "quiet",
 };
 
 /**
- * One comment (§9): the assessor's 24px avatar, name, mono role, the comment.
- * No Reply in v1; a comment can be marked done (§1.1).
+ * One comment (§9): the assessor's avatar, name, mono field, the comment and
+ * its suggestion. No Reply in v1; a comment can be marked done (§1.1).
  */
 export const CommentCard = forwardRef<
   HTMLDivElement,
   {
     comment: Comment;
     assessor?: Assessor;
-    paragraphLabels: { id: string; label: string }[];
+    paragraphLabel: string;
     selected: boolean;
     onShowInText: () => void;
-    onShowParagraph: (paragraphId: string) => void;
     onDone: () => void;
   }
->(function CommentCard({ comment, assessor, paragraphLabels, selected, onShowInText, onShowParagraph, onDone }, ref) {
+>(function CommentCard({ comment, assessor, paragraphLabel, selected, onShowInText, onDone }, ref) {
   const name = assessor?.name ?? "Unknown assessor";
 
   return (
@@ -36,19 +35,21 @@ export const CommentCard = forwardRef<
         <Avatar avatar={assessor?.avatar ?? ""} name={name} size="md" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-body font-semibold text-ink">{name}</span>
-          {assessor && <Label size="sm">{assessor.role}</Label>}
+          {assessor && <Label size="sm">{assessor.field}</Label>}
         </div>
         <div className="flex items-center gap-2">
-          <Pill variant={kindPill[comment.kind]}>{comment.kind}</Pill>
-          {paragraphLabels.map((p) => (
-            <Pill key={p.id} variant="outline" onClick={() => onShowParagraph(p.id)} title="Show in text">
-              {p.label}
-            </Pill>
-          ))}
+          <Pill variant={severityPill[comment.severity]}>{comment.severity}</Pill>
+          <Pill variant="outline" onClick={onShowInText} title="Show in text">
+            {paragraphLabel}
+          </Pill>
         </div>
       </div>
 
-      <p className="mt-3.5 text-body text-grey-900">{comment.text}</p>
+      <Label size="sm" className="mt-3 block">
+        {comment.category}
+      </Label>
+      <p className="mt-1.5 text-body text-grey-900">{comment.text}</p>
+      {comment.suggestion && <p className="mt-2 text-small text-grey-700">{comment.suggestion}</p>}
 
       <div className="mt-4 flex items-center gap-3 text-grey-500">
         <TextButton onClick={onDone}>Mark done</TextButton>

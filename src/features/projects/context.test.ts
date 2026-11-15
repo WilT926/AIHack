@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { reviewContextSchema } from "../review/engine/schemas";
 import { draftFromTemplate, HACKATHON_CRITERIA, TEMPLATES } from "./templates";
-import { allWeakSpots, missingFor, toReviewContext } from "./context";
+import { allWeakSpots, markSchemeText, missingFor } from "./context";
 
 describe("templates", () => {
   it("hackathon pitch seats the Outsider, Communicator and Sceptic and loads the judging criteria", () => {
@@ -29,20 +28,15 @@ describe("templates", () => {
   });
 });
 
-describe("toReviewContext", () => {
-  it("passes the brief, graded items, weak spots and mark scheme to the engine", () => {
-    const d = { ...draftFromTemplate("hackathon-pitch"), weakSpots: ["Business model"], ownWeakSpots: "Q&A unclear\n\n Business model " };
-    const ctx = toReviewContext(d);
-    expect(reviewContextSchema.safeParse(ctx).success).toBe(true);
-    expect(ctx.projectName).toBe("AI Hackathon pitch");
-    expect(ctx.graded).toEqual(["Idea & originality", "The demo", "Presentation skills"]);
-    expect(ctx.weakSpots).toEqual(["Business model", "Q&A unclear"]);
-    expect(ctx.markScheme).toContain("Originality (30%)");
+describe("draft helpers", () => {
+  it("merges chosen and typed weak spots without duplicates", () => {
+    const d = { ...draftFromTemplate("blank"), weakSpots: ["Sample size"], ownWeakSpots: "Sample size\nDiscussion" };
+    expect(allWeakSpots(d)).toEqual(["Sample size", "Discussion"]);
   });
 
-  it("leaves out empty fields", () => {
-    const ctx = toReviewContext({ ...draftFromTemplate("blank"), name: "Essay" });
-    expect(ctx).toEqual({ projectName: "Essay" });
+  it("writes the judging criteria as mark scheme text", () => {
+    expect(markSchemeText(draftFromTemplate("hackathon-pitch"))).toMatch(/Originality \(30%\)/);
+    expect(markSchemeText(draftFromTemplate("blank"))).toBeUndefined();
   });
 });
 

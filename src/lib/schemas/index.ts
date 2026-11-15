@@ -133,6 +133,7 @@ export type DocumentSummary = z.infer<typeof documentSummarySchema>;
 // ---------- Review output ----------
 
 export const severitySchema = z.enum(["praise", "minor", "major"]);
+export type Severity = z.infer<typeof severitySchema>;
 
 export const commentSchema = z.object({
   id,

@@ -1,5 +1,4 @@
-// Turns a project draft into what the review engine and screens need.
-import type { ReviewContext } from "../review/engine/schemas";
+// Helpers for the project draft: weak spots, the mark scheme text, validation.
 import type { ProjectDraft } from "./types";
 
 export function allWeakSpots(draft: ProjectDraft): string[] {
@@ -14,17 +13,6 @@ export function markSchemeText(draft: ProjectDraft): string | undefined {
   if (!draft.markScheme?.criteria.length) return undefined;
   const lines = draft.markScheme.criteria.map((c) => `- ${c.name} (${c.weight}%)`);
   return `${draft.markScheme.source}. Weight your attention by these:\n${lines.join("\n")}`;
-}
-
-export function toReviewContext(draft: ProjectDraft): ReviewContext {
-  const weakSpots = allWeakSpots(draft);
-  return {
-    projectName: draft.name.trim() || "Untitled project",
-    ...(draft.brief.trim() ? { brief: draft.brief.trim() } : {}),
-    ...(draft.graded.length ? { graded: draft.graded } : {}),
-    ...(weakSpots.length ? { weakSpots } : {}),
-    ...(markSchemeText(draft) ? { markScheme: markSchemeText(draft) } : {}),
-  };
 }
 
 /** Which step's input is missing, if any. */

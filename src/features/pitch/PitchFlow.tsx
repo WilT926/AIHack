@@ -8,7 +8,7 @@ import { voice } from "@/config";
 import { recognitionErrorText, useRecognitionSupported, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { clock, endsWithThanks, joinTranscript, parseClock, wordCount } from "@/lib/voice/transcript";
 import type { PitchSession } from "@/lib/schemas";
-import { boardQuestions, endQandA, finishPitch, lastSavedTranscript, saveTranscript, setPitchActionDone, startPitchSession } from "./actions";
+import { boardQuestions, endQandA, finishPitch, lastSavedTranscript, saveTranscript, startPitchSession } from "./actions";
 import type { Phase, PitchSetupData } from "./types";
 import { SessionFrame } from "./components/SessionFrame";
 import { Setup, type SetupValue } from "./components/Setup";
@@ -16,7 +16,9 @@ import { Listening } from "./components/Listening";
 import { TypedTranscript } from "./components/TypedTranscript";
 import { Conferring } from "./components/Conferring";
 import { QandA } from "./components/QandA";
-import { PitchReport } from "./components/PitchReport";
+import { FeedbackReport } from "@/features/feedback/FeedbackReport";
+import { setActionDone } from "@/features/feedback/actions";
+import { Button } from "@/components/ui";
 
 const message = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Try again.");
 
@@ -314,13 +316,22 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
         <Conferring seats={seats} label="The board is writing its feedback" error={boardError} onRetry={() => void writeFeedback()} />
       )}
       {phase === "report" && session?.report && (
-        <PitchReport
+        <FeedbackReport
           report={session.report}
-          seats={seats}
+          people={seats}
           questions={session.questions}
           sample={session.replySource === "sample"}
-          onToggle={(actionId, done) => void setPitchActionDone(session.id, actionId, done)}
-          onAgain={again}
+          onToggleAction={(actionId, done) => void setActionDone({ kind: "pitch", id: session.id, actionId, done })}
+          footer={
+            <div className="ps-actions">
+              <Button variant="secondary" size="lg" href="/">
+                Back to your floor
+              </Button>
+              <Button variant="primary" size="lg" onClick={again}>
+                Practise again
+              </Button>
+            </div>
+          }
         />
       )}
       <button type="button" className="ps-hidden-load" onClick={() => void loadLast()} aria-label="Load the last saved transcript">

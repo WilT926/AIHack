@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReplySource } from "@/lib/schemas";
+import { setActionDone } from "@/features/feedback/actions";
 import type { Assessor, Document, ReviewView } from "../types";
-import type { ReviewContext } from "../engine/schemas";
 import { ReviewScreen } from "../ReviewScreen";
+import { markCommentDone } from "../actions";
 import { useLiveReview } from "./useLiveReview";
 
 /** The review screen, filled in live by the engine. */
@@ -10,35 +12,37 @@ export function LiveReview({
   project,
   board,
   assessors,
-  context,
   document,
+  documentId,
+  reviewId,
+  replySource,
   onUpload,
 }: {
   project: ReviewView["project"];
   board: ReviewView["board"];
   assessors: Assessor[];
-  context: ReviewContext;
   document: Document;
+  documentId: string;
+  reviewId: string;
+  replySource: ReplySource;
   onUpload?: () => void;
 }) {
-  const boardMembers = board.assessorIds
-    .map((id) => assessors.find((a) => a.id === id))
-    .filter((a): a is Assessor => Boolean(a));
-
-  const { run, live, retryAssessor, retryDeliberation } = useLiveReview({
-    context,
-    document,
-    assessors: boardMembers,
-    runId: `run-${document.id}`,
-    runNumber: 1,
+  const { review, live, retryAssessor, retryDeliberation } = useLiveReview({
+    projectId: project.id,
+    documentId,
+    reviewId,
+    assessorIds: board.assessorIds,
+    replySource,
   });
 
   return (
     <ReviewScreen
-      view={{ project, board, assessors, run, live }}
+      view={{ project, board, assessors, document, review, live }}
       onUpload={onUpload}
       onRetryAssessor={retryAssessor}
       onRetryDeliberation={retryDeliberation}
+      onCommentDone={(commentId) => void markCommentDone(reviewId, commentId)}
+      onActionDone={(actionId, done) => void setActionDone({ kind: "review", id: reviewId, actionId, done })}
     />
   );
 }
