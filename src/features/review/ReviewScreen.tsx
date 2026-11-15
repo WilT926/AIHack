@@ -192,39 +192,11 @@ export function ReviewScreen({
         </section>
 
         <aside className="flex w-full max-w-rail shrink-0 flex-col pt-6" aria-label="Board feedback">
-          <div className="sticky top-0 z-10 bg-white pb-3">
+          {/* Tabs and filters stay put; below them the margin starts level with the document. */}
+          <div className="sticky top-0 z-10 flex flex-col gap-3 bg-white pb-3">
             <Tabs items={tabs} active={tab} onChange={chooseTab} />
-          </div>
-
-          <div key={tab} className="mt-2 pb-10">
             {tab === "comments" && (
-              <div className="flex flex-col gap-3">
-                {startControl}
-                {isLive && live && (live.status === "reviewing" || live.status === "deliberating") && (
-                  <BoardLiveCard
-                    board={boardMembers}
-                    status={live.status}
-                    doneIds={live.doneAssessorIds}
-                    failedIds={(live.failed ?? []).map((f) => f.assessorId)}
-                    onRetry={onRetryAssessor}
-                  />
-                )}
-
-                {review.deliberation && (
-                  <div className="mb-1">
-                    <BoardDiscussion deliberation={review.deliberation} assessors={assessors} />
-                  </div>
-                )}
-
-                {!isLive && failed.map((f) => (
-                  <FailedCard
-                    key={f.assessorId}
-                    assessor={f.assessor}
-                    message={f.message}
-                    onRetry={onRetryAssessor ? () => onRetryAssessor(f.assessorId) : undefined}
-                  />
-                ))}
-
+              <>
                 {openComments.length > 0 && (
                   <CommentFilters
                     kind={kindFilter}
@@ -241,6 +213,34 @@ export function ReviewScreen({
                     }
                   />
                 )}
+              </>
+            )}
+          </div>
+
+          <div key={tab} className="mt-2 pb-10">
+            {tab === "comments" && (
+              <div className="flex flex-col gap-3">
+                {startControl}
+                {isLive && live && (live.status === "reviewing" || live.status === "deliberating") && (
+                  <BoardLiveCard
+                    board={boardMembers}
+                    status={live.status}
+                    doneIds={live.doneAssessorIds}
+                    failedIds={(live.failed ?? []).map((f) => f.assessorId)}
+                    onRetry={onRetryAssessor}
+                  />
+                )}
+
+
+                {!isLive && failed.map((f) => (
+                  <FailedCard
+                    key={f.assessorId}
+                    assessor={f.assessor}
+                    message={f.message}
+                    onRetry={onRetryAssessor ? () => onRetryAssessor(f.assessorId) : undefined}
+                  />
+                ))}
+
 
                 {filtering && visibleComments.length === 0 && openComments.length > 0 && (
                   <EmptyState title="No comments match these filters" body="Choose All to see every open comment." />
@@ -281,6 +281,11 @@ export function ReviewScreen({
               </div>
             )}
 
+            {tab === "report" && review.deliberation && (
+              <div className="mb-4">
+                <BoardDiscussion deliberation={review.deliberation} assessors={assessors} />
+              </div>
+            )}
             {tab === "report" &&
               (review.report ? (
                 <FeedbackReport

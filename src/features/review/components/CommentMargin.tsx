@@ -188,13 +188,13 @@ function PassageCard({
           <div className="flex items-center gap-2">
             <span className="min-w-0 flex-1">
               <span className="block text-body font-semibold text-ink">{who?.name ?? "Unknown assessor"}</span>
-              {who && <Label size="sm">{who.field}</Label>}
+              {who && selected && <Label size="sm">{who.field}</Label>}
             </span>
             <Pill variant={severityPill[current.severity as "major" | "minor"]}>{current.severity}</Pill>
           </div>
-          <p className="mt-2 text-body text-grey-900">{current.text}</p>
-          {current.suggestion && <p className="mt-2 text-small text-grey-700">{current.suggestion}</p>}
-          <button
+          <p className={cn("mt-2 text-body text-grey-900", !selected && "line-clamp-2")}>{current.text}</p>
+          {selected && current.suggestion && <p className="mt-2 text-small text-grey-700">{current.suggestion}</p>}
+          {selected && <button
             type="button"
             onClick={() => {
               onDone(current.id);
@@ -206,7 +206,7 @@ function PassageCard({
               ✓
             </span>
             Mark done
-          </button>
+          </button>}
         </div>
       )}
 
