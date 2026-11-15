@@ -113,7 +113,7 @@
   padding: 14px 16px; border-radius: var(--radius-quiet-card); border: var(--line-dashed);
   font: var(--text-small); color: var(--grey-700);
 }
-.fl-people { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.fl-people { display: flex; flex-wrap: wrap; row-gap: 4px; }
 .fl-person {
   min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 8px;
   border-radius: var(--radius-row-lg); border: none; background: transparent; cursor: pointer; transition: background 0.25s;
@@ -262,6 +262,79 @@
 .fl-memory__trend { display: flex; flex-direction: column; gap: var(--space-1); }
 .fl-memory__ratings { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 
-/* The sample-data note, now that the logo has no sub text. */
-.fl-sample { position: fixed; left: var(--space-8); bottom: var(--space-8); z-index: 20; font: var(--text-label); text-transform: uppercase; color: var(--orange); }
 .fl-kbd { font: 500 11px/1 var(--font-mono); padding: 3px 7px; border-radius: var(--radius-pill); background: var(--grey-50); color: var(--grey-500); }
+
+/* Review dots on report tables: one per assessor; solid = all their comments reviewed, outline = not yet. Never white. */
+.fl-dot {
+  position: absolute; width: 11px; height: 11px; border-radius: var(--radius-round); box-sizing: border-box; pointer-events: none;
+  background: transparent; border: var(--line); transition: opacity 0.4s, background 0.3s;
+}
+.fl-dot[data-reviewed="true"] { background: var(--ink); }
+
+/* ---------- Side panel: updates, feedback, board editing, attempts, actions ---------- */
+.fl-update {
+  display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); margin-top: -8px;
+  border-radius: var(--radius-row); background: var(--orange-halo); font: 500 12px/1.3 var(--font-body); color: var(--ink);
+}
+.fl-update__dot { width: 8px; height: 8px; flex: none; border-radius: var(--radius-round); background: var(--orange); }
+
+.fl-feedback { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fl-feedback__row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto 86px; align-items: center; gap: var(--space-2); min-height: 24px; }
+.fl-feedback__name { font: 600 12px/1.2 var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-feedback__row .ui-dots i { width: 8px; height: 8px; }
+.fl-feedback__reviewed { display: flex; align-items: center; gap: 6px; }
+.fl-feedback__progress { position: relative; flex: 1; height: 8px; border-radius: var(--radius-pill); border: var(--line-width) solid var(--ink); box-sizing: border-box; overflow: hidden; }
+.fl-feedback__progress > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); transition: width 0.4s var(--ease-spring); }
+.fl-feedback__count { font: 600 9.5px/1 var(--font-mono); color: var(--grey-700); min-width: 22px; text-align: right; }
+
+/* At this table: wraps after four; scrolls (no bar) past two rows. */
+.fl-people-scroll { max-height: 236px; overflow-y: auto; scrollbar-width: none; }
+.fl-people-scroll::-webkit-scrollbar { display: none; }
+.fl-person-slot { position: relative; width: 25%; box-sizing: border-box; padding: 6px 2px 0; display: flex; }
+.fl-person-slot > .fl-person { width: 100%; }
+.fl-person:disabled { cursor: default; }
+.fl-person:disabled:hover { background: transparent; }
+.fl-person__remove {
+  position: absolute; right: 6px; top: 2px; width: 22px; height: 22px; padding: 0; border: none; border-radius: var(--radius-round);
+  background: var(--ink); color: var(--paper); font: 600 15px/1 var(--font-body); cursor: pointer; display: grid; place-items: center;
+  box-shadow: var(--cutout); animation: ui-pop 0.3s var(--ease-spring);
+}
+.fl-person__remove:hover { background: var(--orange); color: var(--ink); }
+.fl-person-slot--add { justify-content: center; align-items: flex-start; padding-top: 14px; }
+/* The "+" alone on a new row sits in the middle of it. */
+.fl-person-slot--add:nth-child(4n + 1) { margin-inline: auto; }
+.fl-person-add {
+  width: 62px; height: 62px; border: none; border-radius: var(--radius-round); background: var(--orange); color: var(--ink);
+  font: 400 30px/1 var(--font-body); cursor: pointer; display: grid; place-items: center; animation: ui-pop 0.35s var(--ease-plus);
+}
+.fl-person-add:disabled { opacity: 0.35; cursor: default; }
+.fl-person__remove:focus-visible, .fl-person-add:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* Previous attempts and suggested actions: a set height, scroll (no bar) only if needed. */
+.fl-list {
+  height: 112px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 6px;
+  border: var(--line-width) solid var(--grey-100); border-radius: var(--radius-row); padding: var(--space-2); box-sizing: border-box;
+}
+.fl-list::-webkit-scrollbar { display: none; }
+.fl-list__row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "title date" "note date"; column-gap: var(--space-2);
+  padding: 6px 8px; border-radius: 10px; text-decoration: none; color: var(--ink); flex: none;
+}
+a.fl-list__row:hover { background: var(--grey-50); }
+.fl-list__title { grid-area: title; font: 600 12.5px/1.3 var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-list__note { grid-area: note; font: 400 11.5px/1.3 var(--font-body); color: var(--grey-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-list__row > .ui-label { grid-area: date; align-self: center; }
+.fl-list__empty { margin: auto 0; padding: 0 var(--space-2); font: var(--text-small); color: var(--grey-700); }
+.fl-action { grid-template-columns: 14px minmax(0, 1fr); grid-template-areas: "tick title" ". note"; }
+.fl-action__tick { grid-area: tick; width: 12px; height: 12px; margin-top: 2px; border-radius: var(--radius-round); border: var(--line); box-sizing: border-box; }
+.fl-action[data-done="true"] .fl-action__tick { background: var(--ink); }
+.fl-action[data-done="true"] .fl-list__title { color: var(--grey-500); text-decoration: line-through; }
+
+/* Add to the board (popup) */
+.fl-add-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2); max-height: 60vh; overflow-y: auto; }
+.fl-add-list__item {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--space-3); text-align: center; cursor: pointer;
+  border: var(--line-width) solid var(--grey-100); border-radius: var(--radius-row-lg); background: var(--paper);
+}
+.fl-add-list__item:hover { border-color: var(--ink); }
+.fl-add-list__name { font: 600 13px/1.2 var(--font-body); }

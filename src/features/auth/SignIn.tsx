@@ -1,8 +1,10 @@
 "use client";
 
-// Sign in (design: "Your panel is waiting"). v1 has one seeded demo student
-// and no accounts (plan: "One seeded demo user, no login"), so every route in
-// takes you to your floor. Nothing typed here is stored or sent anywhere.
+// Sign in (design: "Your panel is waiting"): Google, or email and password.
+// v1 has one seeded demo student and no accounts (plan: "One seeded demo
+// user, no login"), so both routes take you to your floor. Real Google
+// sign-in needs an OAuth client (e.g. Supabase Auth's Google provider).
+// Nothing typed here is stored or sent anywhere.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -48,11 +50,13 @@ export function SignIn() {
           <h1 className="auth__title">Sign in</h1>
           <p className="auth__lede">Pick up where your panel left off.</p>
           <Button variant="primary" size="lg" onClick={enter}>
-            <i className="auth__uni-dot" aria-hidden />
-            Continue with your university
+            <i className="auth__google" aria-hidden>
+              G
+            </i>
+            Continue with Google
           </Button>
           <Divider>Or with email</Divider>
-          <TextInput id="email" label="University email" type="email" autoComplete="email" placeholder="sam.rivera@uni.ac.uk" />
+          <TextInput id="email" label="Email" type="email" autoComplete="email" placeholder="you@example.com" />
           <TextInput
             id="password"
             label="Password"

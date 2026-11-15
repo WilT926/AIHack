@@ -32,6 +32,20 @@ export type FloorSeat = {
 
 export type FloorDoc = { id: string; title: string; open: number; href: string };
 
+/** One assessor's feedback on the latest finished session. */
+export type FloorFeedback = {
+  assessorId: string;
+  short: string;
+  avatar: string;
+  /** 1–5: how well the work did with this assessor; null before any feedback. */
+  score: number | null;
+  /** Reports only: their comments marked reviewed, of all their comments. */
+  reviewed?: { done: number; total: number };
+};
+
+export type FloorAttempt = { id: string; title: string; date: string; note: string; href?: string };
+export type FloorAction = { id: string; what: string; by: string; done: boolean };
+
 export type FloorTable = {
   id: string;
   code: string;
@@ -43,8 +57,21 @@ export type FloorTable = {
   status: string;
   /** Short mono status on a side table. */
   short: string;
-  /** Last session and open actions. */
+  /** Under the name: when it was last reviewed or practised. */
   line: string;
+  /** The board this table seats (editable from the side panel). */
+  boardId: string | null;
+  /** Reports only: one dot per assessor; true when all their comments are marked reviewed. */
+  dots: { assessorId: string; reviewed: boolean }[];
+  /** Side panel header: "Last reviewed …" / "Not reviewed yet", even while a session runs. */
+  lastReviewed: string;
+  /** What's on the table, e.g. "3 documents · 1 not reviewed yet" or "3 practice runs". */
+  summary: string;
+  /** What changed since the student last opened this table, or null. */
+  updates: string | null;
+  feedback: FloorFeedback[];
+  attempts: FloorAttempt[];
+  actions: FloorAction[];
   deadline?: string;
   sessions: FloorSession[];
   seats: FloorSeat[];
@@ -112,7 +139,16 @@ function firstSentence(text: string): string {
 }
 
 const openCount = (r?: FeedbackReport | null) => (r ? r.actions.filter((a) => !a.done).length : 0);
-const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** "today", "yesterday", "3 days ago", else the date, for "Last reviewed …" under a table's name. */
+export function ago(iso: string, now = Date.now()): string {
+  const days = Math.floor((now - Date.parse(iso)) / 86_400_000);
+  if (Number.isNaN(days)) return "";
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  return dateLabel(iso);
+}
 
 type RawSession = {
   id: string;
@@ -122,8 +158,19 @@ type RawSession = {
   title: string;
   documentId?: string;
   report?: FeedbackReport | null;
+  /** Unresolved items: comments not marked done (reviews) or open actions (presentations). */
+  open: number;
+  /** Reviews: each assessor's comments. */
+  results?: { assessorId: string; done: number; total: number; major: number; minor: number; praise: number }[];
+  /** Presentations: how well each assessor's questions were answered (1–5). */
+  scores?: { assessorId: string; score: number }[];
+  /** When it finished (or started), for "new since you last looked". */
+  finishedAt?: string | null;
   sample: boolean;
 };
+
+const HOW_WELL = { strong: 5, adequate: 3, weak: 1 } as const;
+const clampScore = (n: number) => Math.max(1, Math.min(5, Math.round(n)));
 
 export function buildFloor(ws: Workspace): FloorModel {
   const assessorById = new Map(ws.assessors.map((a) => [a.id, a]));
@@ -151,6 +198,16 @@ export function buildFloor(ws: Workspace): FloorModel {
           title: docById.get(r.documentId)?.title ?? "Report",
           documentId: r.documentId,
           report: r.report,
+          open: r.assessorResults.reduce((n, a) => n + a.comments.filter((c) => !c.done).length, 0),
+          results: r.assessorResults.map((a) => ({
+            assessorId: a.assessorId,
+            done: a.comments.filter((c) => c.done).length,
+            total: a.comments.length,
+            major: a.comments.filter((c) => c.severity === "major").length,
+            minor: a.comments.filter((c) => c.severity === "minor").length,
+            praise: a.comments.filter((c) => c.severity === "praise").length,
+          })),
+          finishedAt: r.createdAt,
           sample: r.replySource === "sample",
         })),
       ...ws.pitchSessions
@@ -162,6 +219,17 @@ export function buildFloor(ws: Workspace): FloorModel {
           state: s.status === "done" ? "done" : s.status === "ready" ? "ready" : "live",
           title: "Presentation practice",
           report: s.report,
+          open: openCount(s.report),
+          scores: (() => {
+            const byQ = new Map((s.report?.questionReview ?? []).map((q) => [q.questionId, HOW_WELL[q.howWell]]));
+            const per = new Map<string, number[]>();
+            for (const q of s.questions) {
+              const v = byQ.get(q.id);
+              if (v !== undefined) per.set(q.assessorId, [...(per.get(q.assessorId) ?? []), v]);
+            }
+            return [...per].map(([assessorId, v]) => ({ assessorId, score: clampScore(v.reduce((a, b) => a + b, 0) / v.length) }));
+          })(),
+          finishedAt: s.endedAt ?? s.startedAt ?? s.createdAt,
           sample: s.replySource === "sample",
         })),
     ].sort((a, b) => a.at.localeCompare(b.at));
@@ -203,19 +271,75 @@ export function buildFloor(ws: Workspace): FloorModel {
 
     const latestDone = [...raw].reverse().find((s) => s.state === "done" && s.report);
     const latestReport = latestDone?.report ?? null;
-    const openActions = openCount(latestReport);
+    const latestDocs = [...raw].reverse();
     const liveSession = raw.find((s) => s.state === "live");
     const live = !!liveSession;
-    const last = raw[raw.length - 1];
     const anyRun = raw.some((s) => s.state !== "ready");
 
     const docs: FloorDoc[] = ws.documents
       .filter((d) => d.projectId === p.id)
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map((d) => {
-        const latest = [...raw].reverse().find((s) => s.documentId === d.id && s.state === "done");
-        return { id: d.id, title: d.title, open: openCount(latest?.report), href: `/review?document=${encodeURIComponent(d.id)}` };
+        const latest = latestDocs.find((s) => s.documentId === d.id && s.state === "done");
+        return { id: d.id, title: d.title, open: latest?.open ?? 0, href: `/review?document=${encodeURIComponent(d.id)}` };
       });
+
+    // Notifications: what still needs looking at. For a report, the comments
+    // not yet marked done in its latest review (the same comments the review
+    // screen shows); for a presentation, the open actions of its last report.
+    const openActions = isPitch ? (latestDone?.open ?? 0) : docs.reduce((n, d) => n + d.open, 0);
+
+    // Reports: per assessor, across the latest finished review of each document.
+    const latestPerDoc = isPitch ? [] : docs.map((d) => latestDocs.find((s) => s.documentId === d.id && s.state === "done")).filter((s) => s !== undefined);
+    const perAssessor = new Map<string, { done: number; total: number; major: number; minor: number; praise: number }>();
+    for (const s of latestPerDoc)
+      for (const r of s.results ?? []) {
+        const t = perAssessor.get(r.assessorId) ?? { done: 0, total: 0, major: 0, minor: 0, praise: 0 };
+        perAssessor.set(r.assessorId, { done: t.done + r.done, total: t.total + r.total, major: t.major + r.major, minor: t.minor + r.minor, praise: t.praise + r.praise });
+      }
+    const dots = isPitch ? [] : seats.filter((s) => perAssessor.has(s.assessorId)).map((s) => {
+      const t = perAssessor.get(s.assessorId)!;
+      return { assessorId: s.assessorId, reviewed: t.total > 0 && t.done === t.total };
+    });
+    const pitchScores = new Map((isPitch ? (latestDone?.scores ?? []) : []).map((x) => [x.assessorId, x.score]));
+    const feedback: FloorFeedback[] = seats.map((s) => {
+      if (isPitch) return { assessorId: s.assessorId, short: s.short, avatar: s.avatar, score: pitchScores.get(s.assessorId) ?? null };
+      const t = perAssessor.get(s.assessorId);
+      if (!t) return { assessorId: s.assessorId, short: s.short, avatar: s.avatar, score: null };
+      // Start at 4, a major costs a point, two minors a point, praise earns half a point back.
+      return { assessorId: s.assessorId, short: s.short, avatar: s.avatar, score: clampScore(4 - t.major - t.minor / 2 + t.praise / 2), reviewed: { done: t.done, total: t.total } };
+    });
+
+    const finished = raw.filter((s) => s.state === "done");
+    const docsCount = docs.length;
+    const notReviewed = docs.filter((d) => !latestDocs.some((s) => s.documentId === d.id && s.state === "done")).length;
+    const summary = isPitch
+      ? finished.length === 0
+        ? "No practice runs yet"
+        : `${finished.length} practice ${finished.length === 1 ? "run" : "runs"}${raw.some((s) => s.state === "ready") ? " · 1 ready to run" : ""}`
+      : docsCount === 0
+        ? "No documents uploaded yet"
+        : `${docsCount} ${docsCount === 1 ? "document" : "documents"} · ${notReviewed === 0 ? "all reviewed" : `${notReviewed} not reviewed yet`}`;
+
+    const seen = p.viewedAt ? Date.parse(p.viewedAt) : 0;
+    const fresh = finished.filter((s) => s.finishedAt && Date.parse(s.finishedAt) > seen);
+    const updates = live
+      ? `${liveSession.kind === "review" ? "The board is reviewing" : "A practice is running"} now`
+      : fresh.length
+        ? `New feedback from the board · ${fresh.length} ${isPitch ? (fresh.length === 1 ? "practice" : "practices") : fresh.length === 1 ? "review" : "reviews"} since you last looked`
+        : null;
+
+    const attempts: FloorAttempt[] = [...finished].reverse().map((s) => ({
+      id: s.id,
+      title: s.kind === "review" ? s.title : "Presentation practice",
+      date: dateLabel(s.at),
+      note: s.kind === "review" ? (s.open ? `${s.open} ${s.open === 1 ? "comment" : "comments"} to review` : "All comments reviewed") : s.open ? `${s.open} ${s.open === 1 ? "action" : "actions"} open` : "All actions done",
+      href: features.feedbackReport ? (s.kind === "pitch" ? `/pitch?session=${s.id}` : s.documentId ? `/review?document=${encodeURIComponent(s.documentId)}` : undefined) : undefined,
+    }));
+    const nameOf = (id: string) => seats.find((x) => x.assessorId === id)?.short ?? assessorById.get(id)?.name ?? "The board";
+    const actions: FloorAction[] = (latestReport?.actions ?? [])
+      .map((a) => ({ id: a.id, what: a.what, by: a.raisedBy.map(nameOf).join(", "), done: a.done }))
+      .sort((a, b) => Number(a.done) - Number(b.done));
 
     let status: string, short: string;
     if (live) {
@@ -226,15 +350,19 @@ export function buildFloor(ws: Workspace): FloorModel {
       short = "READY";
     } else if (latestDone) {
       status = `LAST SESSION · ${dateLabel(latestDone.at)}`;
-      short = dateLabel(latestDone.at);
+      short = ago(latestDone.at).toUpperCase();
     } else {
       status = "NOT STARTED";
       short = "NOT STARTED";
     }
 
-    const line = last
-      ? `${last.kind === "review" ? last.title : "Presentation"} · ${openActions ? `${plural(openActions, "open action")}` : "nothing open"}`
-      : `No sessions yet · ${plural(seats.length, "assessor")}`;
+    // Under the name: when it was last reviewed (or practised).
+    const lastWhen = latestDone ? ago(latestDone.at) : "";
+    const line = live
+      ? `${liveSession.kind === "review" ? "Being reviewed" : "In practice"} now`
+      : latestDone
+        ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}`
+        : `Not ${isPitch ? "practised" : "reviewed"} yet`;
 
     let cta: FloorTable["cta"];
     if (liveSession) {
@@ -264,6 +392,14 @@ export function buildFloor(ws: Workspace): FloorModel {
       sessions,
       seats,
       docs,
+      boardId: p.boardId ?? null,
+      lastReviewed: latestDone ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}` : `Not ${isPitch ? "practised" : "reviewed"} yet`,
+      dots,
+      summary,
+      updates,
+      feedback,
+      attempts,
+      actions,
       memory: p.memory,
       hasMarkScheme: p.markSchemeText.trim().length > 0,
       openActions,

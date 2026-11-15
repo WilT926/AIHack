@@ -6,7 +6,8 @@
 // click, on every page, without leaving the page (same options and motion as
 // the original floor dock).
 import Link from "next/link";
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { dockMemory, useGlide } from "./glide";
 import { features } from "@/config";
 import { Button, cn } from "./index";
 import { MenuItem, MenuSection, Popover } from "./Popover";
@@ -27,8 +28,8 @@ const ICON: Record<NavDockId, ReactNode> = {
   assessors: <span className="ui-ico-assessors"><i /><i /><i /></span>,
   profile: <span className="ui-ico-avatar"><i /><i /></span>,
 };
-const LABEL: Record<NavDockId, string> = { floor: "Floor", desk: "Desk", assessors: "Assessors", profile: "Your profile" };
-const HREF: Record<NavDockId, string> = { floor: "/", desk: "/?sheet=desk", assessors: "/assessors", profile: "/profile" };
+const LABEL: Record<NavDockId, string> = { floor: "Floor", desk: "Desk", assessors: "Assessors", profile: "User settings" };
+const HREF: Record<NavDockId, string> = { floor: "/", desk: "/?sheet=desk", assessors: "/assessors", profile: "/settings?section=profile" };
 
 /**
  * The "+" menu, as in the final home design (design/Panel Home Final.dc.html):
@@ -87,7 +88,8 @@ export function NavDock({
   plusOpen,
   onPlusOpen,
 }: {
-  active: NavDockId | null;
+  /** The current page; `undefined` keeps the last page's (while a page loads). */
+  active: NavDockId | null | undefined;
   deskCount?: number;
   /** Handlers that replace an item's link (the floor opens its sheets in place). */
   on?: Partial<Record<NavDockId, () => void>>;
@@ -100,6 +102,8 @@ export function NavDock({
   onPlusOpen?: (open: boolean) => void;
 }) {
   const gooId = useId();
+  const navRef = useRef<HTMLElement>(null);
+  useGlide(navRef, "nav");
   const [hover, setHover] = useState<NavDockId | null>(null);
   const [menuKey, setMenuKey] = useState(0);
 
@@ -161,10 +165,17 @@ export function NavDock({
     </li>
   );
 
-  const activeX = active === "floor" || active === "desk" || active === "assessors" || active === "profile" ? X[active] : null;
+  const targetX = active === undefined ? dockMemory.activeX : active ? X[active] : null;
+  // Start where the last page's circle was, then slide to this page's item.
+  const [activeX, setActiveX] = useState<number | null>(() => dockMemory.activeX ?? targetX);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setActiveX(targetX));
+    if (active !== undefined) dockMemory.activeX = targetX;
+    return () => cancelAnimationFrame(raf);
+  }, [targetX, active]);
 
   return (
-    <nav className="ui-nav" aria-label="Main" style={{ width: WIDTH }}>
+    <nav ref={navRef} className="ui-nav" aria-label="Main" style={{ width: WIDTH }}>
       <svg width={0} height={0} className="ui-nav__defs" aria-hidden>
         <defs>
           <filter id={gooId} x="-20%" y="-60%" width="140%" height="220%">

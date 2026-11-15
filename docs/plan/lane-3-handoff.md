@@ -30,6 +30,30 @@ Read `CLAUDE.md`, `docs/plan/README.md` and `docs/plan/lane-3.md` first. Lane 3 
 - **Adaptive floor:** tables scale to the space; the side panel is pinned to the right and scaled so all of it fits.
 - **Settings page** (Panel defaults and the other sections), **avatar studio**, **help page**, **skeleton loaders**.
 - **Synthesia** avatars, IDs, guides and scripts.
+- **Sign-in:** Continue with Google, then email and password. Both go to the demo student; real Google sign-in needs an OAuth client.
+- **Smoother page changes:** the dock and search pill glide between pages (`src/components/ui/glide.ts`), the active circle slides, the loading screen keeps the real bar and dock, and content fades in.
+- **One "User settings" page** (`/settings`, Profile section by default; `/profile` redirects):
+  - edit details with Confirm changes / Cancel;
+  - an avatar picker popup;
+  - both **saved to the database** (`updateProfile` in `src/lib/data`);
+  - the right-hand card appears on Profile only.
+- **Floor tables:** no sample-data text; "Last reviewed …" under each name; badges count report comments not yet marked reviewed. **Report tables** show one dot per assessor at the base: solid when all their comments are reviewed, outline when not.
+- **Side panel, top to bottom:**
+  - last reviewed, plus "New feedback from the board…" since you last opened the table (stored as `viewedAt`);
+  - title and summary;
+  - **Feedback** (per assessor: a 5-dot score, and a reviewed-progress bar for reports);
+  - At this table (clicking the selected person again clears the filter);
+  - **Previous attempts**;
+  - **Suggested actions**;
+  - **Edit board** → minus on each person, an orange "+" to add (centred when alone on a row), **Confirm** saves the board to the database.
+- **Mock data** in `fixtures/home-sample.ts`: comments with reviewed states, two scored practice runs, last-viewed dates.
+
+### Changes in Lane 1 folders (tell Lane 1)
+- `src/lib/schemas`: `Project.viewedAt` (optional).
+- `supabase/migrations/0005_project_viewed_at.sql`: `projects.viewed_at`. **Run `npm run db:migrate` on the shared Supabase.**
+- `src/lib/data`: `updateProfile`, `markProjectViewed`, `setBoardSeats`.
+- `src/config`: `features.editBoards` switched on.
+- `fixtures/home-sample.ts`: mock data, as above.
 
 ### Next, in order
 1. **Decide** whether Helen Leane and Martin Stevens replace Tom Achebe and Mira Santos on the pitch judges board, or join as new judges.
