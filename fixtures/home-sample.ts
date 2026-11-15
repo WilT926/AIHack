@@ -27,10 +27,10 @@ export const sampleAssessors: Assessor[] = [
   preset({ id: "communicator", name: "Sophie Lang", field: "Scientific writing", role: "Communicator", harshness: 2, focusAreas: ["Structure", "Flow", "Clarity"], avatar: "avatar-014" }),
   preset({ id: "outsider", name: "Marcus Reid", field: "Medical device industry", role: "Outsider", harshness: 3, focusAreas: ["Cost", "Adoption", "Market"], avatar: "avatar-016" }),
   preset({ id: "sceptic", name: "Dr Nina Volkova", field: "Clinical research", role: "Sceptic", harshness: 5, focusAreas: ["Weakest claim", "Bias"], avatar: "avatar-004" }),
-  preset({ id: "technical-judge", name: "Dr Ezra Cole", field: "Software engineering", role: "Technical Judge", harshness: 4, focusAreas: ["Architecture", "What actually works"], avatar: "avatar-027" }),
-  preset({ id: "education-lead", name: "Prof. Hana Ito", field: "Learning design", role: "Education Lead", harshness: 3, focusAreas: ["Student benefit", "Evidence of learning"], avatar: "avatar-048" }),
-  preset({ id: "investor", name: "Tom Achebe", field: "Early-stage venture", role: "Investor", harshness: 4, focusAreas: ["Market", "Who pays"], avatar: "avatar-064" }),
-  preset({ id: "design-judge", name: "Mira Santos", field: "Product design", role: "Design Judge", harshness: 3, focusAreas: ["Clarity", "Craft", "Consistency"], avatar: "avatar-035" }),
+  preset({ id: "technical-judge", idleClip: "/avatars/real/technical-judge/idle.mp4", name: "Dr Ezra Cole", field: "Software engineering", role: "Technical Judge", harshness: 4, focusAreas: ["Architecture", "What actually works"], avatar: "avatar-027" }),
+  preset({ id: "education-lead", idleClip: "/avatars/real/education-lead/idle.mp4", name: "Prof. Hana Ito", field: "Learning design", role: "Education Lead", harshness: 3, focusAreas: ["Student benefit", "Evidence of learning"], avatar: "avatar-048" }),
+  preset({ id: "investor", idleClip: "/avatars/real/investor/idle.mp4", name: "Martin Stevens", field: "Early-stage venture", role: "Investor", harshness: 4, focusAreas: ["Market", "Who pays"], avatar: "avatar-064" }),
+  preset({ id: "design-judge", idleClip: "/avatars/real/design-judge/idle.mp4", name: "Helen Leane", field: "Product design", role: "Design Judge", harshness: 3, focusAreas: ["Clarity", "Craft", "Consistency"], avatar: "avatar-035" }),
 ];
 
 export const sampleNotes: AssessorNote[] = [

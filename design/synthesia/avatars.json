@@ -19,7 +19,7 @@
     },
     {
       "synthesiaName": "Helen Leane",
-      "assessorId": null,
+      "assessorId": "design-judge",
       "drawing": null,
       "videoAvatarId": "635dda01-864a-4004-936c-1373462322bb",
       "interactiveId": "e908b313-243e-4abe-abca-4d2ed3fe1bb3",
@@ -27,7 +27,7 @@
     },
     {
       "synthesiaName": "Martin Stevens",
-      "assessorId": null,
+      "assessorId": "investor",
       "drawing": null,
       "videoAvatarId": "cdbe4acf-e442-4847-9b00-5a5ee0e11d4a",
       "interactiveId": "7a54f6f4-fa84-4957-9cc9-8f64e9230156",
