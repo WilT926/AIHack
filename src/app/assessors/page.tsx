@@ -2,19 +2,18 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { Avatar, DotRating, Label, Spinner } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
-import { assessorNotes, assessors, hasDatabase } from "@/lib/data";
-import { sampleAssessors, sampleNotes } from "../../../fixtures/home-sample";
+import { assessorNotes, assessors, dataSource } from "@/lib/data";
 
 // Page shell (step 1.1): lists the assessors from the database. Lane 3 builds
 // the real gallery, profiles and notes here (step 3.3).
 async function AssessorList() {
   await connection();
-  const db = hasDatabase();
-  const [list, notes] = db ? await Promise.all([assessors.list(), assessorNotes.list()]) : [sampleAssessors, sampleNotes];
+  const sample = dataSource() !== "database";
+  const [list, notes] = await Promise.all([assessors.list(), assessorNotes.list()]);
   if (list.length === 0) return <p className="ui-empty">No assessors yet. Run npm run db:seed to add the presets.</p>;
   return (
     <>
-      {!db && <Label tone="orange">Sample data: the database is not configured</Label>}
+      {sample && <Label tone="orange">Sample data: the database is not configured</Label>}
       <ul className="shell-grid">
         {list.map((a) => {
           const n = notes.filter((x) => x.assessorId === a.id).length;

@@ -17,14 +17,8 @@ import {
   sampleReviews,
   sampleWorkspace,
 } from "../fixtures/home-sample";
-import {
-  assessorSchema,
-  boardSchema,
-  profileSchema,
-  templateSchema,
-  type Board,
-  type Template,
-} from "../src/lib/schemas";
+import { assessorSchema, boardSchema, profileSchema, templateSchema } from "../src/lib/schemas";
+import { pitchBoard, reportBoard, templates } from "../src/lib/data/seed-data";
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -47,47 +41,6 @@ async function upsert(table: string, rows: object[]) {
   if (error) throw new Error(`${table}: ${error.message}`);
   console.log(`  ${table}: ${rows.length}`);
 }
-
-const reportBoard: Board = {
-  id: "board-report",
-  name: "Report board",
-  assessorIds: ["module-lead", "methodologist", "literature-hawk", "communicator", "outsider", "sceptic"],
-};
-const pitchBoard: Board = {
-  id: "board-pitch",
-  name: "Pitch judges",
-  assessorIds: ["technical-judge", "education-lead", "investor", "design-judge"],
-};
-
-const templates: Template[] = [
-  {
-    id: "masters-report",
-    title: "Master's report",
-    description: "A chapter or a full draft, marked against your handbook.",
-    brief: { what: "Master's thesis", topic: "", graded: ["Aims", "Methods", "Analysis", "Discussion", "Writing"], goal: "" },
-    markSchemeText: "",
-    boardId: reportBoard.id,
-  },
-  {
-    id: "lab-report",
-    title: "Lab report",
-    description: "Methods and results, read hard on the experimental process.",
-    brief: { what: "Lab report", topic: "", graded: ["Method", "Results", "Error analysis", "Conclusions"], goal: "" },
-    markSchemeText: "",
-    boardId: reportBoard.id,
-  },
-  {
-    id: "pitch",
-    title: "Hackathon pitch",
-    description: "A short pitch and Q&A, judged against the event's criteria.",
-    brief: { what: "Hackathon pitch", topic: "", graded: ["Originality", "Relevance", "Industry application", "Design", "Presentation"], goal: "" },
-    markSchemeText:
-      "Judging criteria (paste the event's own wording here):\n" +
-      "- Originality\n- Relevance to the theme\n- Potential industry application\n" +
-      "- User experience and design\n- Presentation\n- Security and resilience",
-    boardId: pitchBoard.id,
-  },
-];
 
 const sampleIds = {
   projects: sampleProjects.map((p) => p.id),
