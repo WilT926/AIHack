@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { Avatar, Button, DotRating, Label, Spinner } from "@/components/ui";
+import { Avatar, Button, DotRating, Label, SkeletonPage } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
 import { CopyAssessor } from "@/features/assessors/CopyAssessor";
 import { Notes } from "@/features/assessors/Notes";
@@ -33,5 +33,5 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
   </div>;
 }
 export default function AssessorPage({ params }: { params: Promise<{ id: string }> }) {
-  return <PageFrame title="Assessor profile" active="assessors"><Suspense fallback={<Spinner label="Opening the assessor's notes" />}><Profile params={params} /></Suspense></PageFrame>;
+  return <PageFrame title="Assessor profile" active="assessors"><Suspense fallback={<SkeletonPage label="Opening the assessor notes" cards={2} />}><Profile params={params} /></Suspense></PageFrame>;
 }

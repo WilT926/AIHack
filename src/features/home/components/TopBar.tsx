@@ -1,52 +1,141 @@
-import Link from "next/link";
-import { Avatar, Logo } from "@/components/ui";
-import type { FloorAssessor, FloorModel } from "../model";
+"use client";
+
+// The floor's top bar: the shared AppBar with the split search pill. Filters
+// live in the pill: the Filters button opens status, assessors and recent
+// tables; each active filter becomes its own part of the pill.
+import { Avatar } from "@/components/ui";
+import { AppBar, ProfileMenu, SearchPill, type SearchSegment } from "@/components/ui/AppBar";
+import { MenuItem, MenuSection } from "@/components/ui/Popover";
+import type { FloorAssessor, FloorFilter, FloorModel, FloorTable } from "../model";
+
+export const STATUS_FILTERS: [Exclude<FloorFilter, "all">, string][] = [
+  ["live", "In session"],
+  ["open", "Actions open"],
+  ["new", "Not started"],
+];
+
+const statusIcon = <i className="ui-ico-status" aria-hidden />;
+const assessorIcon = (
+  <span className="ui-ico-assessors" aria-hidden>
+    <i />
+    <i />
+    <i />
+  </span>
+);
+
+function StatusOptions({ filter, onFilter }: { filter: FloorFilter; onFilter: (f: FloorFilter) => void }) {
+  return (
+    <>
+      <MenuItem selected={filter === "all"} onClick={() => onFilter("all")}>
+        All tables
+      </MenuItem>
+      {STATUS_FILTERS.map(([id, label]) => (
+        <MenuItem key={id} selected={filter === id} onClick={() => onFilter(id)}>
+          {label}
+        </MenuItem>
+      ))}
+    </>
+  );
+}
+
+function AssessorOptions({
+  assessors,
+  selectedId,
+  onAssessor,
+}: {
+  assessors: FloorAssessor[];
+  selectedId: string | null;
+  onAssessor: (id: string | null) => void;
+}) {
+  return (
+    <div className="ui-menu__scroll">
+      {assessors.map((a) => (
+        <MenuItem
+          key={a.id}
+          selected={a.id === selectedId}
+          icon={<Avatar avatar={a.avatar} size="xs" />}
+          hint={a.short}
+          onClick={() => onAssessor(a.id === selectedId ? null : a.id)}
+        >
+          {a.name}
+        </MenuItem>
+      ))}
+    </div>
+  );
+}
 
 export function TopBar({
   profile,
   onSearch,
-  assessor,
-  onClearAssessor,
-  sample,
+  filter,
+  onFilter,
+  assessors,
+  assessorId,
+  onAssessor,
+  tables,
+  onTable,
 }: {
   profile: FloorModel["profile"];
   onSearch: () => void;
-  assessor: FloorAssessor | null;
-  onClearAssessor: () => void;
-  sample?: boolean;
+  filter: FloorFilter;
+  onFilter: (f: FloorFilter) => void;
+  assessors: FloorAssessor[];
+  assessorId: string | null;
+  onAssessor: (id: string | null) => void;
+  tables: FloorTable[];
+  onTable: (i: number) => void;
 }) {
+  const assessor = assessors.find((a) => a.id === assessorId) ?? null;
+  const segments: SearchSegment[] = [];
+  if (filter !== "all") {
+    const label = STATUS_FILTERS.find(([id]) => id === filter)?.[1] ?? "Filtered";
+    segments.push({
+      key: "status",
+      label: `Tables: ${label}`,
+      icon: statusIcon,
+      onRemove: () => onFilter("all"),
+      menu: <StatusOptions filter={filter} onFilter={onFilter} />,
+    });
+  }
+  if (assessor) {
+    segments.push({
+      key: "assessor",
+      label: `Tables with ${assessor.name}`,
+      icon: assessorIcon,
+      onRemove: () => onAssessor(null),
+      menu: <AssessorOptions assessors={assessors} selectedId={assessorId} onAssessor={onAssessor} />,
+    });
+  }
+
   return (
-    <>
-      <div className="fl-brand">
-        <Logo sub={sample ? "Your floor · sample data" : "Your floor"} />
-      </div>
-
-      <button type="button" className="fl-search" onClick={onSearch} aria-label="Find a table, assessor or doc (⌘K)">
-        <i className="fl-search__ring" aria-hidden />
-        <span className="fl-search__text">Find a table, assessor or doc</span>
-        <span className="fl-kbd" aria-hidden>
-          ⌘K
-        </span>
-      </button>
-
-      {assessor && (
-        <div className="fl-filter-chip">
-          <span>
-            Tables with <b>{assessor.name}</b>
-          </span>
-          <button type="button" className="fl-filter-chip__x" onClick={onClearAssessor} aria-label="Show all tables">
-            ×
-          </button>
-        </div>
-      )}
-
-      <Link href="/profile" className="fl-profile">
-        <Avatar avatar={profile.avatar} size="lg" />
-        <span className="fl-profile__text">
-          <span className="fl-profile__name">{profile.name}</span>
-          <span className="fl-profile__sub">{profile.sub}</span>
-        </span>
-      </Link>
-    </>
+    <AppBar
+      search={
+        <SearchPill
+          onSearch={onSearch}
+          segments={segments}
+          filterCount={segments.length}
+          filterMenu={
+            <>
+              <MenuSection title="Tables">
+                <StatusOptions filter={filter} onFilter={onFilter} />
+              </MenuSection>
+              <MenuSection title="Assessors">
+                <AssessorOptions assessors={assessors} selectedId={assessorId} onAssessor={onAssessor} />
+              </MenuSection>
+              {tables.length > 0 && (
+                <MenuSection title="Recent">
+                  {tables.map((t, i) => (
+                    <MenuItem key={t.id} icon={<i className="ui-ico-table" aria-hidden />} hint={t.code} onClick={() => onTable(i)}>
+                      {t.name}
+                    </MenuItem>
+                  ))}
+                </MenuSection>
+              )}
+            </>
+          }
+        />
+      }
+      profile={<ProfileMenu profile={profile} />}
+    />
   );
 }

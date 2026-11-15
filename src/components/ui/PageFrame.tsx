@@ -1,74 +1,88 @@
-import Link from "next/link";
-import { DockMotion } from "./DockMotion";
-import type { ReactNode } from "react";
-import { Logo, cn } from "./index";
+import { Suspense, type ReactNode } from "react";
+import { connection } from "next/server";
+import { getProfile } from "@/lib/data";
+import { loadPlusTables } from "@/features/home/load";
+import { Skeleton } from "./index";
+import { AppBar, ProfileMenu, SearchPill } from "./AppBar";
+import { NavDock, type NavDockId } from "./NavDock";
 
-export type NavId = "home" | "assessors" | "profile";
+export type NavId = "home" | "assessors" | "profile" | "studio";
 
-const NAV: { id: NavId; label: string; href: string; icon: ReactNode }[] = [
-  { id: "home", label: "Floor", href: "/", icon: <span className="ui-ico-floor"><i /><i /></span> },
-  { id: "assessors", label: "Assessors", href: "/assessors", icon: <span className="ui-ico-assessors"><i /><i /><i /></span> },
-  { id: "profile", label: "Your profile", href: "/profile", icon: <span className="ui-ico-avatar"><i /><i /></span> },
-];
+/** The dock, with the tables its "+" menu offers. */
+async function FrameDock({ active }: { active: NavDockId | null }) {
+  await connection();
+  const { tables, newProjectHref } = await loadPlusTables();
+  return <NavDock active={active} tables={tables} newProjectHref={newProjectHref} />;
+}
+
+const LEVEL: Record<string, string> = { UG: "Undergraduate", PGT: "PGT", PGR: "PGR" };
+
+async function FrameProfile() {
+  await connection();
+  const p = await getProfile();
+  if (!p) return null;
+  return <ProfileMenu profile={{ name: p.name, sub: `${p.course} · ${LEVEL[p.level] ?? p.level}`, avatar: p.avatar }} />;
+}
+
+/** The profile pill while it loads. */
+export function ProfileSkeleton() {
+  return (
+    <span className="ui-profile ui-profile--loading" aria-hidden>
+      <Skeleton shape="avatar" />
+      <span className="ui-profile__text">
+        <Skeleton shape="line-short" />
+        <Skeleton shape="line-short" />
+      </span>
+    </span>
+  );
+}
 
 /**
- * Frame for every page other than the floor: the logo, a title, the content,
- * and the bubble dock with Home, Assessors and Profile (§9, §10). No top nav.
+ * Frame for every page other than the floor: the same top bar (logo, search,
+ * profile menu) and the same bottom dock as the floor, with the content in a
+ * fluid column between them (§9, §10).
  */
 export function PageFrame({
   title,
   active,
   aside,
+  bare,
   children,
 }: {
   title: string;
   active?: NavId;
   aside?: ReactNode;
+  /** The page lays itself out (no title row or centred column), e.g. Settings. */
+  bare?: boolean;
   children: ReactNode;
 }) {
+  const dockActive: NavDockId | null = active === "home" ? "floor" : active === "studio" ? "assessors" : (active ?? null);
   return (
     <div className="ui-frame">
-      <header className="ui-frame__head">
-        <Link href="/" className="ui-frame__logo" aria-label="Panel, back to your floor">
-          <Logo />
-        </Link>
-        {aside}
-      </header>
-      <main className="ui-frame__main">
-        <h1 className="ui-frame__title">{title}</h1>
-        {children}
-      </main>
-      <svg width={0} height={0} style={{ position: "absolute" }} aria-hidden>
-        <defs>
-          <filter id="ui-goo" x="-20%" y="-40%" width="140%" height="180%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation={6} result="b" />
-            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" />
-          </filter>
-        </defs>
-      </svg>
-      <DockMotion className="ui-dock"><nav aria-label="Main">
-        <div className="ui-dock__goo" aria-hidden>
-          {NAV.map((n) => (
-            <i key={n.id} />
-          ))}
-          <i />
-        </div>
-        <ul className="ui-dock__list">
-          {NAV.map((n) => (
-            <li key={n.id}>
-              <Link
-                href={n.href}
-                className={cn("ui-dock__item", n.id === active && "ui-dock__item--active")}
-                aria-current={n.id === active ? "page" : undefined}
-                aria-label={n.label}
-                title={n.label}
-              >
-                {n.icon}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav></DockMotion>
+      <AppBar
+        search={<SearchPill searchHref="/?find=1" />}
+        profile={
+          <Suspense fallback={<ProfileSkeleton />}>
+            <FrameProfile />
+          </Suspense>
+        }
+      />
+      {bare ? (
+        <main className="ui-frame__bare" aria-label={title}>
+          {children}
+        </main>
+      ) : (
+        <main className="ui-frame__main">
+          <div className="ui-frame__titlebar">
+            <h1 className="ui-frame__title">{title}</h1>
+            {aside}
+          </div>
+          {children}
+        </main>
+      )}
+      <Suspense fallback={<NavDock active={dockActive} />}>
+        <FrameDock active={dockActive} />
+      </Suspense>
     </div>
   );
 }

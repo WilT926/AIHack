@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Avatar, Label, Spinner } from "@/components/ui";
+import { Avatar, Label, SkeletonPage } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
 import { dataSource, getProfile } from "@/lib/data";
 
@@ -27,7 +27,7 @@ async function ProfileDetails() {
 export default function ProfilePage() {
   return (
     <PageFrame title="Your profile" active="profile">
-      <Suspense fallback={<Spinner label="Loading" />}>
+      <Suspense fallback={<SkeletonPage label="Loading your profile" cards={0} />}>
         <ProfileDetails />
       </Suspense>
     </PageFrame>

@@ -92,12 +92,20 @@ export const COMPACT = {
 /** Opacity of tables that do not match the filter. */
 export const DIM_OPACITY = 0.18;
 
-export const DOCK = {
-  bubble: 56,
-  pitch: 62,
-  count: 5,
-  activeSize: 44,
-  bridgeHeight: 28,
-} as const;
+/**
+ * Adaptive layout, in real pixels (src/styles/shell.css). The top bar and the
+ * dock keep their size; the side panel is pinned to the right edge; the floor
+ * band of the stage (x 0..fitRight, y fitTop..fitBottom) scales to fill the
+ * main area left of the panel.
+ */
+export const CHROME = { top: 84, bottom: 100, gutter: 28, fitTop: 92, fitBottom: 800, fitRight: 1040 } as const;
+
+/**
+ * The side panel keeps its original inner layout: it is laid out at its design
+ * size (358px wide; 768px tall on a 1440x900 screen) and scaled as one piece,
+ * as the original stage did. `top`/`bottom` are its real distances from the
+ * window edges; `gap` is the space between the floor and the panel.
+ */
+export const PANEL = { width: 358, height: 768, top: 104, bottom: 28, gap: 20, minScale: 0.6, maxScale: 1.25 } as const;
 
 export const ASSESSOR_CARD = { width: 228, gap: 16, visible: 4 } as const;

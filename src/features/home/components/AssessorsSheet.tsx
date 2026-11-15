@@ -34,6 +34,12 @@ export function AssessorsSheet({
           <span className="fl-sheet__sub">Select someone to see the tables they sit at</span>
         </div>
         <div className="fl-sheet__actions">
+          <Button variant="secondary" size="sm" href="/studio">
+            Avatar studio
+          </Button>
+          <Button variant="primary" size="sm" href="/assessors">
+            All assessors
+          </Button>
           <IconButton label="Previous assessors" disabled={carIdx <= 0} onClick={() => onCarIdx(Math.max(0, carIdx - 1))}>
             ←
           </IconButton>

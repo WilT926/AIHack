@@ -1,17 +1,16 @@
 "use client";
 
 // The Floor, the product's home screen (DESIGN_SYSTEM §7–§9). Ported from
-// design/Panel Home Final.dc.html: a 1440×900 stage scaled to fit, tables
-// tweened in polar space with easeOutBack, a side panel for the focused
-// table, the bubble dock, sheets and the command palette.
+// design/Panel Home Final.dc.html: a 1440×900 stage, tables tweened in polar
+// space with easeOutBack, a side panel for the focused table and its sheets.
+// The top bar, dock and command palette sit outside the stage at their real
+// size; the stage scales to fill the space between them, so it fits any screen.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
-import { ASSESSOR_CARD, MOTION, STAGE } from "@/styles/floor";
+import { ASSESSOR_CARD, CHROME, MOTION, PANEL } from "@/styles/floor";
 import { ease, focusPath, lerpPolar, slots, type Polar } from "./geometry";
 import type { FloorFilter, FloorModel } from "./model";
 import { TopBar } from "./components/TopBar";
 import { Tables } from "./components/Tables";
-import { FilterBar } from "./components/FilterBar";
 import { SidePanel } from "./components/SidePanel";
 import { AssessorsSheet } from "./components/AssessorsSheet";
 import { DeskSheet } from "./components/DeskSheet";
@@ -26,8 +25,42 @@ function subscribeResize(cb: () => void) {
   window.addEventListener("resize", cb);
   return () => window.removeEventListener("resize", cb);
 }
-const readScale = () => Math.min(window.innerWidth / STAGE.width, window.innerHeight / STAGE.height);
-const serverScale = () => 0;
+const readSize = () => `${window.innerWidth}x${window.innerHeight}`;
+const serverSize = () => "";
+
+/**
+ * The adaptive layout. The side panel is pinned to the right edge and scaled
+ * as one piece (its inner layout never changes); the stage's floor band is
+ * scaled to fill the main area left of it, between the top bar and the dock.
+ * `center` is the main area's middle, where the search pill and the dock sit.
+ */
+function fit(size: string, panelContent: number) {
+  if (!size) return { scale: 0, x: 0, y: 0, panel: PANEL.width, panelK: 1, panelH: PANEL.height, center: 0 };
+  const [w, h] = size.split("x").map(Number);
+  const room = h - PANEL.top - PANEL.bottom;
+  const baseK = Math.max(PANEL.minScale, Math.min(PANEL.maxScale, w / 1440, room / PANEL.height));
+  /** Shortest design height: scaled by baseK it reaches PANEL.bottom from the window's bottom edge. */
+  const panelH = Math.round(room / baseK);
+  /** When the content is taller than that, scale a little further so all of it fits: no scrollbar, nothing cut off. */
+  const panelK = panelContent > panelH ? room / panelContent : baseK;
+  const panel = Math.round(PANEL.width * panelK);
+  const left = CHROME.gutter;
+  const right = w - CHROME.gutter - panel - PANEL.gap;
+  const mainW = Math.max(200, right - left);
+  const mainH = Math.max(200, h - CHROME.top - CHROME.bottom);
+  const bandW = CHROME.fitRight;
+  const bandH = CHROME.fitBottom - CHROME.fitTop;
+  const scale = Math.max(0.3, Math.min(mainW / bandW, mainH / bandH));
+  return {
+    scale,
+    x: left + (mainW - bandW * scale) / 2,
+    y: CHROME.top + (mainH - bandH * scale) / 2 - CHROME.fitTop * scale,
+    panel,
+    panelK,
+    panelH,
+    center: Math.round(left + mainW / 2),
+  };
+}
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 function subscribeReduced(cb: () => void) {
@@ -41,9 +74,22 @@ const serverReduced = () => false;
 // ---------- Component ----------
 
 export function Floor({ model }: { model: FloorModel }) {
-  const router = useRouter();
   const n = model.tables.length;
-  const scale = useSyncExternalStore(subscribeResize, readScale, serverScale);
+  const size = useSyncExternalStore(subscribeResize, readSize, serverSize);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelContent, setPanelContent] = useState(0);
+  const { scale, x: stageX, y: stageY, panelK, panelH, center } = fit(size, panelContent);
+
+  // The side panel's natural height (unscaled), so it can be scaled to fit whole.
+  useEffect(() => {
+    const aside = panelRef.current?.querySelector<HTMLElement>(".fl-panel");
+    if (!aside) return;
+    const measure = () => setPanelContent(aside.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(aside);
+    return () => ro.disconnect();
+  }, []);
   const reduced = useSyncExternalStore(subscribeReduced, readReduced, serverReduced);
 
   const [focus, setFocus] = useState(() => Math.min(model.initialFocus, Math.max(0, n - 1)));
@@ -119,6 +165,20 @@ export function Floor({ model }: { model: FloorModel }) {
     [model.assessors],
   );
 
+  // Links from other pages: /?find=1 opens search, /?sheet=desk the Desk, /?plus=menu the "+".
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (![...q.keys()].length) return;
+    const t = window.setTimeout(() => {
+      if (q.get("find")) setPalette(true);
+      const s = q.get("sheet");
+      if (s === "desk" || s === "assessors") setSheet(s);
+      if (q.get("plus") === "menu") setPlus("menu");
+      window.history.replaceState(null, "", "/");
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
   // Give each excerpt three seconds; pause while reading or using another surface.
   useEffect(() => {
     if (quotePaused || sheet || palette || plus !== "closed" || anim || reduced) return;
@@ -171,7 +231,6 @@ export function Floor({ model }: { model: FloorModel }) {
       ),
     [model.tables, filter, assessorId],
   );
-  const selectedAssessor = model.assessors.find((a) => a.id === assessorId) ?? null;
   const beadIndex = table
     ? (beads[table.id] ??
       (() => {
@@ -181,20 +240,30 @@ export function Floor({ model }: { model: FloorModel }) {
     : 0;
 
   return (
-    <div className="fl-viewport" style={{ "--floor-scale": scale || 1 } as React.CSSProperties}>
+    <div
+      className="fl-viewport"
+      style={center ? ({ "--nav-center": `${center}px`, "--panel-k": panelK, "--panel-h": `${panelH}px` } as React.CSSProperties) : undefined}
+    >
+      <TopBar
+        profile={model.profile}
+        onSearch={() => setPalette(true)}
+        filter={filter}
+        onFilter={setFilter}
+        assessors={model.assessors}
+        assessorId={assessorId}
+        onAssessor={setAssessorId}
+        tables={model.tables}
+        onTable={(i) => {
+          setSheet(null);
+          focusTable(i);
+        }}
+      />
       <div
         className="fl-stage"
         data-ready={scale > 0}
-        style={{ transform: `scale(${scale || 1})` }}
+        style={{ transform: `translate(${stageX}px, ${stageY}px) scale(${scale || 1})` }}
         aria-label="Your floor"
       >
-        <TopBar
-          profile={model.profile}
-          onSearch={() => setPalette(true)}
-          assessor={selectedAssessor}
-          onClearAssessor={() => setAssessorId(null)}
-          sample={model.sample}
-        />
 
         <Tables
           tables={model.tables}
@@ -220,8 +289,6 @@ export function Floor({ model }: { model: FloorModel }) {
           }}
         />
 
-        <FilterBar filter={filter} onFilter={setFilter} />
-
         <AssessorsSheet
           open={sheet === "assessors"}
           assessors={model.assessors}
@@ -242,21 +309,25 @@ export function Floor({ model }: { model: FloorModel }) {
           onClose={() => setSheet(null)}
         />
 
-        <SidePanel
-          table={table}
-          index={focus}
-          count={n}
-          beadIndex={beadIndex}
-          selectedAssessorId={assessorId}
-          newProjectHref={model.newProjectHref}
-          onBead={(k) => table && setBeads((b) => ({ ...b, [table.id]: k }))}
-          onPrev={() => focusTable((focus + n - 1) % n)}
-          onNext={() => focusTable((focus + 1) % n)}
-          onPerson={(id) => openAssessor(id)}
-          onEditBoard={() => openAssessor(null)}
-        />
 
-        {palette && (
+      </div>
+      <div ref={panelRef} className="fl-panel-slot">
+      <SidePanel
+        table={table}
+        index={focus}
+        count={n}
+        beadIndex={beadIndex}
+        selectedAssessorId={assessorId}
+        newProjectHref={model.newProjectHref}
+        onBead={(k) => table && setBeads((b) => ({ ...b, [table.id]: k }))}
+        onPrev={() => focusTable((focus + n - 1) % n)}
+        onNext={() => focusTable((focus + 1) % n)}
+        onPerson={(id) => openAssessor(id)}
+        onEditBoard={() => openAssessor(null)}
+      />
+      </div>
+      {model.sample && <span className="fl-sample">Sample data</span>}
+      {palette && (
           <CommandPalette
             tables={model.tables}
             assessors={model.assessors}
@@ -274,19 +345,17 @@ export function Floor({ model }: { model: FloorModel }) {
             }}
           />
         )}
-      </div>
       <Dock
         sheet={sheet}
         openActions={model.openActions}
         plus={plus}
         tables={model.tables}
         newProjectHref={model.newProjectHref}
+        focusId={table?.id}
         onSheet={(s) => {
           setSheet((cur) => (s === null ? null : cur === s ? null : s));
           setPlus("closed");
         }}
-        onProfile={() => router.push("/profile")}
-        onSettings={() => router.push("/settings")}
         onPlus={(p) => {
           setPlus(p);
           if (p !== "closed") setSheet(null);

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Avatar, Button, Card, DotRating, Label, Spinner } from "@/components/ui";
+import { Avatar, Button, Card, DotRating, Label, SkeletonPage } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
 import { CopyAssessor } from "@/features/assessors/CopyAssessor";
 import { assessorNotes, assessors, dataSource } from "@/lib/data";
@@ -26,5 +26,5 @@ async function AssessorGallery() {
   </div>;
 }
 export default function AssessorsPage() {
-  return <PageFrame title="Assessors" active="assessors"><Suspense fallback={<Spinner label="Fetching the board" />}><AssessorGallery /></Suspense></PageFrame>;
+  return <PageFrame title="Assessors" active="assessors"><Suspense fallback={<SkeletonPage label="Fetching the board" />}><AssessorGallery /></Suspense></PageFrame>;
 }

@@ -9,7 +9,8 @@ export function cn(...parts: (string | false | null | undefined)[]): string {
 
 // ---------- Logo ----------
 
-export function Logo({ sub }: { sub?: string }) {
+/** The Panel mark and wordmark. The same on every page, with no sub text (§2). */
+export function Logo() {
   return (
     <div className="ui-logo" aria-label="Panel">
       <div className="ui-logo__mark" aria-hidden>
@@ -22,7 +23,6 @@ export function Logo({ sub }: { sub?: string }) {
       </div>
       <div className="ui-logo__text">
         <span className="ui-logo__word">Panel</span>
-        {sub && <span className="ui-logo__sub">{sub}</span>}
       </div>
     </div>
   );
@@ -244,9 +244,27 @@ export function TextInput({
   label,
   hint,
   id,
+  action,
   className,
   ...rest
-}: FieldProps & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id">) {
+}: FieldProps & {
+  /** A small control on the label's line, e.g. "Forgot?". Kept outside the label. */
+  action?: ReactNode;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "id">) {
+  if (action) {
+    return (
+      <div className={cn("ui-field", className)}>
+        <div className="ui-field__row">
+          <label className="ui-label" htmlFor={id}>
+            {label}
+          </label>
+          {action}
+        </div>
+        <input id={id} className="ui-input" {...rest} />
+        {hint && <span className="ui-field__hint">{hint}</span>}
+      </div>
+    );
+  }
   return (
     <label className={cn("ui-field", className)} htmlFor={id}>
       <span className="ui-label">{label}</span>
@@ -361,5 +379,119 @@ export function Spinner({ label = "Reading" }: { label?: string }) {
         <i />
       </span>
     </span>
+  );
+}
+
+// ---------- Skeletons (loading) ----------
+
+export type SkeletonShape = "line" | "line-short" | "title" | "pill" | "circle" | "avatar" | "card" | "block";
+
+/** A quiet grey placeholder with a slow sheen, shaped like what is loading. */
+export function Skeleton({ shape = "line", className }: { shape?: SkeletonShape; className?: string }) {
+  return <i aria-hidden className={cn("ui-skel", `ui-skel--${shape}`, className)} />;
+}
+
+/** A page loading: a title, a line and a grid of cards. */
+export function SkeletonPage({ label = "Loading", cards = 6 }: { label?: string; cards?: number }) {
+  return (
+    <div className="ui-skel-page" role="status" aria-label={label}>
+      <Skeleton shape="title" />
+      <Skeleton shape="line" />
+      <div className="ui-skel-page__grid">
+        {Array.from({ length: cards }, (_, i) => (
+          <div key={i} className="ui-skel-card">
+            <Skeleton shape="avatar" />
+            <Skeleton shape="line" />
+            <Skeleton shape="line-short" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** The floor loading: three tables, the focused one larger, and the side panel. */
+export function SkeletonFloor() {
+  return (
+    <div className="ui-skel-floor" role="status" aria-label="Setting the tables">
+      <div className="ui-skel-floor__tables" aria-hidden>
+        <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--focus" />
+        <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--a" />
+        <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--b" />
+        <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--c" />
+      </div>
+      <div className="ui-skel-floor__panel" aria-hidden>
+        <Skeleton shape="line-short" />
+        <Skeleton shape="title" />
+        <Skeleton shape="line" />
+        <Skeleton shape="block" />
+        <div className="ui-skel-floor__people">
+          <Skeleton shape="avatar" />
+          <Skeleton shape="avatar" />
+          <Skeleton shape="avatar" />
+          <Skeleton shape="avatar" />
+        </div>
+        <Skeleton shape="pill" />
+        <Skeleton shape="pill" />
+      </div>
+    </div>
+  );
+}
+
+/** The top bar and dock while a page loads. */
+export function SkeletonChrome() {
+  return (
+    <>
+      <header className="ui-appbar" aria-hidden>
+        <span className="ui-appbar__logo">
+          <Logo />
+        </span>
+        <span className="ui-appbar__search">
+          <i className="ui-skel ui-skel-chrome__pill" />
+        </span>
+        <span className="ui-appbar__profile">
+          <span className="ui-profile ui-profile--loading">
+            <Skeleton shape="avatar" />
+            <span className="ui-profile__text">
+              <Skeleton shape="line-short" />
+              <Skeleton shape="line-short" />
+            </span>
+          </span>
+        </span>
+      </header>
+      <i className="ui-skel ui-skel-chrome__nav" aria-hidden />
+    </>
+  );
+}
+
+// ---------- Divider and text button ----------
+
+/** A thin rule with a mono label in the middle, e.g. OR WITH EMAIL. */
+export function Divider({ children }: { children?: ReactNode }) {
+  return (
+    <div className="ui-divider" role="separator">
+      {children}
+    </div>
+  );
+}
+
+/** A small bold text link or button, e.g. "Forgot?". */
+export function TextButton({
+  href,
+  className,
+  children,
+  ...rest
+}: { href?: string; children: ReactNode } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">) {
+  if (href) {
+    return (
+      <Link href={href} className={cn("ui-text-btn", className)}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" className={cn("ui-text-btn", className)} {...rest}>
+      {children}
+    </button>
   );
 }

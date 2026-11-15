@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Spinner } from "@/components/ui";
+import { SkeletonChrome, SkeletonFloor } from "@/components/ui";
 import { Floor } from "@/features/home/Floor";
 import { loadWorkspace } from "@/features/home/load";
 import { buildFloor } from "@/features/home/model";
@@ -17,7 +17,8 @@ export default function HomePage() {
     <Suspense
       fallback={
         <div className="fl-viewport">
-          <Spinner label="Setting the tables" />
+          <SkeletonChrome />
+          <SkeletonFloor />
         </div>
       }
     >

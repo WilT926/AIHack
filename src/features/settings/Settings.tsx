@@ -1,0 +1,293 @@
+"use client";
+
+// Settings (design: "Panel defaults"). Sections on the left, the chosen
+// section in the middle, the profile card on the right. Choices are kept on
+// this device until the data layer can store them (Lane 1, src/lib/data), and
+// are not yet read by the review or pitch flows.
+import { useState, useSyncExternalStore } from "react";
+import { Avatar, Button, TextButton, cn } from "@/components/ui";
+import { DotPicker, Segmented, SelectPill, SettingRow, Toggle } from "@/components/ui/Controls";
+import { useChosenAvatar } from "@/components/ui/avatarChoice";
+
+type Prefs = {
+  harshness: number;
+  openOn: "panel" | "speaker";
+  autoCut: boolean;
+  captions: boolean;
+  remember: boolean;
+  fade: "instant" | "gentle" | "drawings";
+  language: "en-GB" | "en-US";
+  camera: boolean;
+  mirror: boolean;
+  media: "clips" | "portraits" | "drawings";
+  voice: "natural" | "browser";
+  notifyDone: boolean;
+  notifyEscalation: boolean;
+  weekly: boolean;
+  keep: "always" | "30" | "never";
+  motion: "system" | "reduce" | "full";
+  bigCaptions: boolean;
+  questionText: boolean;
+  level: "UG" | "PGT" | "PGR" | null;
+};
+
+const DEFAULTS: Prefs = {
+  harshness: 3,
+  openOn: "panel",
+  autoCut: true,
+  captions: true,
+  remember: true,
+  fade: "gentle",
+  language: "en-GB",
+  camera: true,
+  mirror: true,
+  media: "clips",
+  voice: "natural",
+  notifyDone: true,
+  notifyEscalation: true,
+  weekly: false,
+  keep: "always",
+  motion: "system",
+  bigCaptions: false,
+  questionText: true,
+  level: null,
+};
+
+const KEY = "panel.settings";
+const EVENT = "panel:settings";
+
+function subscribe(cb: () => void) {
+  window.addEventListener(EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+function readRaw() {
+  try {
+    return window.localStorage.getItem(KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+function parse(raw: string): Prefs {
+  try {
+    return raw ? { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Prefs>) } : DEFAULTS;
+  } catch {
+    return DEFAULTS;
+  }
+}
+function save(p: Prefs | null) {
+  try {
+    if (p) window.localStorage.setItem(KEY, JSON.stringify(p));
+    else window.localStorage.removeItem(KEY);
+  } catch {
+    // Storage blocked: choices last for this page only.
+  }
+  window.dispatchEvent(new Event(EVENT));
+}
+
+const SECTIONS = [
+  { id: "profile", label: "Profile" },
+  { id: "defaults", label: "Panel defaults" },
+  { id: "clips", label: "Clips & camera" },
+  { id: "notifications", label: "Notifications" },
+  { id: "privacy", label: "Privacy & data" },
+  { id: "accessibility", label: "Accessibility" },
+  { id: "account", label: "Account" },
+] as const;
+type SectionId = (typeof SECTIONS)[number]["id"];
+
+export type SettingsProfile = { name: string; university: string; course: string; level: "UG" | "PGT" | "PGR"; avatar: string };
+
+export function Settings({ profile }: { profile: SettingsProfile }) {
+  const raw = useSyncExternalStore(subscribe, readRaw, () => "");
+  const prefs = parse(raw);
+  const set = <K extends keyof Prefs>(k: K, v: Prefs[K]) => save({ ...prefs, [k]: v });
+  const [section, setSection] = useState<SectionId>("defaults");
+  const [deleteNote, setDeleteNote] = useState(false);
+  const avatar = useChosenAvatar(profile.avatar);
+  const level = prefs.level ?? profile.level;
+
+  const body: Record<SectionId, { title: string; lede: string; rows: React.ReactNode }> = {
+    profile: {
+      title: "Profile",
+      lede: "Who the board is marking. Your assessors use this to pitch their feedback.",
+      rows: (
+        <>
+          <SettingRow title="Name" hint={profile.name} />
+          <SettingRow title="University" hint={profile.university} />
+          <SettingRow title="Course" hint={profile.course} />
+          <SettingRow title="Level" hint="Changes how demanding the board's expectations are">
+            <Segmented label="Level" value={level} onChange={(v) => set("level", v)} options={[{ id: "UG", label: "UG" }, { id: "PGT", label: "PGT" }, { id: "PGR", label: "PGR" }]} />
+          </SettingRow>
+          <SettingRow title="Avatar" hint="Pick yours from the set">
+            <Button variant="secondary" size="sm" href="/studio">
+              Edit avatar
+            </Button>
+          </SettingRow>
+        </>
+      ),
+    },
+    defaults: {
+      title: "Panel defaults",
+      lede: "Applies to new tables. Each table can override these.",
+      rows: (
+        <>
+          <SettingRow title="How tough" hint="Starting harshness for new assessors">
+            <DotPicker label="How tough" value={prefs.harshness} max={5} onChange={(v) => set("harshness", v)} />
+          </SettingRow>
+          <SettingRow title="Open the room on" hint="First shot when a session starts">
+            <Segmented label="Open the room on" value={prefs.openOn} onChange={(v) => set("openOn", v)} options={[{ id: "panel", label: "Whole panel" }, { id: "speaker", label: "Speaker" }]} />
+          </SettingRow>
+          <SettingRow title="Auto-cut to whoever speaks" hint="Switch to a close-up when an assessor talks">
+            <Toggle label="Auto-cut to whoever speaks" checked={prefs.autoCut} onChange={(v) => set("autoCut", v)} />
+          </SettingRow>
+          <SettingRow title="Captions" hint="Show what each assessor says as a pill">
+            <Toggle label="Captions" checked={prefs.captions} onChange={(v) => set("captions", v)} />
+          </SettingRow>
+          <SettingRow title="Remember what I fixed" hint="Assessors bring up unresolved points from earlier sessions">
+            <Toggle label="Remember what I fixed" checked={prefs.remember} onChange={(v) => set("remember", v)} />
+          </SettingRow>
+          <SettingRow title="Line-to-video fade" hint="How assessors appear when they join">
+            <Segmented label="Line-to-video fade" value={prefs.fade} onChange={(v) => set("fade", v)} options={[{ id: "instant", label: "Instant" }, { id: "gentle", label: "Gentle" }, { id: "drawings", label: "Stay as drawings" }]} />
+          </SettingRow>
+          <SettingRow title="Feedback language" hint="Spelling and tone for comments">
+            <SelectPill label="Feedback language" value={prefs.language} onChange={(v) => set("language", v)} options={[{ id: "en-GB", label: "English (UK)" }, { id: "en-US", label: "English (US)" }]} />
+          </SettingRow>
+        </>
+      ),
+    },
+    clips: {
+      title: "Clips & camera",
+      lede: "How the board looks and sounds in a presentation call.",
+      rows: (
+        <>
+          <SettingRow title="Show my camera" hint="On this screen only. Never recorded or sent anywhere">
+            <Toggle label="Show my camera" checked={prefs.camera} onChange={(v) => set("camera", v)} />
+          </SettingRow>
+          <SettingRow title="Mirror my camera" hint="Like looking in a mirror">
+            <Toggle label="Mirror my camera" checked={prefs.mirror} onChange={(v) => set("mirror", v)} />
+          </SettingRow>
+          <SettingRow title="Assessors appear as" hint="Video clips, still portraits or the pen drawings">
+            <Segmented label="Assessors appear as" value={prefs.media} onChange={(v) => set("media", v)} options={[{ id: "clips", label: "Clips" }, { id: "portraits", label: "Portraits" }, { id: "drawings", label: "Drawings" }]} />
+          </SettingRow>
+          <SettingRow title="Voices" hint="Natural voices need a connection; the browser voice works offline">
+            <Segmented label="Voices" value={prefs.voice} onChange={(v) => set("voice", v)} options={[{ id: "natural", label: "Natural" }, { id: "browser", label: "Browser" }]} />
+          </SettingRow>
+        </>
+      ),
+    },
+    notifications: {
+      title: "Notifications",
+      lede: "What Panel tells you about, while it is open.",
+      rows: (
+        <>
+          <SettingRow title="A session has finished" hint="When the board's feedback report is ready">
+            <Toggle label="A session has finished" checked={prefs.notifyDone} onChange={(v) => set("notifyDone", v)} />
+          </SettingRow>
+          <SettingRow title="Take it to your supervisor" hint="When the board cannot agree or a point is outside its field">
+            <Toggle label="Take it to your supervisor" checked={prefs.notifyEscalation} onChange={(v) => set("notifyEscalation", v)} />
+          </SettingRow>
+          <SettingRow title="Weekly summary" hint="What improved and what is still open across your tables">
+            <Toggle label="Weekly summary" checked={prefs.weekly} onChange={(v) => set("weekly", v)} />
+          </SettingRow>
+        </>
+      ),
+    },
+    privacy: {
+      title: "Privacy & data",
+      lede: "Your speech is turned into text in the browser. Panel keeps the text, never the audio.",
+      rows: (
+        <>
+          <SettingRow title="Keep transcripts" hint="Practice transcripts and the board's questions">
+            <Segmented label="Keep transcripts" value={prefs.keep} onChange={(v) => set("keep", v)} options={[{ id: "always", label: "Until I delete" }, { id: "30", label: "30 days" }, { id: "never", label: "Don't keep" }]} />
+          </SettingRow>
+          <SettingRow title="Settings on this device" hint="Reset every choice on this page to its default">
+            <Button variant="secondary" size="sm" onClick={() => save(null)}>
+              Reset
+            </Button>
+          </SettingRow>
+        </>
+      ),
+    },
+    accessibility: {
+      title: "Accessibility",
+      lede: "Make sessions easier to follow.",
+      rows: (
+        <>
+          <SettingRow title="Motion" hint="Follow your system setting, or reduce it here">
+            <Segmented label="Motion" value={prefs.motion} onChange={(v) => set("motion", v)} options={[{ id: "system", label: "System" }, { id: "reduce", label: "Reduced" }, { id: "full", label: "Full" }]} />
+          </SettingRow>
+          <SettingRow title="Larger captions" hint="Bigger question text in calls">
+            <Toggle label="Larger captions" checked={prefs.bigCaptions} onChange={(v) => set("bigCaptions", v)} />
+          </SettingRow>
+          <SettingRow title="Show questions as text" hint="Every spoken question also appears on screen">
+            <Toggle label="Show questions as text" checked={prefs.questionText} onChange={(v) => set("questionText", v)} />
+          </SettingRow>
+        </>
+      ),
+    },
+    account: {
+      title: "Account",
+      lede: "This version has one demo student, so there is nothing to sign up for.",
+      rows: (
+        <>
+          <SettingRow title="Signed in as" hint={profile.name} />
+          <SettingRow title="Sign out" hint="Back to the sign-in page">
+            <Button variant="secondary" size="sm" href="/login">
+              Sign out
+            </Button>
+          </SettingRow>
+        </>
+      ),
+    },
+  };
+  const current = body[section];
+
+  return (
+    <div className="settings">
+      <nav className="settings__nav" aria-label="Settings sections">
+        {SECTIONS.map((s) => (
+          <button key={s.id} type="button" className={cn("settings__tab", s.id === section && "settings__tab--active")} aria-current={s.id === section ? "page" : undefined} onClick={() => setSection(s.id)}>
+            {s.label}
+          </button>
+        ))}
+      </nav>
+
+      <section className="settings__main" aria-labelledby="settings-title">
+        <h1 id="settings-title" className="settings__title">
+          {current.title}
+        </h1>
+        <p className="settings__lede">{current.lede}</p>
+        <div className="settings__rows">{current.rows}</div>
+      </section>
+
+      <aside className="settings__card" aria-label="Your profile">
+        <Avatar avatar={avatar} size="fill" className="settings__avatar" alt={`${profile.name}'s avatar`} />
+        <span className="settings__name">{profile.name}</span>
+        <span className="settings__sub">
+          {profile.university} · {profile.course}
+        </span>
+        <Segmented label="Level" value={level} onChange={(v) => set("level", v)} options={[{ id: "UG", label: "UG" }, { id: "PGT", label: "PGT" }, { id: "PGR", label: "PGR" }]} />
+        <Button variant="secondary" size="sm" href="/studio">
+          Edit avatar
+        </Button>
+        <div className="settings__card-foot">
+          <Button variant="quiet" block href="/login">
+            Sign out
+          </Button>
+          <TextButton className="settings__delete" onClick={() => setDeleteNote(true)}>
+            Delete account
+          </TextButton>
+          {deleteNote && (
+            <span className="settings__note" role="status">
+              There is one demo account in this version, so there is nothing to delete.
+            </span>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
