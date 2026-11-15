@@ -296,6 +296,12 @@ Respect `prefers-reduced-motion`: replace every movement with a 150ms cross-fade
 5. **ON THE TABLE**: document rows with a paper icon, title and "n OPEN" in orange (open actions). The mark scheme is listed here too, with a mono `MARK SCHEME` label.
 6. Footer: a primary CTA + an outlined **Edit board** button. The CTA is orange **Take your seat** when a session is in progress (it resumes it), otherwise black **Review a report** or **Practise a presentation**, whichever the project's template calls for.
 
+### What the board remembers (home side panel)
+- Place after Sessions and before At this table. Use the mono label **WHAT THE BOARD REMEMBERS**.
+- A quiet outlined disclosure shows the count of remembered attempts and open actions. Expanding it shows the three most recent attempts (type, mono date, an ink dot, short verdict and ticked action count), the previous attempt's still-open actions, and criterion trends as three-dot ratings from oldest to newest.
+- Levels use ink dots only; **STILL OPEN FROM LAST TIME** may use the one orange highlight. Counts describe sessions or actions, never marks or scores.
+- The side panel scrolls when expanded. Empty copy explains that memory begins after the first session. Temporary sample memory keeps the floor's sample-data label. Each invented remembered attempt also says **SAMPLE REPLIES · NOT REAL FEEDBACK**, including when held in a configured database; real Claude runs exclude these attempts from comparisons.
+
 ### Assessors sheet (carousel of assessors)
 - A sheet 1010×352 sliding up above the dock, with a 32px radius and a 1.5px ink border.
 - Cards 228 wide, 16px gap, 4 visible, navigated with ← → buttons. Each card: 84px avatar, project-code chips for the tables they sit at (e.g. `MT` `LR`), name (Bricolage 16), field, focus (one line, ellipsis), harshness as five dots, `n NOTES` in mono, and a **Seat at {code}** pill for the focused table.
@@ -374,9 +380,10 @@ One layout for both session types, on a white page with a 28px top radius. In or
 3. **Actions, ranked:** numbered rows. What to do (600 weight), why it matters, the avatars of the assessors who raised it, effort as dots, and a round tick box. For a report, a link to the paragraphs. For a presentation, the quote from the transcript in mono.
 4. **Keep:** the strengths, as a plain list.
 5. **Report only:** likely questions, each beside the assessor who would ask it.
-6. **Presentation only:** delivery (length and words per minute in mono, then notes on structure and clarity), and a review of each question with the outline of a stronger answer.
+6. **Presentation only:** delivery (length and words per minute in mono, then notes on structure and clarity), and a review of each question with a bullet list of points a stronger answer would cover. Never give answer wording.
 7. **Take this to your supervisor:** points the board could not settle or that fall outside its fields. A card with a 1.5px ink border and the mono label `FOR A HUMAN`. This is the one place the product sends the student to a person, so it must not look like an error.
-8. **Since last time**, when there was an earlier session: what improved, and what was raised again (mono `RAISED AGAIN` in orange).
+8. **Since last time**, when there was an earlier session: what improved, what was raised again (mono `RAISED AGAIN` in orange), and the previous attempt's unticked actions under `STILL OPEN`.
+9. **How the board behaved**, last in both report kinds: ordered mode shifts, then guardrail events grouped by reason with their counts. Mode names and event counts are mono labels, with ink dots for the ordered trace. Explain why a boundary removed content without showing the removed wording. A new report with no events says so; an older report without telemetry says behavior was not recorded. Preserve this section in **Copy as text**, including the sample-reply label when applicable. No scores and no additional highlight colours.
 
 A **Copy as text** pill sits at the top right. The report never shows a mark, a grade or a percentage. It never comments on tone of voice or body language, because the product only has the student's words.
 

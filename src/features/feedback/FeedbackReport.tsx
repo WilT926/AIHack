@@ -7,6 +7,7 @@
 import { useState, type ReactNode } from "react";
 import { Avatar, Button, DotRating, Label } from "@/components/ui";
 import type { FeedbackReport as Report, PitchQuestion } from "@/lib/schemas";
+import { summarizeGuardrails } from "./behavior";
 import { clock } from "@/lib/voice/transcript";
 
 export type ReportPerson = { id: string; name: string; avatar: string };
@@ -41,6 +42,13 @@ export function reportAsText(r: Report, name: (id: string) => string, questions:
       ...r.sinceLastTime.raisedAgain.map((s) => `Raised again: ${s}`),
       ...r.sinceLastTime.stillOpen.map((s) => `Still open: ${s}`),
     );
+  lines.push("", "How the board behaved:");
+  if (!r.behavior) lines.push("Behavior was not recorded for this earlier session.");
+  else {
+    lines.push("Mode shifts:", ...(r.behavior.modeShifts.length ? r.behavior.modeShifts.map((m) => `- ${m.mode.replaceAll("-", " ")}: ${m.reason}`) : ["No mode changes recorded."]));
+    const events = summarizeGuardrails(r.behavior.guardrailEvents);
+    lines.push("Guardrails:", ...(events.length ? events.map((e) => `- ${e.label} (${e.count}): ${e.reason}`) : ["No guardrail events recorded."]));
+  }
   return lines.filter((l) => l !== undefined).join("\n");
 }
 
@@ -91,7 +99,7 @@ export function FeedbackReport({
           variant="quiet"
           size="sm"
           onClick={() => {
-            const text = reportAsText({ ...report, actions: report.actions.map((a) => ({ ...a, done: !!ticked[a.id] })) }, name, questions, label);
+            const text = (sample ? "Sample replies: not real feedback\n\n" : "") + reportAsText({ ...report, actions: report.actions.map((a) => ({ ...a, done: !!ticked[a.id] })) }, name, questions, label);
             void navigator.clipboard?.writeText(text).then(() => setCopied(true));
           }}
         >
@@ -275,6 +283,25 @@ export function FeedbackReport({
             </ul>
           </Section>
         )}
+
+      <Section title="How the board behaved">
+        {!report.behavior ? <p className="fb-quiet">Behavior was not recorded for this earlier session.</p> : <>
+          <Label size="sm" tone="ink">Mode shifts · in order</Label>
+          {report.behavior.modeShifts.length ? <ol className="fb-list fb-behavior">
+            {report.behavior.modeShifts.map((shift, i) => <li key={`${shift.turnId}-${i}`}>
+              <span className="fb-behavior__dot" aria-hidden />
+              <div><Label size="sm" tone="ink">{shift.mode.replaceAll("-", " ")}</Label><p className="fb-p">{shift.reason}</p></div>
+            </li>)}
+          </ol> : <p className="fb-quiet">No mode changes recorded.</p>}
+          <Label size="sm" tone="ink">Guardrail events</Label>
+          {report.behavior.guardrailEvents.length ? <ul className="fb-list">
+            {summarizeGuardrails(report.behavior.guardrailEvents).map((event) => <li key={`${event.label}-${event.reason}`} className="fb-guardrail">
+              <Label size="sm" tone="ink">{event.count} · {event.label}</Label>
+              <p className="fb-p">{event.reason}</p>
+            </li>)}
+          </ul> : <p className="fb-quiet">No guardrail events recorded.</p>}
+        </>}
+      </Section>
 
       {footer}
     </article>

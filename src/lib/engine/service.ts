@@ -38,7 +38,7 @@ async function loadContext(projectId: string, documentId: string): Promise<{ con
   if (!document.paragraphs.some((p) => p.type !== "heading")) throw new EngineError("The document has no paragraphs to review.", "invalid_reply", false);
   if (!profile) throw new EngineError("The student profile is missing.", "invalid_reply", false);
   const board = project.boardId ? await boards.get(project.boardId) : null;
-  return { context: { profile, project, document }, boardIds: board?.assessorIds ?? [], memory: project.memory };
+  return { context: { profile, project, document }, boardIds: board?.assessorIds ?? [], memory: { attempts: project.memory.attempts.filter((a) => !hasClaude() || a.replySource === "claude") } };
 }
 
 /**

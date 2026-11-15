@@ -2,7 +2,7 @@
 // Pure and serialisable: the page builds it on the server from either the
 // sample fixture or src/lib/data, and the client components never change.
 import { features } from "@/config";
-import type { FeedbackReport, Workspace } from "@/lib/schemas";
+import type { BoardMemory, FeedbackReport, Workspace } from "@/lib/schemas";
 import { MAX_TABLES } from "@/styles/floor";
 
 export type SessionState = "done" | "live" | "ready" | "deadline";
@@ -50,6 +50,7 @@ export type FloorTable = {
   seats: FloorSeat[];
   docs: FloorDoc[];
   hasMarkScheme: boolean;
+  memory: BoardMemory;
   openActions: number;
   questions: { assessorId: string; text: string }[];
   tags: FloorFilter[];
@@ -121,6 +122,7 @@ type RawSession = {
   title: string;
   documentId?: string;
   report?: FeedbackReport | null;
+  sample: boolean;
 };
 
 export function buildFloor(ws: Workspace): FloorModel {
@@ -149,6 +151,7 @@ export function buildFloor(ws: Workspace): FloorModel {
           title: docById.get(r.documentId)?.title ?? "Report",
           documentId: r.documentId,
           report: r.report,
+          sample: r.replySource === "sample",
         })),
       ...ws.pitchSessions
         .filter((s) => s.projectId === p.id)
@@ -159,6 +162,7 @@ export function buildFloor(ws: Workspace): FloorModel {
           state: s.status === "done" ? "done" : s.status === "ready" ? "ready" : "live",
           title: "Presentation practice",
           report: s.report,
+          sample: s.replySource === "sample",
         })),
     ].sort((a, b) => a.at.localeCompare(b.at));
 
@@ -180,7 +184,7 @@ export function buildFloor(ws: Workspace): FloorModel {
         type,
         title: s.kind === "review" ? s.title : type,
         date: s.state === "live" ? "NOW" : dateLabel(s.at),
-        note,
+        note: s.sample ? `Sample replies · ${note}` : note,
         reportHref,
       };
     });
@@ -260,6 +264,7 @@ export function buildFloor(ws: Workspace): FloorModel {
       sessions,
       seats,
       docs,
+      memory: p.memory,
       hasMarkScheme: p.markSchemeText.trim().length > 0,
       openActions,
       questions: (latestReport?.likelyQuestions ?? [])
@@ -287,7 +292,7 @@ export function buildFloor(ws: Workspace): FloorModel {
   const deskReports: DeskReport[] = tables.flatMap((t) =>
     t.sessions
       .filter((s) => s.state === "done")
-      .map((s) => ({ id: s.id, title: `${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
+      .map((s) => ({ id: s.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
   );
 
   const liveIdx = tables.findIndex((t) => t.live);
