@@ -1,0 +1,686 @@
+{
+  "provenance": "Real Claude on invented document and invented lecture note; isolated temporary store; not student work",
+  "verifiedAt": "2026-11-15T03:11:24.075Z",
+  "copiedAssessor": {
+    "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+    "name": "Dr Alex Rowan (invented)",
+    "field": "Biomedical engineering",
+    "role": "Module Lead",
+    "personality": "",
+    "harshness": 3,
+    "focusAreas": [
+      "Mark scheme",
+      "Handbook requirements"
+    ],
+    "avatar": "avatar-099",
+    "portrait": null,
+    "idleClip": null,
+    "talkingClip": null,
+    "isPreset": false,
+    "basedOn": "module-lead"
+  },
+  "document": {
+    "id": "note-evidence-doc",
+    "projectId": "note-evidence-project",
+    "title": "Prototype report (invented)",
+    "paragraphs": [
+      {
+        "id": "p1",
+        "text": "We built an offline timetable search prototype. It indexes invented module names and room labels from a fixed local file. A keyword query returns matching timetable entries. The prototype has no network connection, accounts or personal records.",
+        "type": "paragraph"
+      },
+      {
+        "id": "p2",
+        "text": "We compared keyword search with manually scanning the same timetable. Six volunteers completed eight lookup tasks in counterbalanced order. We measured completion time and correct matches. The median completion time was 18 seconds with search and 31 seconds with manual scanning, with five incorrect matches across all search tasks.",
+        "type": "paragraph"
+      },
+      {
+        "id": "p3",
+        "text": "The interface uses one search box and a list of matching modules. Participants said abbreviations were difficult to recognise. Our next version will show full module titles. The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+        "type": "paragraph"
+      }
+    ],
+    "createdAt": "2026-11-15T03:11:24.075Z"
+  },
+  "intervention": {
+    "source": "lecture",
+    "text": "wants safety considered in the design"
+  },
+  "before": {
+    "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+    "status": "done",
+    "comments": [
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c1",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p1",
+        "quote": "The prototype has no network connection, accounts or personal records.",
+        "category": "Scope",
+        "severity": "praise",
+        "text": "You state the prototype's scope clearly, including what it does not do. This sets the boundaries for the evaluation and helps the reader judge what the results apply to.",
+        "suggestion": "",
+        "done": false
+      },
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c2",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p2",
+        "quote": "with five incorrect matches across all search tasks",
+        "category": "Evaluation reporting",
+        "severity": "major",
+        "text": "The accuracy result has no denominator. You do not say how many correct matches were returned, how many total matches were possible, or how many incorrect matches occurred under manual scanning. Without these, the reader cannot judge whether five errors is a small or large proportion.",
+        "suggestion": "Report correct and incorrect matches for each condition as counts out of the total tasks, and give the spread of completion times alongside the medians.",
+        "done": false
+      },
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c3",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p2",
+        "quote": "We compared keyword search with manually scanning the same timetable.",
+        "category": "Evaluation design",
+        "severity": "minor",
+        "text": "The excerpt does not state the question the evaluation was meant to answer, so it is unclear whether the comparison tests the project's aim. The counterbalancing is a sound design choice, but its link to the research question is not shown here.",
+        "suggestion": "State the evaluation question in one sentence before the method, and tie each reported measure to it.",
+        "done": false
+      },
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c4",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p3",
+        "quote": "The interface uses one search box and a list of matching modules.",
+        "category": "Design rationale",
+        "severity": "major",
+        "text": "The design rationale is missing from this excerpt. You describe the interface but not why a single search box and a results list were chosen over alternatives. Design rationale is a graded criterion, so this would cost marks if it is absent from the full report.",
+        "suggestion": "Explain the design decisions by linking each one to a stated requirement or to evidence from the evaluation, and note the alternatives you considered.",
+        "done": false
+      },
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c5",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p3",
+        "quote": "Participants said abbreviations were difficult to recognise.",
+        "category": "Evidence and analysis",
+        "severity": "minor",
+        "text": "This finding is reported without the number of participants who raised it or how the comments were collected. It is also unclear whether it came from structured questions or informal remarks, so its weight is hard to judge.",
+        "suggestion": "State how many participants made the comment and how feedback was gathered, then link the finding to a specific design change.",
+        "done": false
+      },
+      {
+        "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c6",
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "paragraphId": "p3",
+        "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+        "category": "Critical limitations",
+        "severity": "praise",
+        "text": "You identify the main limits of the study, including the sample and the fixed tasks, and you explain what they stop you concluding. This is the kind of critical reflection that the evaluation criterion rewards.",
+        "suggestion": "",
+        "done": false
+      }
+    ],
+    "dropped": 0,
+    "angles": [
+      "how well the work meets each graded criterion in the brief",
+      "whether the conclusion answers the question the project set",
+      "the balance between description and critical analysis"
+    ],
+    "guardrailEvents": [],
+    "replySource": "claude"
+  },
+  "after": [
+    {
+      "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+      "status": "done",
+      "comments": [
+        {
+          "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c1",
+          "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+          "paragraphId": "p1",
+          "quote": "The prototype has no network connection, accounts or personal records.",
+          "category": "Design rationale",
+          "severity": "minor",
+          "text": "The report states the absence of network, accounts and personal records but does not explain why these choices were made or what risks they address. A second marker would need that reasoning to credit the design decisions, and the lecture-stated expectation that safety is considered is not addressed here. No handbook extract or mark scheme was supplied, so I cannot check the handbook requirements directly.",
+          "suggestion": "Add a short paragraph explaining why the offline, no-account design was chosen and what data-handling or safety considerations, if any, shaped it.",
+          "done": false
+        },
+        {
+          "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c2",
+          "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+          "paragraphId": "p2",
+          "quote": "Six volunteers completed eight lookup tasks in counterbalanced order.",
+          "category": "Method",
+          "severity": "praise",
+          "text": "Counterbalancing the task order is a sound choice for a within-participant comparison and is clearly stated. This is a strength to keep and to make explicit in the evaluation.",
+          "suggestion": "Keep this sentence and briefly say how the counterbalancing was implemented so the design can be checked.",
+          "done": false
+        },
+        {
+          "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c3",
+          "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+          "paragraphId": "p2",
+          "quote": "with five incorrect matches across all search tasks",
+          "category": "Evaluation",
+          "severity": "major",
+          "text": "The error figure has no denominator and no comparison with the manual condition, so the reader cannot tell whether search was more or less accurate. The median times are given without any measure of spread, and the description of results is not yet balanced by critical analysis of what they mean.",
+          "suggestion": "Report the number of correct matches out of total attempts for both conditions, give a measure of spread alongside the medians, and interpret what the error difference means for the design.",
+          "done": false
+        },
+        {
+          "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c4",
+          "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+          "paragraphId": "p3",
+          "quote": "Participants said abbreviations were difficult to recognise.",
+          "category": "Evaluation",
+          "severity": "minor",
+          "text": "This is a finding presented without any indication of how it was collected or how many participants raised it. A second marker would not be able to judge how much weight it deserves.",
+          "suggestion": "State how the comment was obtained, such as a questionnaire or interview, and how many participants mentioned it.",
+          "done": false
+        },
+        {
+          "id": "ece7c3e8-7e2e-436b-8d00-eedfe369403e-c5",
+          "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Critical analysis",
+          "severity": "praise",
+          "text": "The limitations are acknowledged directly and tied to the scope of the claims, which is the kind of critical reflection the evaluation needs. The sentence would be stronger if it also said which conclusions the study does support.",
+          "suggestion": "Add one sentence stating the specific claim the results do support, so the limitation is balanced against a clear conclusion.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "the balance between description and critical analysis",
+        "how the work would read to a second marker",
+        "anything the handbook requires that is missing"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    },
+    {
+      "assessorId": "methodologist",
+      "status": "done",
+      "comments": [
+        {
+          "id": "methodologist-c1",
+          "assessorId": "methodologist",
+          "paragraphId": "p2",
+          "quote": "Six volunteers completed eight lookup tasks in counterbalanced order.",
+          "category": "Controls",
+          "severity": "praise",
+          "text": "Counterbalancing the order of conditions is the right control for a within-participant comparison of search and manual scanning, because it spreads learning effects across both conditions. The report should say how the orders were assigned and whether each order was used equally often.",
+          "suggestion": "State the number of participants in each order and confirm that the allocation was balanced across the six volunteers.",
+          "done": false
+        },
+        {
+          "id": "methodologist-c2",
+          "assessorId": "methodologist",
+          "paragraphId": "p2",
+          "quote": "Six volunteers completed eight lookup tasks in counterbalanced order.",
+          "category": "Sample size",
+          "severity": "major",
+          "text": "Six participants is too few to support a comparison of completion times, and the excerpt gives no power calculation or other reason for this number. Nothing in the text shows the study could detect a realistic difference between the two methods.",
+          "suggestion": "Add a justification for the sample size, such as a power calculation based on an expected effect size or a stated rationale for the number of participants, and present the result as exploratory if the study was not powered.",
+          "done": false
+        },
+        {
+          "id": "methodologist-c3",
+          "assessorId": "methodologist",
+          "paragraphId": "p2",
+          "quote": "The median completion time was 18 seconds with search and 31 seconds with manual scanning",
+          "category": "Analysis",
+          "severity": "major",
+          "text": "Medians are reported without any measure of spread, confidence interval or statistical test, so the reader cannot judge whether the difference is reliable. With six participants and eight tasks each, the analysis should match the repeated-measures design, for example by using participant-level summaries or a paired test.",
+          "suggestion": "Report the spread (for example the interquartile range) for each condition, the paired differences per participant, and an analysis that accounts for the repeated measures on each participant.",
+          "done": false
+        },
+        {
+          "id": "methodologist-c4",
+          "assessorId": "methodologist",
+          "paragraphId": "p2",
+          "quote": "with five incorrect matches across all search tasks",
+          "category": "Measurement error",
+          "severity": "major",
+          "text": "The error count has no denominator and no comparison with manual scanning, so accuracy cannot be compared across the two methods. The text also does not say how a correct match was defined or how completion time was recorded, so measurement error cannot be assessed.",
+          "suggestion": "Report errors as a proportion of tasks for each method, define what counts as a correct match, and state how times were recorded and whether the recording was checked for consistency.",
+          "done": false
+        },
+        {
+          "id": "methodologist-c5",
+          "assessorId": "methodologist",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Analysis",
+          "severity": "minor",
+          "text": "The limitations are acknowledged, which is good, but they are stated only in terms of generalisation. They should also address the internal validity issues, such as the small sample, the lack of a stated sample size rationale and the fixed tasks possibly favouring one method.",
+          "suggestion": "Extend the limitations paragraph to cover the statistical power of the comparison and whether the fixed tasks could have influenced the results.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "how measurement error is handled",
+        "whether the sample size is justified",
+        "whether the analysis matches the design"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    },
+    {
+      "assessorId": "literature-hawk",
+      "status": "done",
+      "comments": [
+        {
+          "id": "literature-hawk-c1",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p1",
+          "quote": "We built an offline timetable search prototype.",
+          "category": "Novelty",
+          "severity": "major",
+          "text": "The report claims a prototype but does not say what existing timetable or campus search tools already do, so a reader cannot judge what is new. The novelty is asserted rather than positioned against prior work.",
+          "suggestion": "Add a short related-work paragraph that identifies existing approaches to timetable or schedule search and states specifically how this offline design differs from them.",
+          "done": false
+        },
+        {
+          "id": "literature-hawk-c2",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p2",
+          "quote": "We compared keyword search with manually scanning the same timetable.",
+          "category": "Citation",
+          "severity": "major",
+          "text": "Comparing keyword search with browsing a list is a long-studied question in information retrieval and interface design, yet the report makes no reference to that work. Without it, the comparison's findings cannot be placed against what is already known.",
+          "suggestion": "Cite the established literature on search versus browsing for structured lists, and state which of its findings your results confirm or extend.",
+          "done": false
+        },
+        {
+          "id": "literature-hawk-c3",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p2",
+          "quote": "The median completion time was 18 seconds with search and 31 seconds with manual scanning",
+          "category": "Citation",
+          "severity": "minor",
+          "text": "The timing figures are presented with no benchmark from comparable studies, so the reader cannot tell whether a 13-second difference is typical or unusual. The report has no sources at all, so over-reliance on any single source cannot be judged.",
+          "suggestion": "Add one or two comparable studies that report lookup or task-completion times, and say briefly whether your figures are in line with them.",
+          "done": false
+        },
+        {
+          "id": "literature-hawk-c4",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p3",
+          "quote": "Participants said abbreviations were difficult to recognise.",
+          "category": "Citation",
+          "severity": "minor",
+          "text": "This is a usability claim that is plausible but unsupported by any reference or stated basis beyond participant remarks. It reads as a general statement about abbreviations in interfaces.",
+          "suggestion": "Either cite prior work on abbreviation comprehension in interfaces, or label this explicitly as a participant observation from a small sample.",
+          "done": false
+        },
+        {
+          "id": "literature-hawk-c5",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Novelty",
+          "severity": "minor",
+          "text": "The limitation is stated honestly, which keeps the novelty claim modest. However, the report does not say which prior work on campus timetable use the findings might bear on, so the limitation is not linked to the wider literature.",
+          "suggestion": "Name the existing studies of timetable or course-scheduling use that your findings could be compared with, and note where they agree or differ.",
+          "done": false
+        },
+        {
+          "id": "literature-hawk-c6",
+          "assessorId": "literature-hawk",
+          "paragraphId": "p1",
+          "quote": "The prototype has no network connection, accounts or personal records.",
+          "category": "Novelty",
+          "severity": "praise",
+          "text": "The scope is stated plainly: offline, no accounts, no personal data. This is useful because it defines what the prototype does and does not claim, which a related-work section can build on.",
+          "suggestion": "Use these scope boundaries as the basis for your comparison with existing tools in the related-work section.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "claims that need a citation",
+        "over-reliance on a few sources",
+        "whether the novelty is overstated"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    },
+    {
+      "assessorId": "communicator",
+      "status": "done",
+      "comments": [
+        {
+          "id": "communicator-c1",
+          "assessorId": "communicator",
+          "paragraphId": "p1",
+          "quote": "We built an offline timetable search prototype.",
+          "category": "Structure",
+          "severity": "minor",
+          "text": "The opening states what was built but does not tell the reader what the report covers, such as the design rationale, the comparison and the evaluation. A reader has to infer the report's structure from the rest of the text.",
+          "suggestion": "Add a short roadmap sentence to the opening paragraph that names the design rationale, the comparison with manual scanning and the limitations, in the order the reader will meet them.",
+          "done": false
+        },
+        {
+          "id": "communicator-c2",
+          "assessorId": "communicator",
+          "paragraphId": "p1",
+          "quote": "The prototype has no network connection, accounts or personal records.",
+          "category": "Clarity",
+          "severity": "praise",
+          "text": "The scope and constraints are stated plainly and briefly, so the reader knows immediately what the prototype does and does not include. The sentence structure is clear throughout the paragraph.",
+          "suggestion": "",
+          "done": false
+        },
+        {
+          "id": "communicator-c3",
+          "assessorId": "communicator",
+          "paragraphId": "p2",
+          "quote": "We measured completion time and correct matches.",
+          "category": "Flow",
+          "severity": "minor",
+          "text": "The methods say correct matches were measured, but the results report only incorrect matches. The reader has to work out how the two measures relate, and whether the error count applies to both conditions.",
+          "suggestion": "Make the outcome measures and the reported results use the same terms, and state which condition each error figure refers to.",
+          "done": false
+        },
+        {
+          "id": "communicator-c4",
+          "assessorId": "communicator",
+          "paragraphId": "p2",
+          "quote": "The median completion time was 18 seconds with search and 31 seconds with manual scanning, with five incorrect matches across all search tasks.",
+          "category": "Structure",
+          "severity": "minor",
+          "text": "This sentence packs two results and an error count into one line, and the error count is attached by 'with' to the timing result. It is hard to see that these are separate findings, and the paragraph has no clear single point.",
+          "suggestion": "Split the timing result and the error count into separate sentences so each finding stands alone.",
+          "done": false
+        },
+        {
+          "id": "communicator-c5",
+          "assessorId": "communicator",
+          "paragraphId": "p3",
+          "quote": "Participants said abbreviations were difficult to recognise.",
+          "category": "Flow",
+          "severity": "minor",
+          "text": "This finding arrives without any lead-in, and nothing earlier in the report introduces participant comments or a qualitative element. It reads as an abrupt shift in the paragraph.",
+          "suggestion": "Introduce where this feedback came from and how it was collected, or move it to the section where the evaluation is reported.",
+          "done": false
+        },
+        {
+          "id": "communicator-c6",
+          "assessorId": "communicator",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Structure",
+          "severity": "minor",
+          "text": "The paragraph mixes the interface description, participant feedback, a plan for the next version and a limitations statement. Each is a separate point, and the limitations sentence sits at the end of the paragraph where it is easy to miss.",
+          "suggestion": "Give the limitations their own paragraph or section, and keep the interface description and the planned change in separate paragraphs.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "whether the opening tells the reader what to expect",
+        "whether each paragraph makes one point",
+        "paragraph structure and signposting"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    },
+    {
+      "assessorId": "outsider",
+      "status": "done",
+      "comments": [
+        {
+          "id": "outsider-c1",
+          "assessorId": "outsider",
+          "paragraphId": "p1",
+          "quote": "It indexes invented module names and room labels from a fixed local file.",
+          "category": "Adoption",
+          "severity": "major",
+          "text": "The report does not say how a real campus would keep this local file current when modules and rooms change, who would do that, or what it would cost. Without that, a reader cannot judge whether the prototype could be adopted beyond a demonstration.",
+          "suggestion": "Add a short section, or a few sentences, on how the data would be refreshed and by whom, and note that the cost of that process is unknown at this stage.",
+          "done": false
+        },
+        {
+          "id": "outsider-c2",
+          "assessorId": "outsider",
+          "paragraphId": "p2",
+          "quote": "The median completion time was 18 seconds with search and 31 seconds with manual scanning",
+          "category": "Market",
+          "severity": "minor",
+          "text": "The timing gain is presented without any link to value for the people who would pay for or run such a tool. Nothing indicates how time saved would translate into benefit for students or administrators, or how it compares with existing timetable systems the institution may already use.",
+          "suggestion": "State briefly who the likely users and funders would be, and whether any existing timetable tools were considered as the alternative to your prototype.",
+          "done": false
+        },
+        {
+          "id": "outsider-c3",
+          "assessorId": "outsider",
+          "paragraphId": "p3",
+          "quote": "Participants said abbreviations were difficult to recognise.",
+          "category": "Adoption",
+          "severity": "minor",
+          "text": "This is a useful signal about user acceptance, but it is a single comment without any indication of how many participants raised it or how it affected their willingness to use the tool. Its significance for adoption therefore remains unclear.",
+          "suggestion": "Report how many of the six participants raised the point and whether it affected task outcomes, so the reader can judge how much weight the adoption concern deserves.",
+          "done": false
+        },
+        {
+          "id": "outsider-c4",
+          "assessorId": "outsider",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Adoption",
+          "severity": "praise",
+          "text": "You are candid that the sample and tasks restrict what can be said about wider use, which is the right caution for a prototype. This keeps claims about adoption appropriately modest.",
+          "suggestion": "",
+          "done": false
+        },
+        {
+          "id": "outsider-c5",
+          "assessorId": "outsider",
+          "paragraphId": "p1",
+          "quote": "The prototype has no network connection, accounts or personal records.",
+          "category": "Cost",
+          "severity": "minor",
+          "text": "Avoiding network connections and personal records simplifies deployment and data protection, which is an advantage. However, the report does not say what the cost of building, hosting or supporting the prototype would be if it were used by a whole campus, so the advantage is not quantified.",
+          "suggestion": "Add one or two sentences on the expected running and support costs of a real deployment, marking any figures you cannot yet estimate as unknown.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "assumptions an expert might not notice",
+        "what is missing for someone outside the field",
+        "real-world use, cost and adoption"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    },
+    {
+      "assessorId": "sceptic",
+      "status": "done",
+      "comments": [
+        {
+          "id": "sceptic-c1",
+          "assessorId": "sceptic",
+          "paragraphId": "p2",
+          "quote": "The median completion time was 18 seconds with search and 31 seconds with manual scanning",
+          "category": "Weakest claim",
+          "severity": "major",
+          "text": "The speed advantage is the report's central claim, but it rests on six participants and eight tasks with no measure of spread, no individual-level pairing and no statistical test. A median from this sample cannot show that search is reliably faster, and the report does not say how many observations each median is based on.",
+          "suggestion": "Report the spread for each condition (for example the interquartile range or individual times), state how times were paired within participants, and either add a suitable paired comparison or describe the difference as descriptive only.",
+          "done": false
+        },
+        {
+          "id": "sceptic-c2",
+          "assessorId": "sceptic",
+          "paragraphId": "p2",
+          "quote": "with five incorrect matches across all search tasks",
+          "category": "Bias",
+          "severity": "major",
+          "text": "The error count has no denominator and there is no error count for manual scanning, so the report cannot say whether search was more or less accurate than the comparison. The figure could also reflect a few participants or a few tasks rather than a general problem.",
+          "suggestion": "Give the total number of matches returned or attempted in each condition, the error rate per condition, and which tasks produced the five errors.",
+          "done": false
+        },
+        {
+          "id": "sceptic-c3",
+          "assessorId": "sceptic",
+          "paragraphId": "p2",
+          "quote": "Six volunteers completed eight lookup tasks in counterbalanced order.",
+          "category": "Bias",
+          "severity": "major",
+          "text": "Counterbalancing addresses order effects between conditions, but the report does not address how the volunteers were recruited, whether they already knew the timetable, or whether they learned across the eight tasks. Any of these could explain a time difference as readily as the interface does.",
+          "suggestion": "Describe how participants were recruited and their prior familiarity with the timetable, and discuss learning effects across tasks and the alternative explanations for the time difference.",
+          "done": false
+        },
+        {
+          "id": "sceptic-c4",
+          "assessorId": "sceptic",
+          "paragraphId": "p3",
+          "quote": "Participants said abbreviations were difficult to recognise.",
+          "category": "Weakest claim",
+          "severity": "minor",
+          "text": "This is an unquantified impression. The report does not say how many participants raised it, whether it was prompted or spontaneous, or whether the lookup tasks used abbreviations at all, so the finding cannot yet support a design decision.",
+          "suggestion": "State how many participants mentioned abbreviations, how the comment was elicited, and whether any tasks depended on abbreviated labels.",
+          "done": false
+        },
+        {
+          "id": "sceptic-c5",
+          "assessorId": "sceptic",
+          "paragraphId": "p3",
+          "quote": "The small convenience sample and the fixed lookup tasks limit what can be concluded about use across courses.",
+          "category": "Structure",
+          "severity": "major",
+          "text": "The limitation is acknowledged, but the results in p2 are not presented with the same caution, and the report does not say what evidence would change its conclusions. Given the invented data and fixed local file, the findings are also limited for real timetables beyond the sample and tasks.",
+          "suggestion": "Move a statement of these limits to the evaluation of the speed and accuracy results, and state what evidence (for example a larger sample, real timetable data or a randomised task order) would be needed to support the conclusion.",
+          "done": false
+        },
+        {
+          "id": "sceptic-c6",
+          "assessorId": "sceptic",
+          "paragraphId": "p2",
+          "quote": "We measured completion time and correct matches.",
+          "category": "Structure",
+          "severity": "praise",
+          "text": "Recording both completion time and correct matches is the right design for a comparison of this kind, because it prevents a faster method from being judged only on speed. Keeping that pairing in the write-up will help the report be read as a balanced evaluation.",
+          "suggestion": "Keep both outcomes in the results and report them with the same level of detail.",
+          "done": false
+        }
+      ],
+      "dropped": 0,
+      "angles": [
+        "conclusions that go beyond the evidence",
+        "alternative explanations for the results",
+        "what would change the conclusion"
+      ],
+      "guardrailEvents": [],
+      "replySource": "claude"
+    }
+  ],
+  "safetyRaised": {
+    "before": false,
+    "after": [
+      {
+        "assessorId": "ece7c3e8-7e2e-436b-8d00-eedfe369403e",
+        "raised": true
+      },
+      {
+        "assessorId": "methodologist",
+        "raised": false
+      },
+      {
+        "assessorId": "literature-hawk",
+        "raised": false
+      },
+      {
+        "assessorId": "communicator",
+        "raised": false
+      },
+      {
+        "assessorId": "outsider",
+        "raised": false
+      },
+      {
+        "assessorId": "sceptic",
+        "raised": false
+      }
+    ]
+  },
+  "calls": [
+    {
+      "id": "dd0c513a-ad21-4169-948f-a1e8f85693f6",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:24.079Z",
+      "durationMs": 8531,
+      "inputTokens": 1939,
+      "outputTokens": 1747,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "1c89ebf8-9509-4d36-b315-620f3f4ab342",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.624Z",
+      "durationMs": 10241,
+      "inputTokens": 1980,
+      "outputTokens": 1985,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "7710fd44-152c-412a-8d94-5149f8a7b04b",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.625Z",
+      "durationMs": 7472,
+      "inputTokens": 1890,
+      "outputTokens": 1553,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "c9d0bea3-45c5-404b-a8a8-9a74d4bf4401",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.626Z",
+      "durationMs": 8161,
+      "inputTokens": 1888,
+      "outputTokens": 1689,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "6c3fa96f-3bb2-4f97-89b9-c8fd2265f369",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.626Z",
+      "durationMs": 9083,
+      "inputTokens": 1892,
+      "outputTokens": 1852,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "f55769c7-84a8-4a03-9d5c-76370b693bbf",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.626Z",
+      "durationMs": 10621,
+      "inputTokens": 1886,
+      "outputTokens": 2090,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "62e54766-89dc-4239-b671-ffc4a134568f",
+      "kind": "review",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T03:11:32.627Z",
+      "durationMs": 11413,
+      "inputTokens": 1893,
+      "outputTokens": 2397,
+      "ok": true,
+      "error": null
+    }
+  ]
+}

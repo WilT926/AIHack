@@ -67,7 +67,7 @@ export const features = {
   /** Seat and unseat assessors from the floor (Lane 3, step 3.4). */
   editBoards: false,
   /** New assessor: copy one, rename, adjust (Lane 3, step 3.3). */
-  newAssessor: false,
+  newAssessor: true,
   /** ElevenLabs voices; off means the browser's built-in voice. */
   elevenLabs: false,
 } as const;

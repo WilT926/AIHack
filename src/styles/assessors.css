@@ -1,0 +1,33 @@
+/* Profiles and notes from the Assessors sheet language (DESIGN_SYSTEM §9). */
+.as-page { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-6); }
+.as-page h2 { margin: 0; font: var(--text-h3-lg); }
+.as-quiet { color: var(--grey-700); font: var(--text-body); margin: 0; }
+.as-create { width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); padding: var(--space-6); }
+.as-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); width: 100%; }
+.as-group { display: flex; flex-direction: column; gap: var(--space-3); }
+.as-group > h2 { font: var(--text-label); color: var(--grey-700); }
+.as-card { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); padding: var(--space-6); }
+.as-card h3 { margin: 0; font: var(--text-h3-lg); }
+.as-card__focus { font: var(--text-small); color: var(--grey-700); margin: 0; }
+.as-choices { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+.as-profile { display: grid; grid-template-columns: 1fr 2fr; align-items: start; gap: var(--space-8); max-width: var(--width-content, 100%); }
+.as-profile__avatar { width: 100%; aspect-ratio: 1; }
+.as-profile__details { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.as-profile__details p { margin: var(--space-1) 0 0; font: var(--text-body); }
+.as-focus { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.as-focus li { border: var(--line); border-radius: var(--radius-pill); padding: var(--space-2) var(--space-3); font: var(--text-small); }
+.as-notes { width: 100%; display: flex; flex-direction: column; gap: var(--space-5); }
+.as-form { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-4); width: 100%; }
+.as-form > .ui-btn { align-self: flex-start; }
+.as-note-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.as-note { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); padding: var(--space-5); border: var(--line-width) solid var(--grey-100); border-radius: var(--radius-row); }
+.as-note__text { font: var(--text-body); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.as-transcript { border: var(--line-dashed); border-radius: var(--radius-quiet-card); padding: var(--space-6); box-sizing: border-box; }
+.as-message { margin: 0; font: var(--text-small); color: var(--ink); }
+.as-fieldset { padding: 0; margin: 0; border: 0; }
+.as-fieldset legend { margin-bottom: var(--space-2); }
+.as-avatar-picker summary { display: flex; align-items: center; gap: var(--space-3); cursor: pointer; }
+.as-avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2); max-height: 24rem; overflow-y: auto; padding: var(--space-3); }
+.as-avatar-grid .ui-chip { padding: var(--space-2); border-radius: var(--radius-row); background: var(--paper); }
+.as-avatar-grid .ui-chip[aria-pressed="true"] { border-color: var(--orange); outline: var(--line-width) solid var(--orange); }
+@media (max-width: 800px) { .as-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } .as-profile { grid-template-columns: 1fr 2fr; } }

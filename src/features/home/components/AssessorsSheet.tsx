@@ -1,6 +1,6 @@
 // Assessors sheet: a carousel of assessor cards above the dock (§9).
 import { features } from "@/config";
-import { Avatar, Button, CodeChip, DotRating, IconButton, Label } from "@/components/ui";
+import { Avatar, Button, CodeChip, DotRating, IconButton } from "@/components/ui";
 import { ASSESSOR_CARD } from "@/styles/floor";
 import type { FloorAssessor } from "../model";
 
@@ -23,7 +23,7 @@ export function AssessorsSheet({
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
-  const maxIdx = Math.max(0, assessors.length - ASSESSOR_CARD.visible);
+  const maxIdx = Math.max(0, assessors.length + (features.newAssessor ? 1 : 0) - ASSESSOR_CARD.visible);
   const step = ASSESSOR_CARD.width + ASSESSOR_CARD.gap;
 
   return (
@@ -47,6 +47,7 @@ export function AssessorsSheet({
       </div>
       <div className="fl-cards">
         <div className="fl-cards__track" style={{ transform: `translateX(${-carIdx * step}px)` }}>
+          {features.newAssessor && <div className="fl-card ui-card--dashed"><span className="fl-card__name">New assessor</span><p className="fl-card__focus">Copy a preset and add what your marker wants.</p><Button variant="secondary" href="/assessors">Copy an assessor</Button></div>}
           {assessors.map((a) => {
             const selected = a.id === selectedId;
             const seatedHere = !!focusCode && a.tables.includes(focusCode);
@@ -57,8 +58,9 @@ export function AssessorsSheet({
                 tabIndex={0}
                 className="fl-card"
                 aria-pressed={selected}
-                onClick={() => onSelect(a.id)}
+                onClick={(e) => { if (!(e.target as HTMLElement).closest("a")) onSelect(a.id); }}
                 onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return;
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     onSelect(a.id);
@@ -89,7 +91,7 @@ export function AssessorsSheet({
                     {seatedHere ? `Unseat from ${focusCode}` : `Seat at ${focusCode}`}
                   </Button>
                 ) : (
-                  <span className="fl-card__seated">{seatedHere ? <Label size="sm" className="fl-card__seated-label">{`Seated at ${focusCode}`}</Label> : null}</span>
+                  <Button variant={selected ? "on-ink" : "secondary"} size="sm" href={`/assessors/${a.id}`}>Profile and notes</Button>
                 )}
               </div>
             );
