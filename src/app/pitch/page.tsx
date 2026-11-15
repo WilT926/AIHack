@@ -1,16 +1,35 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { features } from "@/config";
+import { Spinner } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
+import { PitchFlow } from "@/features/pitch/PitchFlow";
+import { loadPitchSetup } from "@/features/pitch/load";
 
-// Page shell (step 1.1). Presentation practice is built in steps 1.3 and 1.4
-// and stays switched off in src/config until then.
-export default function PitchPage() {
+async function Pitch({ searchParams }: { searchParams: Promise<{ project?: string }> }) {
+  await connection();
+  const { project } = await searchParams;
+  const data = await loadPitchSetup(typeof project === "string" ? project : null);
+  return <PitchFlow data={data} />;
+}
+
+export default function PitchPage({ searchParams }: { searchParams: Promise<{ project?: string }> }) {
+  if (!features.pitch && !features.pitchPreview) {
+    return (
+      <PageFrame title="Presentation practice">
+        <p className="ui-empty">Presentation practice is not switched on yet.</p>
+      </PageFrame>
+    );
+  }
   return (
-    <PageFrame title="Presentation practice">
-      <p className="ui-empty">
-        {features.pitch
-          ? "Choose a table on your floor to practise a presentation."
-          : "Presentation practice is not switched on yet."}
-      </p>
-    </PageFrame>
+    <Suspense
+      fallback={
+        <div className="ps-frame ps-frame--loading">
+          <Spinner label="Setting up the room" />
+        </div>
+      }
+    >
+      <Pitch searchParams={searchParams} />
+    </Suspense>
   );
 }

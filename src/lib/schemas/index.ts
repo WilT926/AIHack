@@ -5,6 +5,8 @@
 // - Profile.avatar, Project.createdAt/updatedAt, Document.createdAt,
 //   PitchSession.createdAt: the floor orders and labels by these.
 // - PitchSession.status: whether a presentation is ready, running or done.
+// - PitchSession.settings.boardId and .capture: the board chosen for the run
+//   and whether the transcript came from the microphone or was typed.
 // - Comment.done and FeedbackAction.done: comments can be marked done and
 //   "open actions" are the unticked actions in the latest report.
 // - Paragraph.type: headings are numbered but not commented on.
@@ -251,6 +253,10 @@ export const pitchSessionSchema = z.object({
   settings: z.object({
     questionCount: z.number().int().min(1).max(5),
     mode: z.enum(["spoken", "text"]),
+    /** The board for this run, when it differs from the project's own. */
+    boardId: id.nullish(),
+    /** How the transcript was captured: live from the microphone, or typed/pasted. */
+    capture: z.enum(["live", "typed"]).nullish(),
   }),
   questions: z.array(pitchQuestionSchema).max(10),
   report: feedbackReportSchema.nullish(),

@@ -3,6 +3,7 @@
 @import "./tokens.css";
 @import "./ui.css";
 @import "./home.css";
+@import "./pitch.css";
 
 html,
 body {

@@ -1,0 +1,85 @@
+/*
+ * Presentation practice (DESIGN_SYSTEM §9 Call stage and AI states, §10).
+ * White background, the stepper above the stage, the dock collapsed to an
+ * exit bubble. Class prefix: ps-.
+ */
+
+.ps-frame { min-height: 100dvh; background: var(--paper); color: var(--ink); display: flex; flex-direction: column; font-family: var(--font-body); }
+.ps-frame--loading { align-items: center; justify-content: center; }
+.ps-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 26px var(--space-8) 0; gap: var(--space-4); }
+.ps-head__logo { text-decoration: none; }
+.ps-head__flags { display: flex; justify-content: flex-end; gap: var(--space-3); }
+.ps-main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: var(--space-8) var(--space-8) 120px; box-sizing: border-box; }
+
+/* Stepper: four pills joined by 2px lines (§9). */
+.ps-stepper { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; }
+.ps-step {
+  padding: 7px 14px; border-radius: var(--radius-pill); border: var(--line-width) solid var(--grey-150);
+  font: 500 13px/1.2 var(--font-body); color: var(--grey-500); background: var(--paper); white-space: nowrap;
+}
+.ps-step + .ps-step { margin-left: 24px; position: relative; }
+.ps-step + .ps-step::before { content: ""; position: absolute; right: 100%; top: 50%; width: 24px; height: 2px; margin-top: -1px; background: var(--grey-150); }
+.ps-step--done { color: var(--ink); border-color: var(--ink); }
+.ps-step--done + .ps-step::before, .ps-step--now::before { background: var(--ink); }
+.ps-step--now { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.ps-exit {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); width: 56px; height: 56px; border-radius: var(--radius-round);
+  background: var(--ink); color: var(--paper); display: grid; place-items: center; font: 400 24px/1 var(--font-body); text-decoration: none; z-index: 40;
+}
+.ps-exit:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+
+.ps-title { margin: 0; font: var(--text-h1); letter-spacing: var(--tracking-h1); }
+.ps-lede { margin: var(--space-2) 0 0; font: 400 15px/1.5 var(--font-body); color: var(--grey-700); }
+.ps-note { margin: 0; font: var(--text-small); color: var(--grey-700); }
+.ps-error { margin: 0; padding: var(--space-3) var(--space-4); border: var(--line); border-radius: var(--radius-row); font: var(--text-body); }
+.ps-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+
+/* Set-up */
+.ps-setup, .ps-typed, .ps-saved { display: flex; flex-direction: column; gap: var(--space-6); }
+.ps-field { display: flex; flex-direction: column; gap: var(--space-2-5); }
+.ps-chips { display: flex; flex-wrap: wrap; gap: var(--space-1-5); }
+.ps-row { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.ps-length { max-width: 220px; }
+
+/* The board in a row */
+.ps-board { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; transition: opacity 0.4s; }
+.ps-board[data-dim="true"] { opacity: 0.4; }
+.ps-board__seat { width: 96px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.ps-board__name { font: 600 12px/1.2 var(--font-body); }
+.ps-board__seat .ui-label { text-transform: uppercase; }
+
+/* Listening (§9): transcript in grey-700, one orange dot beside "Listening" */
+.ps-listen { display: flex; flex-direction: column; gap: var(--space-5-5); }
+.ps-status { display: flex; align-items: center; gap: var(--space-3); justify-content: center; }
+.ps-status__dot { width: 10px; height: 10px; border-radius: var(--radius-round); border: var(--line-width) solid var(--orange); box-sizing: border-box; }
+.ps-status__dot[data-on="true"] { background: var(--orange); }
+.ps-transcript {
+  height: 360px; overflow-y: auto; padding: var(--space-6) var(--space-7); box-sizing: border-box;
+  border: var(--line-width) solid var(--grey-150); border-radius: var(--radius-card);
+  font: 400 20px/1.55 var(--font-body); color: var(--grey-700);
+}
+.ps-transcript p { margin: 0; }
+.ps-transcript__interim { color: var(--grey-500); }
+.ps-transcript__empty { color: var(--grey-500); }
+.ps-transcript:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.ps-controls {
+  align-self: center; display: flex; gap: var(--space-2); padding: 6px; border-radius: var(--radius-pill);
+  border: var(--line); background: var(--paper);
+}
+
+/* Saved */
+.ps-stats { display: flex; gap: var(--space-8); }
+.ps-stats span { display: flex; flex-direction: column; gap: var(--space-1); }
+.ps-stats b { font: 600 26px/1.1 var(--font-display); letter-spacing: var(--tracking-h2); }
+.ps-saved__transcript {
+  margin: 0; max-height: 220px; overflow-y: auto; padding: var(--space-4) var(--space-5-5);
+  border: var(--line-width) solid var(--grey-150); border-radius: var(--radius-card-sm); font: var(--text-body); color: var(--grey-700);
+}
+
+/* Hidden fallback control: invisible until focused (Ctrl/⌘ + Shift + L also works). */
+.ps-hidden-load {
+  position: fixed; right: 0; bottom: 0; width: 24px; height: 24px; opacity: 0; border: none; background: transparent;
+  font-size: 0; cursor: default; overflow: hidden;
+}
+.ps-hidden-load:focus-visible { opacity: 1; width: auto; height: auto; padding: 8px 12px; font: var(--text-label); background: var(--grey-50); right: 8px; bottom: 8px; border-radius: var(--radius-pill); }

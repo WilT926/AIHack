@@ -8,6 +8,15 @@ export const models = {
   pitch: "claude-haiku-5-5",
 } as const;
 
+export const voice = {
+  /** Speech recognition language. */
+  lang: "en-GB",
+  /** After "thank you", this much silence ends the pitch automatically. */
+  thanksPauseMs: 2500,
+  /** How often the live transcript is saved while listening. */
+  autosaveMs: 15000,
+} as const;
+
 export const defaults = {
   /** Questions the board asks after a presentation (1–5). */
   questionCount: 3,
@@ -21,8 +30,13 @@ export const defaults = {
 export const features = {
   /** Report review (Lane 2): upload, comments, deliberation. */
   review: true,
-  /** Presentation practice (Lane 1, steps 1.3 and 1.4). */
+  /** Presentation practice (Lane 1, steps 1.3 and 1.4): the floor's entry points. */
   pitch: false,
+  /**
+   * Opens /pitch directly while presentation practice is being built, with a
+   * PREVIEW label on screen. Switch off once `pitch` is on.
+   */
+  pitchPreview: true,
   /** Feedback report screen (Lane 2, step 2.3b). */
   feedbackReport: false,
   /** Seat and unseat assessors from the floor (Lane 3, step 3.4). */
