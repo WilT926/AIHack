@@ -55,8 +55,12 @@ export function useLiveAvatar(enabled: boolean) {
       const res = await fetch("/api/live/token", { method: "POST" });
       if (!res.ok) throw new Error("no token");
       const { url, token } = (await res.json()) as { url: string; token: string };
+      // A newer connect (or a disconnect) replaced this room while we waited: drop it.
+      if (roomRef.current !== room) return;
+      const mine = () => roomRef.current === room;
 
       const checkBoard = (p: RemoteParticipant) => {
+        if (!mine()) return;
         const state = p.attributes?.panel;
         if (state === "ready") {
           boardRef.current = p.identity;
@@ -68,7 +72,7 @@ export function useLiveAvatar(enabled: boolean) {
         if (p !== room.localParticipant) checkBoard(p as RemoteParticipant);
       });
       room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _pub, p: RemoteParticipant) => {
-        if (p.identity !== AVATAR_IDENTITY) return;
+        if (!mine() || p.identity !== AVATAR_IDENTITY) return;
         if (track.kind === Track.Kind.Video) setStream(new MediaStream([track.mediaStreamTrack]));
         if (track.kind === Track.Kind.Audio) {
           teardownAudio();
@@ -99,11 +103,12 @@ export function useLiveAvatar(enabled: boolean) {
         }
       });
       room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack, _pub, p: RemoteParticipant) => {
-        if (p.identity !== AVATAR_IDENTITY) return;
+        if (!mine() || p.identity !== AVATAR_IDENTITY) return;
         if (track.kind === Track.Kind.Video) setStream(null);
         track.detach();
       });
       room.on(RoomEvent.ParticipantDisconnected, (p) => {
+        if (!mine()) return;
         if (p.identity === AVATAR_IDENTITY) setStream(null);
         if (p.identity === boardRef.current) {
           boardRef.current = null;
@@ -115,6 +120,10 @@ export function useLiveAvatar(enabled: boolean) {
       });
 
       await room.connect(url, token, { autoSubscribe: true });
+      if (!mine()) {
+        void room.disconnect().catch(() => {});
+        return;
+      }
       room.remoteParticipants.forEach(checkBoard);
     } catch {
       if (roomRef.current === room) disconnect();
