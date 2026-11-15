@@ -17,6 +17,7 @@ import {
   sampleReviews,
   sampleWorkspace,
 } from "../fixtures/home-sample";
+import { sampleEngineDocument } from "../fixtures/engine/sample-document";
 import { assessorSchema, boardSchema, profileSchema, templateSchema } from "../src/lib/schemas";
 import { pitchBoard, reportBoard, templates } from "../src/lib/data/seed-data";
 
@@ -59,7 +60,10 @@ async function seed(withSample: boolean) {
     await upsert("boards", sampleBoards);
     await upsert("assessor_notes", sampleNotes);
     await upsert("projects", sampleProjects);
-    await upsert("documents", sampleDocuments.map((d) => ({ ...d, paragraphs: [] })));
+    await upsert(
+      "documents",
+      sampleDocuments.map((d) => ({ ...d, paragraphs: d.id === sampleEngineDocument.id ? sampleEngineDocument.paragraphs : [] })),
+    );
     await upsert("reviews", sampleReviews);
     await upsert("pitch_sessions", samplePitchSessions);
   }

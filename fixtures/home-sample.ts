@@ -140,6 +140,7 @@ export const sampleReviews: Review[] = [
     createdAt: "2026-10-12T10:00:00Z",
     status: "done",
     assessorResults: [],
+    replySource: "sample",
     deliberation: null,
     report: {
       ...reportBase("A solid chapter with a clear aim. The board wants the gap in the literature stated earlier."),
@@ -153,6 +154,7 @@ export const sampleReviews: Review[] = [
     createdAt: "2026-11-05T10:00:00Z",
     status: "done",
     assessorResults: [],
+    replySource: "sample",
     deliberation: null,
     report: {
       ...reportBase("The review covers the field but reads as a list. Group the studies by the question they answer."),
@@ -177,6 +179,7 @@ export const sampleReviews: Review[] = [
     createdAt: "2026-11-14T09:40:00Z",
     status: "running",
     assessorResults: [],
+    replySource: "sample",
     deliberation: null,
     report: null,
   },
@@ -187,6 +190,7 @@ export const sampleReviews: Review[] = [
     createdAt: "2026-10-20T10:00:00Z",
     status: "done",
     assessorResults: [],
+    replySource: "sample",
     deliberation: null,
     report: {
       ...reportBase("Results are clear. The error analysis needs to say where the uncertainty comes from."),
@@ -207,6 +211,7 @@ export const sampleReviews: Review[] = [
     createdAt: "2026-11-13T17:05:00Z",
     status: "ready",
     assessorResults: [],
+    replySource: "sample",
     deliberation: null,
     report: null,
   },
@@ -223,6 +228,7 @@ export const samplePitchSessions: PitchSession[] = [
     endedAt: "2026-11-13T20:07:00Z",
     settings: { questionCount: 3, mode: "spoken" },
     questions: [],
+    replySource: "sample",
     report: {
       ...reportBase("A clear problem and a memorable demo. The ending runs long and the business case is thin."),
       kind: "pitch",
@@ -242,6 +248,7 @@ export const samplePitchSessions: PitchSession[] = [
     endedAt: null,
     settings: { questionCount: 3, mode: "spoken" },
     questions: [],
+    replySource: "sample",
     report: null,
   },
 ];

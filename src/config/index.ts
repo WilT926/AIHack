@@ -8,6 +8,21 @@ export const models = {
   pitch: "claude-haiku-5-5",
 } as const;
 
+/** The assessor engine (lane-1.md step 1.2). */
+export const engine = {
+  /** Effort per call kind; set explicitly (Opus 5.5 and Haiku 5.5 default to medium). */
+  effort: { review: "medium", deliberation: "high", questions: "low", followUp: "low", pitchReport: "medium" },
+  /** Reply length cap per call. Non-streaming, so kept within SDK timeouts. */
+  maxTokens: { review: 16000, deliberation: 16000, questions: 8000, followUp: 2000, pitchReport: 16000 },
+  /** Random focus angles added to each assessor's prompt per run. */
+  anglesPerRun: 3,
+  /**
+   * Without ANTHROPIC_API_KEY, return generated sample replies (marked
+   * replySource "sample" and labelled on screen) so the screens still work.
+   */
+  sampleRepliesWithoutKey: true,
+} as const;
+
 export const voice = {
   /** Speech recognition language. */
   lang: "en-GB",

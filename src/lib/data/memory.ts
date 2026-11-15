@@ -12,6 +12,7 @@ import "server-only";
 // Delete this file once every environment has the real database.
 // ============================================================================
 import { sampleWorkspace } from "../../../fixtures/home-sample";
+import { sampleEngineDocument } from "../../../fixtures/engine/sample-document";
 import { pitchBoard, reportBoard, templates } from "./seed-data";
 
 type Row = Record<string, unknown>;
@@ -28,7 +29,7 @@ function seed(): Store {
     ["boards", [reportBoard, pitchBoard, ...ws.boards]],
     ["templates", templates],
     ["projects", ws.projects],
-    ["documents", ws.documents.map((d) => ({ ...d, paragraphs: [] }))],
+    ["documents", ws.documents.map((d) => ({ ...d, paragraphs: d.id === sampleEngineDocument.id ? sampleEngineDocument.paragraphs : [] }))],
     ["reviews", ws.reviews],
     ["pitch_sessions", ws.pitchSessions],
     ["call_logs", []],

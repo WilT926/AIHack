@@ -10,6 +10,8 @@
 // - Comment.done and FeedbackAction.done: comments can be marked done and
 //   "open actions" are the unticked actions in the latest report.
 // - Paragraph.type: headings are numbered but not commented on.
+// - Review.replySource and PitchSession.replySource: "sample" when the replies
+//   were generated without Claude (no API key). Screens must say so.
 import { z } from "zod";
 
 const id = z.string().min(1).max(100);
@@ -214,6 +216,10 @@ export type FeedbackReport = z.infer<typeof feedbackReportSchema>;
 // ---------- Sessions ----------
 
 export const reviewStatusSchema = z.enum(["ready", "running", "done", "failed"]);
+
+/** Where the AI replies came from. "sample" means made up without Claude, and must be labelled on screen. */
+export const replySourceSchema = z.enum(["claude", "sample"]);
+export type ReplySource = z.infer<typeof replySourceSchema>;
 export const assessorRunStatusSchema = z.enum(["pending", "reading", "done", "failed"]);
 
 export const reviewSchema = z.object({
@@ -227,6 +233,7 @@ export const reviewSchema = z.object({
     .max(12),
   deliberation: deliberationSchema.nullish(),
   report: feedbackReportSchema.nullish(),
+  replySource: replySourceSchema.default("claude"),
 });
 export type Review = z.infer<typeof reviewSchema>;
 
@@ -260,6 +267,7 @@ export const pitchSessionSchema = z.object({
   }),
   questions: z.array(pitchQuestionSchema).max(10),
   report: feedbackReportSchema.nullish(),
+  replySource: replySourceSchema.default("claude"),
 });
 export type PitchSession = z.infer<typeof pitchSessionSchema>;
 
