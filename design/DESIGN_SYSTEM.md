@@ -63,19 +63,19 @@ A student creates **assessors** (presets, or copies renamed after a real lecture
 
 Every session ends in the same **feedback report**: a verdict, a rating against each marking criterion, ranked actions with the evidence behind each, and anything the board says to take to a human supervisor. The board remembers earlier sessions, so the next one says what improved.
 
-The UI shows this literally as a **floor plan of round tables**: each project is a table, its board sits around it, its documents lie on it, and its sessions are dots on its rim.
+The UI shows this literally as a **floor plan of round tables, called panels**: each project is a panel, its board sits around it, its documents lie on it, and its sessions are dots on its rim.
 
 ### Terminology mapping (product → UI)
 
 | Product (see `docs/plan/README.md`) | UI object | Notes |
 |---|---|---|
 | Profile | Profile pill, top right; **Avatar** bubble in the dock | University, course, level, your own avatar |
-| Assessor | **Seat** (avatar at a table) + **Assessor card** | Name, avatar, field, personality, harshness, focus areas, notes |
+| Assessor | **Seat** (avatar at a panel) + **Assessor card** | Name, avatar, field, personality, harshness, focus areas, notes |
 | Assessor note | A line on the assessor's profile | "Wants safety considered in the design." The count shows on the card |
-| Board | **The ring of seats** around a table | Saved boards can be seated at other tables |
-| Project | **Table** | Brief, mark scheme, weak spots, documents, sessions |
-| Session (report review or presentation practice) | **Rim dot** on the table + **bead** in the side panel | Done, in session, or ready to run (§9) |
-| Document | **Paper** lying on a table + a card on the **Desk** | Orange badge = open actions |
+| Board | **The ring of seats** around a panel | Saved boards can be seated at other panels |
+| Project | **Panel** (a round table) | Brief, mark scheme, weak spots, documents, sessions |
+| Session (report review or presentation practice) | **Rim dot** on the panel + **bead** in the side panel | Done, in session, or ready to run (§9) |
+| Document | **Paper** lying on a panel + a card on the **Desk** | Orange badge = open actions |
 | Feedback report | Opened from a bead or a Desk card | One per session (§9) |
 | Navigation | **Bubble dock** (bottom centre) | Floor · Desk · Assessors · Avatar · Settings + orange "+" |
 | Home | **Floor plan** with swing-to-focus motion | §7 |

@@ -67,7 +67,7 @@ export function Tables({
           aria-pressed={focused}
           aria-expanded={focused ? deskOpen : undefined}
           aria-controls={focused ? "floor-desk" : undefined}
-          title={focused ? "Open the documents and feedback on this table" : undefined}
+          title={focused ? "Open the documents and feedback on this panel" : undefined}
           aria-label={`${t.name} · ${t.status.replace("● ", "")}`}
           onClick={() => onFocus(i)}
           style={{
@@ -122,15 +122,15 @@ export function Tables({
 
   return (
     <div className="fl-layer" key={fadeKey} data-fade={fadeKey > 0}>
-      <button type="button" className="fl-new-table" onClick={onNewTable} aria-label="New table">
+      <button type="button" className="fl-new-table" onClick={onNewTable} aria-label="New panel">
         <span className="fl-new-table__plus" aria-hidden>
           +
         </span>
-        <span className="fl-new-table__title">New table</span>
+        <span className="fl-new-table__title">New panel</span>
         <span className="fl-new-table__sub">report or presentation</span>
       </button>
 
-      {tables.length === 0 && <div className="fl-empty-floor">Your floor is empty. Start a table for your first report or presentation.</div>}
+      {tables.length === 0 && <div className="fl-empty-floor">Your floor is empty. Start a panel for your first report or presentation.</div>}
 
       {layers}
 

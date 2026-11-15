@@ -62,7 +62,7 @@ function PlusMenu({ tables, newProjectHref, focusId }: { tables: PlusTable[]; ne
   }
   return (
     <div className="ui-plus-menu" key={kind}>
-      <span className="ui-plus-menu__label">Which table?</span>
+      <span className="ui-plus-menu__label">Which panel?</span>
       {tables
         .filter((t) => t.kind === kind)
         .map((t) => (
@@ -71,7 +71,7 @@ function PlusMenu({ tables, newProjectHref, focusId }: { tables: PlusTable[]; ne
           </Button>
         ))}
       <Button variant="primary" href={newProjectHref}>
-        New table
+        New panel
       </Button>
     </div>
   );

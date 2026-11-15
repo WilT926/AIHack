@@ -55,7 +55,7 @@ export function SearchPill({
   const find = (
     <>
       <i className="ui-search__ring" aria-hidden />
-      <span className="ui-search__text">Find a table, assessor or doc</span>
+      <span className="ui-search__text">Find a panel, assessor or doc</span>
       <span className="ui-search__kbd" aria-hidden>
         ⌘K
       </span>
@@ -64,11 +64,11 @@ export function SearchPill({
   return (
     <div className="ui-search" role="search">
       {searchHref ? (
-        <Link href={searchHref} className="ui-search__find" aria-label="Find a table, assessor or doc (⌘K)">
+        <Link href={searchHref} className="ui-search__find" aria-label="Find a panel, assessor or doc (⌘K)">
           {find}
         </Link>
       ) : (
-        <button type="button" className="ui-search__find" onClick={onSearch} aria-label="Find a table, assessor or doc (⌘K)">
+        <button type="button" className="ui-search__find" onClick={onSearch} aria-label="Find a panel, assessor or doc (⌘K)">
           {find}
         </button>
       )}

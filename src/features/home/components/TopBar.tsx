@@ -27,7 +27,7 @@ function StatusOptions({ filter, onFilter }: { filter: FloorFilter; onFilter: (f
   return (
     <>
       <MenuItem selected={filter === "all"} onClick={() => onFilter("all")}>
-        All tables
+        All panels
       </MenuItem>
       {STATUS_FILTERS.map(([id, label]) => (
         <MenuItem key={id} selected={filter === id} onClick={() => onFilter(id)}>
@@ -91,7 +91,7 @@ export function TopBar({
     const label = STATUS_FILTERS.find(([id]) => id === filter)?.[1] ?? "Filtered";
     segments.push({
       key: "status",
-      label: `Tables: ${label}`,
+      label: `Panels: ${label}`,
       icon: statusIcon,
       onRemove: () => onFilter("all"),
       menu: <StatusOptions filter={filter} onFilter={onFilter} />,
@@ -100,7 +100,7 @@ export function TopBar({
   if (assessor) {
     segments.push({
       key: "assessor",
-      label: `Tables with ${assessor.name}`,
+      label: `Panels with ${assessor.name}`,
       icon: assessorIcon,
       onRemove: () => onAssessor(null),
       menu: <AssessorOptions assessors={assessors} selectedId={assessorId} onAssessor={onAssessor} />,
@@ -116,7 +116,7 @@ export function TopBar({
           filterCount={segments.length}
           filterMenu={
             <>
-              <MenuSection title="Tables">
+              <MenuSection title="Panels">
                 <StatusOptions filter={filter} onFilter={onFilter} />
               </MenuSection>
               <MenuSection title="Assessors">

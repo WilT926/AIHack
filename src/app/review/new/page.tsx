@@ -17,7 +17,7 @@ async function Intake({ searchParams }: { searchParams: Params }) {
   if (!context) {
     return (
       <div className="mx-auto max-w-sheet px-6 py-24">
-        <EmptyState title="No project yet" body="Start a table from your floor first." />
+        <EmptyState title="No project yet" body="Start a panel from your floor first." />
       </div>
     );
   }

@@ -31,14 +31,14 @@ export function SidePanel({
 }) {
   if (!table) {
     return (
-      <aside className="fl-panel" aria-label="No table yet">
+      <aside className="fl-panel" aria-label="No panel yet">
         <div className="fl-panel__head">
-          <h1 className="fl-panel__title">No tables yet</h1>
-          <span className="fl-panel__line">A table is one project: a report or a presentation, with the board that marks it.</span>
+          <h1 className="fl-panel__title">No panels yet</h1>
+          <span className="fl-panel__line">A panel is one project: a report or a presentation, with the board that marks it.</span>
         </div>
         <div className="fl-panel__footer">
           <Button variant="create" size="lg" block href={newProjectHref}>
-            New table
+            New panel
           </Button>
         </div>
       </aside>
@@ -48,17 +48,17 @@ export function SidePanel({
   const bead = table.sessions[beadIndex];
 
   return (
-    <aside className="fl-panel" aria-label={`${table.name}, focused table`}>
+    <aside className="fl-panel" aria-label={`${table.name}, focused panel`}>
       <div className="fl-panel__top">
         <Label tone={table.live ? "orange" : "quiet"}>{table.status}</Label>
         <span className="fl-panel__nav">
           <Label>
             {index + 1} / {count}
           </Label>
-          <button type="button" className="fl-panel__arrow" onClick={onPrev} aria-label="Previous table">
+          <button type="button" className="fl-panel__arrow" onClick={onPrev} aria-label="Previous panel">
             ←
           </button>
-          <button type="button" className="fl-panel__arrow" onClick={onNext} aria-label="Next table">
+          <button type="button" className="fl-panel__arrow" onClick={onNext} aria-label="Next panel">
             →
           </button>
         </span>
@@ -104,8 +104,8 @@ export function SidePanel({
 
       <BoardMemory memory={table.memory} />
 
-      <section className="fl-panel__section" aria-label="At this table">
-        <Label>At this table</Label>
+      <section className="fl-panel__section" aria-label="At this panel">
+        <Label>At this panel</Label>
         {table.seats.length === 0 ? (
           <div className="fl-empty-note">No assessors seated. Edit the board to seat some.</div>
         ) : (
@@ -127,10 +127,10 @@ export function SidePanel({
         )}
       </section>
 
-      <section className="fl-panel__section" aria-label="On the table">
-        <Label>On the table</Label>
+      <section className="fl-panel__section" aria-label="On this panel">
+        <Label>On this panel</Label>
         {table.docs.length === 0 && !table.hasMarkScheme ? (
-          <div className="fl-empty-note">Nothing on the table yet.</div>
+          <div className="fl-empty-note">Nothing on this panel yet.</div>
         ) : (
           <div className="fl-docs">
             {table.docs.map((d) => (

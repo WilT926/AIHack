@@ -32,10 +32,10 @@ export function DeskSheet({
       <div className="fl-sheet__head">
         <div className="fl-sheet__titles">
           <h2 className="fl-sheet__title">Your desk</h2>
-          <span className="fl-sheet__sub">{allTables || !table ? "Every table" : table.name} · documents and feedback</span>
+          <span className="fl-sheet__sub">{allTables || !table ? "Every panel" : table.name} · documents and feedback</span>
         </div>
         <div className="fl-sheet__actions">
-          {table && <><Chip active={!allTables} onClick={() => onScope(false)}>This table</Chip><Chip active={allTables} onClick={() => onScope(true)}>All tables</Chip></>}
+          {table && <><Chip active={!allTables} onClick={() => onScope(false)}>This panel</Chip><Chip active={allTables} onClick={() => onScope(true)}>All panels</Chip></>}
         <IconButton label="Close" quiet onClick={onClose}>
           ×
         </IconButton>
@@ -45,7 +45,7 @@ export function DeskSheet({
         const el = event.currentTarget;
         setPosition({ scope, bottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 2 });
       }}>
-        {docs.length === 0 && reports.length === 0 && <Card dashed className="fl-desk-empty"><Label>Nothing here yet</Label><p>Upload a report or finish a session to add documents and feedback to this table.</p></Card>}
+        {docs.length === 0 && reports.length === 0 && <Card dashed className="fl-desk-empty"><Label>Nothing here yet</Label><p>Upload a report or finish a session to add documents and feedback to this panel.</p></Card>}
         {docs.map((d) => (
           <Link key={d.id} href={d.href} className="fl-desk-card">
             <div className="fl-desk-card__paper" aria-hidden>

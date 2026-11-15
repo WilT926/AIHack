@@ -39,7 +39,7 @@ export function RoundTable({
         "relative aspect-table w-full overflow-hidden rounded-sheet border-line border-grey-100 bg-floor",
         compact ? "max-w-sm" : "max-w-table",
       )}
-      aria-label={`${label || "New table"}: ${seated.length} ${seated.length === 1 ? "assessor" : "assessors"} seated`}
+      aria-label={`${label || "New panel"}: ${seated.length} ${seated.length === 1 ? "assessor" : "assessors"} seated`}
     >
       {/* The focused table: orange, ink text (§3, §7) */}
       <div
@@ -50,7 +50,7 @@ export function RoundTable({
           ● Setting up
         </Label>
         <span className={cn("line-clamp-2 font-display font-semibold text-ink", compact ? "text-h3-lg tracking-h3" : "text-h2 tracking-h2")}>
-          {label || "New table"}
+          {label || "New panel"}
         </span>
         <span className="text-small text-ink">
           {seated.length === 0 ? "No one seated yet" : `${seated.length} ${seated.length === 1 ? "assessor" : "assessors"} seated`}

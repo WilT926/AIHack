@@ -67,8 +67,8 @@ export function CommandPalette({
             autoFocus
             className="fl-pal__input"
             value={q}
-            placeholder="Type a table, assessor or document…"
-            aria-label="Search tables, assessors and documents"
+            placeholder="Type a panel, assessor or document…"
+            aria-label="Search panels, assessors and documents"
             aria-controls="fl-pal-results"
             aria-activedescendant={results[active] ? `fl-pal-${results[active].key}` : undefined}
             onChange={(e) => {
@@ -101,7 +101,7 @@ export function CommandPalette({
                   <span className="fl-pal__label">{r.label}</span>
                   <span className="fl-pal__sub">{r.sub}</span>
                 </span>
-                <span className="fl-pal__kind">{r.kind}</span>
+                <span className="fl-pal__kind">{r.kind === "TABLE" ? "PANEL" : r.kind}</span>
               </button>
             </li>
           ))}

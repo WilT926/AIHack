@@ -253,7 +253,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     try {
       const last = await lastSavedTranscript(setup.projectId);
       if (!last) {
-        setError("There is no saved transcript for this table yet.");
+        setError("There is no saved transcript for this panel yet.");
         return;
       }
       if (rec.listening) rec.stop();

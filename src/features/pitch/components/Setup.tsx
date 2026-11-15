@@ -44,11 +44,11 @@ export function Setup({
       </div>
 
       {projects.length === 0 ? (
-        <p className="ui-empty">You have no tables yet. Start one from your floor first.</p>
+        <p className="ui-empty">You have no panels yet. Start one from your floor first.</p>
       ) : (
         <>
           <div className="ps-field">
-            <Label>Table</Label>
+            <Label>Panel</Label>
             <div className="ps-chips">
               {projects.map((p) => (
                 <Chip

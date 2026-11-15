@@ -413,7 +413,7 @@ export function SkeletonPage({ label = "Loading", cards = 6 }: { label?: string;
 /** The floor loading: three tables, the focused one larger, and the side panel. */
 export function SkeletonFloor() {
   return (
-    <div className="ui-skel-floor" role="status" aria-label="Setting the tables">
+    <div className="ui-skel-floor" role="status" aria-label="Setting the panels">
       <div className="ui-skel-floor__tables" aria-hidden>
         <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--focus" />
         <i className="ui-skel ui-skel-floor__table ui-skel-floor__table--a" />

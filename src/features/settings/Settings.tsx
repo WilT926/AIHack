@@ -132,7 +132,7 @@ export function Settings({ profile }: { profile: SettingsProfile }) {
     },
     defaults: {
       title: "Panel defaults",
-      lede: "Applies to new tables. Each table can override these.",
+      lede: "Applies to new panels. Each panel can override these.",
       rows: (
         <>
           <SettingRow title="How tough" hint="Starting harshness for new assessors">
@@ -190,7 +190,7 @@ export function Settings({ profile }: { profile: SettingsProfile }) {
           <SettingRow title="Take it to your supervisor" hint="When the board cannot agree or a point is outside its field">
             <Toggle label="Take it to your supervisor" checked={prefs.notifyEscalation} onChange={(v) => set("notifyEscalation", v)} />
           </SettingRow>
-          <SettingRow title="Weekly summary" hint="What improved and what is still open across your tables">
+          <SettingRow title="Weekly summary" hint="What improved and what is still open across your panels">
             <Toggle label="Weekly summary" checked={prefs.weekly} onChange={(v) => set("weekly", v)} />
           </SettingRow>
         </>
