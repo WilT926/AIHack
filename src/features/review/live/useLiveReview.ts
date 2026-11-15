@@ -126,6 +126,45 @@ export function useLiveReview(start: Inputs): {
     }
   }, [inputs, statuses, replies]);
 
+  // Leaving the page before the board has finished still saves the review to
+  // its panel (it then appears in the Desk): send what has arrived so far, as
+  // a request that outlives the page.
+  const latest = useRef({ statuses, replies, delib });
+  useEffect(() => {
+    latest.current = { statuses, replies, delib };
+  }, [statuses, replies, delib]);
+  const savedOnLeave = useRef(false);
+  useEffect(() => {
+    const saveOnLeave = () => {
+      const { statuses: st, replies: rp, delib: d } = latest.current;
+      if (savedOnLeave.current || d.state === "done") return;
+      if (!inputs.assessorIds.some((id) => st[id]?.state === "done")) return;
+      savedOnLeave.current = true;
+      void fetch("/api/engine/deliberate", {
+        method: "POST",
+        keepalive: true,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectId: inputs.projectId,
+          documentId: inputs.documentId,
+          reviewId: inputs.reviewId,
+          results: inputs.assessorIds.map((id) => ({
+            assessorId: id,
+            status: st[id]?.state === "done" ? "done" : "failed",
+            replySource: rp[id]?.replySource ?? inputs.replySource,
+            comments: rp[id]?.comments ?? [],
+          })),
+          doneCommentIds: inputs.doneCommentIds(),
+        }),
+      }).catch(() => {});
+    };
+    window.addEventListener("pagehide", saveOnLeave);
+    return () => {
+      window.removeEventListener("pagehide", saveOnLeave);
+      saveOnLeave();
+    };
+  }, [inputs]);
+
   // When nobody is still reading and at least one assessor finished, deliberate.
   const settled = inputs.assessorIds.every((id) => statuses[id]?.state !== "reading");
   const anyDone = inputs.assessorIds.some((id) => statuses[id]?.state === "done");

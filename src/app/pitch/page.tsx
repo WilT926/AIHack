@@ -7,9 +7,9 @@ import { PitchFlow } from "@/features/pitch/PitchFlow";
 import { loadPitchReport, loadPitchSetup } from "@/features/pitch/load";
 import { PastPitchReport } from "@/features/pitch/PastPitchReport";
 
-async function Pitch({ searchParams }: { searchParams: Promise<{ project?: string; session?: string }> }) {
+async function Pitch({ searchParams }: { searchParams: Promise<{ project?: string; session?: string; fresh?: string }> }) {
   await connection();
-  const { project, session } = await searchParams;
+  const { project, session, fresh } = await searchParams;
   if (typeof session === "string" && session) {
     const past = await loadPitchReport(session);
     if (!past) {
@@ -22,10 +22,11 @@ async function Pitch({ searchParams }: { searchParams: Promise<{ project?: strin
     return <PastPitchReport session={past.session} seats={past.seats} sample={past.sample} />;
   }
   const data = await loadPitchSetup(typeof project === "string" ? project : null);
-  return <PitchFlow data={data} />;
+  // `fresh` (from the floor's "+") gives a brand-new session screen every time.
+  return <PitchFlow key={fresh ?? project ?? "pitch"} data={data} />;
 }
 
-export default function PitchPage({ searchParams }: { searchParams: Promise<{ project?: string; session?: string }> }) {
+export default function PitchPage({ searchParams }: { searchParams: Promise<{ project?: string; session?: string; fresh?: string }> }) {
   if (!features.pitch && !features.pitchPreview) {
     return (
       <PageFrame title="Presentation practice">

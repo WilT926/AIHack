@@ -207,6 +207,38 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     return () => clearInterval(t);
   }, [phase]);
 
+  // ---------- Leaving part-way saves the session to the Desk ----------
+
+  const leaveRef = useRef({ phase, startedAt: rec.startedAt });
+  useEffect(() => {
+    leaveRef.current = { phase, startedAt: rec.startedAt };
+  }, [phase, rec.startedAt]);
+  useEffect(() => {
+    let sent = false;
+    const saveOnLeave = () => {
+      const s = sessionRef.current;
+      const { phase: p, startedAt } = leaveRef.current;
+      if (sent || !s || !["listening", "conferring", "questions", "feedback"].includes(p)) return;
+      sent = true;
+      void fetch("/api/pitch/leave", {
+        method: "POST",
+        keepalive: true,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          sessionId: s.id,
+          transcript: p === "listening" ? liveRef.current : undefined,
+          startedAt: p === "listening" ? (startedAt ?? undefined) : undefined,
+          endedAt: p === "listening" ? new Date().toISOString() : undefined,
+        }),
+      }).catch(() => {});
+    };
+    window.addEventListener("pagehide", saveOnLeave);
+    return () => {
+      window.removeEventListener("pagehide", saveOnLeave);
+      saveOnLeave();
+    };
+  }, []);
+
   // ---------- Typed fallback ----------
 
   const toTyped = useCallback(() => {

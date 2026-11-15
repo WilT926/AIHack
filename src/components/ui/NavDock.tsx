@@ -6,6 +6,7 @@
 // click, on every page, without leaving the page (same options and motion as
 // the original floor dock).
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { dockMemory, useGlide } from "./glide";
 import { features } from "@/config";
@@ -14,6 +15,9 @@ import { MenuItem, MenuSection, Popover } from "./Popover";
 
 export type NavDockId = "floor" | "desk" | "assessors" | "profile";
 export type PlusTable = { id: string; name: string; kind: "review" | "pitch" };
+
+/** A one-off key, so a link from the "+" always opens a fresh screen. Called on click only. */
+const freshKey = () => Date.now().toString(36);
 
 /** Bubble geometry, in px; matches --nav-h, --nav-gap and --nav-plus in shell.css. */
 const B = 50;
@@ -43,13 +47,16 @@ function PlusMenu({ tables, newProjectHref, focusId }: { tables: PlusTable[]; ne
   if (features.pitch) kinds.push({ kind: "pitch", label: "Panel room" });
   if (features.review) kinds.push({ kind: "review", label: "Live doc review" });
   const hrefFor = (k: "pitch" | "review", id: string) => (k === "pitch" ? `/pitch?project=${id}` : `/review/new?project=${id}`);
+  // Panel room and Live doc review always start fresh: a one-off key in the link.
+  const router = useRouter();
+  const go = (href: string) => router.push(`${href}&fresh=${freshKey()}`);
 
   if (kind === "menu") {
     return (
       <div className="ui-plus-menu">
         {kinds.map((k, i) =>
           focusId ? (
-            <Button key={k.kind} variant={i === 0 ? "primary" : "secondary"} href={hrefFor(k.kind, focusId)}>
+            <Button key={k.kind} variant={i === 0 ? "primary" : "secondary"} onClick={() => go(hrefFor(k.kind, focusId))}>
               {k.label}
             </Button>
           ) : (
@@ -70,7 +77,7 @@ function PlusMenu({ tables, newProjectHref, focusId }: { tables: PlusTable[]; ne
       {tables
         .filter((t) => t.kind === kind)
         .map((t) => (
-          <Button key={t.id} variant="secondary" href={hrefFor(kind, t.id)}>
+          <Button key={t.id} variant="secondary" onClick={() => go(hrefFor(kind, t.id))}>
             {t.name}
           </Button>
         ))}
