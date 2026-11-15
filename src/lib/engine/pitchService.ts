@@ -246,7 +246,7 @@ export async function finishQandA(sessionId: string): Promise<PitchSession> {
   let reply;
   if (source === "sample") reply = samplePitchReportReply(ctx, qa.map((q) => q.id));
   else {
-    const p = pitchReportPrompt(ctx, qa, { lengthSeconds, wordsPerMinute: wpm });
+    const p = pitchReportPrompt(ctx, qa, { lengthSeconds, wordsPerMinute: wpm }, s.qa.turns);
     reply = (
       await callWithRetry(
         { kind: "pitchReport", model: models.pitch, system: p.system, user: p.user, schema: pitchReportReplySchema, effort: engine.effort.pitchReport, maxTokens: engine.maxTokens.pitchReport },
@@ -257,7 +257,7 @@ export async function finishQandA(sessionId: string): Promise<PitchSession> {
   }
   const checked = checkPitchReport(reply, {
     boardIds: ctx.board.map((b) => b.id),
-    spoken: [s.transcript, ...qa.flatMap((q) => [q.answer, q.followUpAnswer ?? ""])],
+    spoken: [s.transcript, ...s.qa.turns.map((t) => t.answer ?? ""), ...qa.flatMap((q) => [q.answer, q.followUpAnswer ?? ""])],
     questionIds: qa.map((q) => q.id),
     lengthSeconds,
     wordsPerMinute: wpm,
