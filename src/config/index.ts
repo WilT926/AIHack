@@ -65,7 +65,7 @@ export const features = {
   /** Feedback report screen (Lane 2, step 2.3b). */
   feedbackReport: true,
   /** Seat and unseat assessors from the floor (Lane 3, step 3.4). */
-  editBoards: false,
+  editBoards: true,
   /** New assessor: copy one, rename, adjust (Lane 3, step 3.3). */
   newAssessor: true,
   /** ElevenLabs voices; off means the browser's built-in voice. */

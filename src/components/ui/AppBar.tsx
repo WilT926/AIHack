@@ -4,10 +4,10 @@
 // profile menu, all centred on one horizontal line (§9). Fixed to the
 // viewport at its real size, so it fits any screen.
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useGlide } from "./glide";
 import { Avatar, Logo } from "./index";
 import { MenuItem, MenuSection, Popover } from "./Popover";
-import { useChosenAvatar } from "./avatarChoice";
 
 export type AppBarProfile = { name: string; sub: string; avatar: string };
 
@@ -61,8 +61,10 @@ export function SearchPill({
       </span>
     </>
   );
+  const ref = useRef<HTMLDivElement>(null);
+  useGlide(ref, "search");
   return (
-    <div className="ui-search" role="search">
+    <div ref={ref} className="ui-search" role="search">
       {searchHref ? (
         <Link href={searchHref} className="ui-search__find" aria-label="Find a panel, assessor or doc (⌘K)">
           {find}
@@ -121,7 +123,7 @@ export function SearchPill({
 
 /** The profile pill. Hover or click: profile settings and help, then sign out on its own. */
 export function ProfileMenu({ profile }: { profile: AppBarProfile }) {
-  const avatar = useChosenAvatar(profile.avatar);
+  const avatar = profile.avatar;
   return (
     <Popover
       triggerClassName="ui-profile"
@@ -138,8 +140,8 @@ export function ProfileMenu({ profile }: { profile: AppBarProfile }) {
       }
     >
       <MenuSection>
-        <MenuItem href="/settings" icon={<span className="ui-ico-avatar"><i /><i /></span>}>
-          Profile settings
+        <MenuItem href="/settings?section=profile" icon={<span className="ui-ico-avatar"><i /><i /></span>}>
+          User settings
         </MenuItem>
         <MenuItem href="/help" icon={<i className="ui-ico-help">?</i>}>
           Help

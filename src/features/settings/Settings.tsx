@@ -1,13 +1,16 @@
 "use client";
 
-// Settings (design: "Panel defaults"). Sections on the left, the chosen
-// section in the middle, the profile card on the right. Choices are kept on
-// this device until the data layer can store them (Lane 1, src/lib/data), and
-// are not yet read by the review or pitch flows.
+// User settings. Sections on the left, the chosen section in the middle;
+// on Profile, a card on the right with your avatar, sign out and delete.
+// Profile details and avatar save to the database (./actions.ts). The other
+// sections' choices are kept on this device until the data layer can store
+// them, and are not yet read by the review or pitch flows.
 import { useState, useSyncExternalStore } from "react";
 import { Avatar, Button, TextButton, cn } from "@/components/ui";
 import { DotPicker, Segmented, SelectPill, SettingRow, Toggle } from "@/components/ui/Controls";
-import { useChosenAvatar } from "@/components/ui/avatarChoice";
+import type { Profile } from "@/lib/schemas";
+import { ProfileSection } from "./ProfileSection";
+import { SECTIONS, type SectionId } from "./sections";
 
 type Prefs = {
   harshness: number;
@@ -28,7 +31,6 @@ type Prefs = {
   motion: "system" | "reduce" | "full";
   bigCaptions: boolean;
   questionText: boolean;
-  level: "UG" | "PGT" | "PGR" | null;
 };
 
 const DEFAULTS: Prefs = {
@@ -50,7 +52,6 @@ const DEFAULTS: Prefs = {
   motion: "system",
   bigCaptions: false,
   questionText: true,
-  level: null,
 };
 
 const KEY = "panel.settings";
@@ -88,47 +89,22 @@ function save(p: Prefs | null) {
   window.dispatchEvent(new Event(EVENT));
 }
 
-const SECTIONS = [
-  { id: "profile", label: "Profile" },
-  { id: "defaults", label: "Panel defaults" },
-  { id: "clips", label: "Clips & camera" },
-  { id: "notifications", label: "Notifications" },
-  { id: "privacy", label: "Privacy & data" },
-  { id: "accessibility", label: "Accessibility" },
-  { id: "account", label: "Account" },
-] as const;
-type SectionId = (typeof SECTIONS)[number]["id"];
 
-export type SettingsProfile = { name: string; university: string; course: string; level: "UG" | "PGT" | "PGR"; avatar: string };
+const LEVEL_SHORT = { UG: "Undergraduate", PGT: "Postgraduate taught", PGR: "Postgraduate research" } as const;
 
-export function Settings({ profile }: { profile: SettingsProfile }) {
+export function Settings({ profile: initial, initialSection = "profile" }: { profile: Profile; initialSection?: SectionId }) {
   const raw = useSyncExternalStore(subscribe, readRaw, () => "");
   const prefs = parse(raw);
   const set = <K extends keyof Prefs>(k: K, v: Prefs[K]) => save({ ...prefs, [k]: v });
-  const [section, setSection] = useState<SectionId>("defaults");
+  const [section, setSection] = useState<SectionId>(initialSection);
   const [deleteNote, setDeleteNote] = useState(false);
-  const avatar = useChosenAvatar(profile.avatar);
-  const level = prefs.level ?? profile.level;
+  const [profile, setProfile] = useState<Profile>(initial);
 
   const body: Record<SectionId, { title: string; lede: string; rows: React.ReactNode }> = {
     profile: {
       title: "Profile",
       lede: "Who the board is marking. Your assessors use this to pitch their feedback.",
-      rows: (
-        <>
-          <SettingRow title="Name" hint={profile.name} />
-          <SettingRow title="University" hint={profile.university} />
-          <SettingRow title="Course" hint={profile.course} />
-          <SettingRow title="Level" hint="Changes how demanding the board's expectations are">
-            <Segmented label="Level" value={level} onChange={(v) => set("level", v)} options={[{ id: "UG", label: "UG" }, { id: "PGT", label: "PGT" }, { id: "PGR", label: "PGR" }]} />
-          </SettingRow>
-          <SettingRow title="Avatar" hint="Pick yours from the set">
-            <Button variant="secondary" size="sm" href="/studio">
-              Edit avatar
-            </Button>
-          </SettingRow>
-        </>
-      ),
+      rows: <ProfileSection profile={profile} onSaved={setProfile} />,
     },
     defaults: {
       title: "Panel defaults",
@@ -247,10 +223,13 @@ export function Settings({ profile }: { profile: SettingsProfile }) {
   const current = body[section];
 
   return (
-    <div className="settings">
+    <div className={cn("settings", section === "profile" && "settings--card")}>
       <nav className="settings__nav" aria-label="Settings sections">
         {SECTIONS.map((s) => (
-          <button key={s.id} type="button" className={cn("settings__tab", s.id === section && "settings__tab--active")} aria-current={s.id === section ? "page" : undefined} onClick={() => setSection(s.id)}>
+          <button key={s.id} type="button" className={cn("settings__tab", s.id === section && "settings__tab--active")} aria-current={s.id === section ? "page" : undefined} onClick={() => {
+              setSection(s.id);
+              window.history.replaceState(null, "", `/settings?section=${s.id}`);
+            }}>
             {s.label}
           </button>
         ))}
@@ -264,30 +243,27 @@ export function Settings({ profile }: { profile: SettingsProfile }) {
         <div className="settings__rows">{current.rows}</div>
       </section>
 
-      <aside className="settings__card" aria-label="Your profile">
-        <Avatar avatar={avatar} size="fill" className="settings__avatar" alt={`${profile.name}'s avatar`} />
-        <span className="settings__name">{profile.name}</span>
-        <span className="settings__sub">
-          {profile.university} · {profile.course}
-        </span>
-        <Segmented label="Level" value={level} onChange={(v) => set("level", v)} options={[{ id: "UG", label: "UG" }, { id: "PGT", label: "PGT" }, { id: "PGR", label: "PGR" }]} />
-        <Button variant="secondary" size="sm" href="/studio">
-          Edit avatar
-        </Button>
-        <div className="settings__card-foot">
-          <Button variant="quiet" block href="/login">
-            Sign out
-          </Button>
-          <TextButton className="settings__delete" onClick={() => setDeleteNote(true)}>
-            Delete account
-          </TextButton>
-          {deleteNote && (
-            <span className="settings__note" role="status">
-              There is one demo account in this version, so there is nothing to delete.
-            </span>
-          )}
-        </div>
-      </aside>
+      {section === "profile" && (
+        <aside className="settings__card" aria-label="Your profile">
+          <Avatar avatar={profile.avatar} size="fill" className="settings__avatar" alt={`${profile.name}'s avatar`} />
+          <span className="settings__name">{profile.name}</span>
+          <span className="settings__sub">{[profile.university, profile.course].filter(Boolean).join(" · ")}</span>
+          <span className="settings__sub">{LEVEL_SHORT[profile.level]}</span>
+          <div className="settings__card-foot">
+            <Button variant="quiet" block href="/login">
+              Sign out
+            </Button>
+            <TextButton className="settings__delete" onClick={() => setDeleteNote(true)}>
+              Delete account
+            </TextButton>
+            {deleteNote && (
+              <span className="settings__note" role="status">
+                There is one demo account in this version, so there is nothing to delete.
+              </span>
+            )}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

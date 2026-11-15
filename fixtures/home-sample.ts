@@ -62,6 +62,7 @@ const projectsBase: Omit<Project, "memory">[] = [
     boardId: "board-mt",
     createdAt: "2026-09-20T10:00:00Z",
     updatedAt: "2026-11-14T09:40:00Z",
+    viewedAt: "2026-11-01T18:00:00Z",
   },
   {
     id: "proj-lr",
@@ -74,6 +75,7 @@ const projectsBase: Omit<Project, "memory">[] = [
     boardId: "board-lr",
     createdAt: "2026-10-01T10:00:00Z",
     updatedAt: "2026-11-13T17:00:00Z",
+    viewedAt: "2026-10-18T12:00:00Z",
   },
   {
     id: "proj-hp",
@@ -86,6 +88,7 @@ const projectsBase: Omit<Project, "memory">[] = [
     boardId: "board-hp",
     createdAt: "2026-11-01T10:00:00Z",
     updatedAt: "2026-11-13T21:00:00Z",
+    viewedAt: "2026-11-14T07:30:00Z",
   },
   {
     id: "proj-rp",
@@ -119,6 +122,20 @@ const action = (id: string, what: string, raisedBy: string[], effort: "quick" | 
   done,
 });
 
+/** A sample comment. `done` = the student has marked it reviewed. */
+const comment = (id: string, assessorId: string, p: number, severity: "praise" | "minor" | "major", text: string, done = false) => ({
+  id,
+  assessorId,
+  paragraphId: `p${p}`,
+  quote: null,
+  category: severity === "praise" ? "Strength" : "Clarity",
+  severity,
+  text,
+  suggestion: severity === "praise" ? "" : "See the board's suggestion in the review.",
+  done,
+});
+const result = (assessorId: string, comments: ReturnType<typeof comment>[]) => ({ assessorId, status: "done" as const, comments });
+
 const reportBase = (verdict: string): FeedbackReport => ({
   kind: "report",
   verdict,
@@ -140,7 +157,12 @@ export const sampleReviews: Review[] = [
     documentId: "doc-mt-ch2",
     createdAt: "2026-10-12T10:00:00Z",
     status: "done",
-    assessorResults: [],
+    assessorResults: [
+      result("module-lead", [comment("c1", "module-lead", 1, "praise", "The aim is clear from the first line.", true), comment("c2", "module-lead", 4, "minor", "Tie this back to the mark scheme's 'aims' criterion.", true)]),
+      result("methodologist", [comment("c3", "methodologist", 6, "minor", "Say how the wraps were randomised.", true)]),
+      result("literature-hawk", [comment("c4", "literature-hawk", 2, "major", "The gap in the literature arrives too late.", true)]),
+      result("sceptic", [comment("c5", "sceptic", 8, "minor", "This claim needs a citation.", true)]),
+    ],
     replySource: "sample",
     deliberation: null,
     report: {
@@ -154,7 +176,22 @@ export const sampleReviews: Review[] = [
     documentId: "doc-mt-lit",
     createdAt: "2026-11-05T10:00:00Z",
     status: "done",
-    assessorResults: [],
+    assessorResults: [
+      result("module-lead", [
+        comment("c1", "module-lead", 1, "minor", "The history section is long for what it adds.", true),
+        comment("c2", "module-lead", 9, "praise", "Good synthesis in the final section.", true),
+      ]),
+      result("methodologist", [
+        comment("c3", "methodologist", 5, "major", "Twelve participants needs a power calculation.", false),
+        comment("c4", "methodologist", 7, "minor", "Report effect sizes, not only p-values.", true),
+      ]),
+      result("literature-hawk", [
+        comment("c5", "literature-hawk", 3, "major", "Studies are listed by year; group them by question.", false),
+        comment("c6", "literature-hawk", 4, "minor", "The 2024 meta-analysis is missing.", true),
+        comment("c7", "literature-hawk", 11, "minor", "Two citations are out of date.", false),
+      ]),
+      result("sceptic", [comment("c8", "sceptic", 6, "major", "Why twelve participants? Defend it or change it.", false)]),
+    ],
     replySource: "sample",
     deliberation: null,
     report: {
@@ -190,7 +227,16 @@ export const sampleReviews: Review[] = [
     documentId: "doc-lr-1",
     createdAt: "2026-10-20T10:00:00Z",
     status: "done",
-    assessorResults: [],
+    assessorResults: [
+      result("methodologist", [
+        comment("c1", "methodologist", 3, "major", "Figure 2 has no error bars.", false),
+        comment("c2", "methodologist", 5, "praise", "The method is easy to repeat.", true),
+      ]),
+      result("communicator", [
+        comment("c3", "communicator", 2, "minor", "Say what figure 2 should show at a glance.", true),
+        comment("c4", "communicator", 6, "minor", "The conclusion repeats the results.", true),
+      ]),
+    ],
     replySource: "sample",
     deliberation: null,
     report: {
@@ -218,7 +264,38 @@ export const sampleReviews: Review[] = [
   },
 ];
 
+const sampleQuestion = (id: string, assessorId: string, text: string) => ({ id, assessorId, text, reason: "", answerTranscript: null, followUp: null, followUpAnswer: null });
+
 export const samplePitchSessions: PitchSession[] = [
+  {
+    id: "pitch-hp-0",
+    projectId: "proj-hp",
+    status: "done",
+    transcript: "",
+    createdAt: "2026-11-12T19:00:00Z",
+    startedAt: "2026-11-12T19:01:00Z",
+    endedAt: "2026-11-12T19:09:00Z",
+    settings: { questionCount: 4, mode: "spoken", conditions: "coaching" },
+    qa: { mode: null, struggles: 0, turns: [], escalations: [] },
+    questions: [
+      sampleQuestion("q1", "technical-judge", "What actually runs today?"),
+      sampleQuestion("q2", "education-lead", "How do you know students learn from this?"),
+      sampleQuestion("q3", "investor", "Who pays?"),
+      sampleQuestion("q4", "design-judge", "Why a floor of tables?"),
+    ],
+    replySource: "sample",
+    report: {
+      ...reportBase("Strong idea, but the demo stalled and the run was eight minutes. Cut it down and lead with the live board."),
+      kind: "pitch",
+      actions: [action("a1", "Rehearse the demo path end to end", ["technical-judge"], "moderate", true), action("a2", "Lead with the live board, not slides", ["design-judge"], "quick", true)],
+      questionReview: [
+        { questionId: "q1", howWell: "weak", strongerAnswer: ["Show it running."] },
+        { questionId: "q2", howWell: "adequate", strongerAnswer: ["Name one measure of learning."] },
+        { questionId: "q3", howWell: "weak", strongerAnswer: ["Say who pays in one sentence."] },
+        { questionId: "q4", howWell: "strong", strongerAnswer: ["Keep this answer."] },
+      ],
+    },
+  },
   {
     id: "pitch-hp-1",
     projectId: "proj-hp",
@@ -229,7 +306,11 @@ export const samplePitchSessions: PitchSession[] = [
     endedAt: "2026-11-13T20:07:00Z",
     settings: { questionCount: 3, mode: "spoken", conditions: "coaching" },
     qa: { mode: null, struggles: 0, turns: [], escalations: [] },
-    questions: [],
+    questions: [
+      sampleQuestion("q1", "technical-judge", "What happens when Claude is down?"),
+      sampleQuestion("q2", "education-lead", "Which students is this for?"),
+      sampleQuestion("q3", "investor", "Why would a university buy this?"),
+    ],
     replySource: "sample",
     report: {
       ...reportBase("A clear problem and a memorable demo. The ending runs long and the business case is thin."),
@@ -237,6 +318,11 @@ export const samplePitchSessions: PitchSession[] = [
       actions: [
         action("a1", "Cut the closing to thirty seconds", ["design-judge"], "quick"),
         action("a2", "Say who pays, in one sentence", ["investor"], "quick"),
+      ],
+      questionReview: [
+        { questionId: "q1", howWell: "strong", strongerAnswer: ["Keep this answer."] },
+        { questionId: "q2", howWell: "adequate", strongerAnswer: ["Name the course and year."] },
+        { questionId: "q3", howWell: "weak", strongerAnswer: ["Say who pays and why, in one sentence."] },
       ],
     },
   },

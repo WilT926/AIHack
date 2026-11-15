@@ -126,6 +126,8 @@ export const projectSchema = z.object({
   boardId: id.nullish(),
   createdAt: timestamp,
   updatedAt: timestamp,
+  /** When the student last opened this table on the floor; feedback after this is "new". */
+  viewedAt: timestamp.nullish(),
   /** What the board remembers across attempts. Updated when a session ends. */
   memory: boardMemorySchema.default({ attempts: [] }),
 });
