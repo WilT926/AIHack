@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "./cn";
+import { cn } from "@/components/ui";
 
-/** Drag-and-drop or click-to-choose file area. */
+/** Drop or choose a file. Dashed 2px = create (§5); the orange "+" with an ink sign (§3). */
 export function FileDrop({
   accept,
   onFile,
@@ -30,12 +30,15 @@ export function FileDrop({
         if (file) onFile(file);
       }}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-6 py-14 text-center transition-colors",
-        "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus",
-        dragging ? "border-accent bg-critique-tint" : "border-rule hover:border-ink",
+        "flex cursor-pointer flex-col items-center gap-2 rounded-card border-2 border-dashed px-6 py-12 text-center transition-colors",
+        "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange",
+        dragging ? "border-ink bg-grey-50" : "border-grey-250 hover:border-grey-300",
       )}
     >
-      <span className="font-semibold text-ink">{title}</span>
+      <span aria-hidden="true" className="mb-2 flex size-14 items-center justify-center rounded-full bg-orange text-3xl font-light text-ink">
+        +
+      </span>
+      <span className="font-display text-h3-lg font-semibold tracking-h3 text-ink">{title}</span>
       {hint}
       <input
         type="file"

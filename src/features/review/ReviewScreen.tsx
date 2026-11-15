@@ -8,12 +8,14 @@ import { Tabs, type TabItem } from "./ui/Tabs";
 import { TopBar } from "./components/TopBar";
 import { DocumentPane } from "./components/DocumentPane";
 import { CommentCard } from "./components/CommentCard";
-import { DeliberationCard } from "./components/DeliberationCard";
-import { ArrivingCard, DeliberatingCard, EmptyState, FailedCard } from "./components/StatusCards";
-import { DeliberationTab, FixListTab, QuestionsTab } from "./components/RailTabs";
+import { ConsensusCard, DeliberationCard } from "./components/DeliberationCard";
+import { BoardLiveCard, EmptyState, FailedCard } from "./components/StatusCards";
+import { FeedbackTab } from "./components/RailTabs";
+import { ExitBubble } from "./ui/ExitBubble";
 import { CommentFilters } from "./components/CommentFilters";
 
-type RailTab = "comments" | "deliberation" | "fixes" | "questions";
+/** §10: two tabs across the top, Comments and Feedback report. */
+type RailTab = "comments" | "report";
 type ScrollRequest = { kind: "paragraph" | "comment"; id: string; nonce: number };
 
 export function ReviewScreen({
@@ -37,7 +39,6 @@ export function ReviewScreen({
   );
   const [selectedParagraphId, setSelectedParagraphId] = useState<string>();
   const [selectedCommentIds, setSelectedCommentIds] = useState<Set<string>>(() => new Set());
-  const [replies, setReplies] = useState<Record<string, string[]>>({});
   const [scrollRequest, setScrollRequest] = useState<ScrollRequest>();
   const [kindFilter, setKindFilter] = useState<CommentKind | "all">("all");
   const [assessorFilter, setAssessorFilter] = useState<Set<string>>(() => new Set());
@@ -130,21 +131,18 @@ export function ReviewScreen({
 
   const tabs: TabItem<RailTab>[] = [
     { id: "comments", label: "Comments", count: openComments.length },
-    { id: "deliberation", label: "Deliberation" },
-    { id: "fixes", label: "Fix list", count: run.fixList.length },
-    { id: "questions", label: "Likely questions", count: run.questions.length },
+    { id: "report", label: "Feedback report" },
   ];
 
   const headlineSplit = run.deliberation?.splits[0];
-  const readers = (live?.reading ?? [])
-    .map((r) => ({ ...r, assessor: assessors.get(r.assessorId) }))
-    .filter((r): r is typeof r & { assessor: Assessor } => Boolean(r.assessor));
+  const isLive = live && (live.status === "reviewing" || (live.status === "deliberating" && !live.deliberationError));
+  const stillReading = (live?.reading ?? []).length;
   const failed = (live?.failed ?? [])
     .map((f) => ({ ...f, assessor: assessors.get(f.assessorId) }))
     .filter((f): f is typeof f & { assessor: Assessor } => Boolean(f.assessor));
 
   return (
-    <div className="flex h-dvh flex-col bg-bg">
+    <div className="flex h-dvh flex-col bg-white">
       <TopBar
         view={view}
         boardMembers={boardMembers}
@@ -171,6 +169,16 @@ export function ReviewScreen({
           <div className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
             {tab === "comments" && (
               <div className="flex flex-col gap-3">
+                {isLive && live && (live.status === "reviewing" || live.status === "deliberating") && (
+                  <BoardLiveCard
+                    board={boardMembers}
+                    status={live.status}
+                    doneIds={live.doneAssessorIds}
+                    failedIds={(live.failed ?? []).map((f) => f.assessorId)}
+                    onRetry={onRetryAssessor}
+                  />
+                )}
+
                 {headlineSplit && (
                   <div className="mb-1">
                     <DeliberationCard
@@ -182,7 +190,16 @@ export function ReviewScreen({
                   </div>
                 )}
 
-                {failed.map((f) => (
+                {run.deliberation && !headlineSplit && (
+                  <ConsensusCard
+                    seconds={run.deliberation.seconds}
+                    agreements={run.deliberation.agreements}
+                    fixCount={run.fixList.length}
+                    onShowFixes={() => setTab("report")}
+                  />
+                )}
+
+                {!isLive && failed.map((f) => (
                   <FailedCard
                     key={f.assessorId}
                     assessor={f.assessor}
@@ -219,26 +236,13 @@ export function ReviewScreen({
                     comment={c}
                     assessor={assessors.get(c.assessorId)}
                     paragraphLabels={c.paragraphIds.map((id) => ({ id, label: paragraphLabel(doc, id) }))}
-                    replies={replies[c.id] ?? []}
                     selected={selectedCommentIds.has(c.id)}
                     onShowInText={() => c.paragraphIds[0] && showParagraph(c.paragraphIds[0], c.id)}
                     onShowParagraph={(pid) => showParagraph(pid, c.id)}
-                    onResolve={() => resolve(c.id)}
-                    onReply={(text) => setReplies((prev) => ({ ...prev, [c.id]: [...(prev[c.id] ?? []), text] }))}
+                    onDone={() => resolve(c.id)}
                   />
                 ))}
 
-                {readers.map((r) => (
-                  <ArrivingCard
-                    key={r.assessorId}
-                    assessor={r.assessor}
-                    paragraphLabel={r.paragraphId ? paragraphLabel(doc, r.paragraphId) : undefined}
-                  />
-                ))}
-
-                {live?.status === "deliberating" && !live.deliberationError && (
-                  <DeliberatingCard people={boardMembers.filter((a) => live.doneAssessorIds.includes(a.id))} />
-                )}
 
                 {live?.deliberationError && (
                   <FailedCard
@@ -248,9 +252,9 @@ export function ReviewScreen({
                   />
                 )}
 
-                {openComments.length === 0 && readers.length === 0 && failed.length === 0 && (
+                {openComments.length === 0 && stillReading === 0 && failed.length === 0 && (
                   <EmptyState
-                    title={run.comments.length > 0 ? "Everything is resolved" : "No comments yet"}
+                    title={run.comments.length > 0 ? "Everything is marked done" : "No comments yet"}
                     body={
                       run.comments.length > 0
                         ? "Upload a new version when you're ready for another run."
@@ -261,30 +265,21 @@ export function ReviewScreen({
               </div>
             )}
 
-            {tab === "deliberation" && (
-              <DeliberationTab
+            {tab === "report" && (
+              <FeedbackTab
                 deliberation={run.deliberation}
-                doc={doc}
-                assessors={assessors}
-                onShowParagraph={(pid) => showParagraph(pid)}
-              />
-            )}
-
-            {tab === "fixes" && (
-              <FixListTab
                 fixList={run.fixList}
+                questions={run.questions}
                 doc={doc}
+                boardOrder={board.assessorIds}
                 assessors={assessors}
                 onShowParagraph={(pid) => showParagraph(pid)}
               />
-            )}
-
-            {tab === "questions" && (
-              <QuestionsTab questions={run.questions} boardOrder={board.assessorIds} assessors={assessors} />
             )}
           </div>
         </aside>
       </main>
+      <ExitBubble />
     </div>
   );
 }

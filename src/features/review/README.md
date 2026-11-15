@@ -43,12 +43,18 @@ The engine sits behind `reviewAsAssessor` and `deliberate` in `engine/run.ts`, s
 
 | Here | Replace with |
 |---|---|
-| `src/app/review/layout.tsx`, `src/app/projects/layout.tsx` act as root layouts | Lane 1's `src/app/layout.tsx`; then drop `<html>`/`<body>` from these |
-| `src/features/review/styles` (style variables, fonts, named grid layouts) | Lane 3's `src/styles` (same variable names) |
-| `src/features/review/ui` (Button, Pill, Card, Avatar, Tabs, …) | `src/components/ui` |
-| `src/features/review/types.ts`, `engine/schemas.ts`, `projects/types.ts` (brief's data shapes) | `src/lib/schemas` |
-| `src/features/review/engine/config.ts` | `src/config` |
+| `src/features/review/types.ts`, `engine/schemas.ts`, `projects/types.ts` (the Lane 2 brief's data shapes) | `src/lib/schemas` (Lane 1's contract: `severity`, `suggestion`, one `paragraphId` per comment, `disagreements` with views) |
+| `src/features/review/engine/config.ts` | `models.review` in `src/config` |
 | Preset assessors in `fixtures/review-sample.ts` | Seeded assessors via `src/lib/data` |
+
+## Design
+
+Follows `design/DESIGN_SYSTEM.md` and uses the shared foundation directly:
+
+- Tokens, fonts and base components come from `src/styles` and `src/components/ui`. `styles/review.css` only gives Tailwind names to the shared tokens (`@theme inline`, nothing redefined on `:root`); `ui/` holds thin wrappers over the shared components.
+- People are the pen avatars from `public/avatars` (same file per preset as the home floor), transparent, inverted on black.
+- Report review (§9, §10): numbered disc anchors in the margin (orange = open critique), two tabs (Comments, Feedback report), no Reply (a comment is marked done), AI states Reading, Did not finish (Try again) and Empty, and an exit bubble back to the floor.
+- New project (§15): steps as pills joined by lines; the board step shows the new table focused (orange) with its seats around it from −110°, no empty seats; assessor cards with harshness as dots and Seat / Unseat pills.
 
 ## Not done yet
 

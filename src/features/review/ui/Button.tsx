@@ -1,38 +1,28 @@
-import { cn } from "./cn";
+import { Button as SharedButton } from "@/components/ui";
 
-type Variant = "primary" | "outline";
+type Variant = "primary" | "outline" | "create" | "quiet";
 
-const variantClass: Record<Variant, string> = {
-  primary: "bg-ink text-surface border-2 border-ink",
-  outline: "bg-surface text-ink border-2 border-ink",
-};
+const map = { primary: "primary", outline: "secondary", create: "create", quiet: "quiet" } as const;
 
+/** §9 buttons: create (orange, ink text), primary (ink), secondary (outline), quiet. */
 export function Button({
   variant = "primary",
+  size = "md",
   onClick,
   disabled,
   type = "button",
   children,
 }: {
   variant?: Variant;
+  size?: "sm" | "md" | "lg";
   onClick?: () => void;
   disabled?: boolean;
   type?: "button" | "submit";
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "inline-flex items-center justify-center rounded-full px-4.5 py-2 text-sm font-semibold",
-        "transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        variantClass[variant],
-      )}
-    >
+    <SharedButton variant={map[variant]} size={size} onClick={onClick} disabled={disabled} type={type}>
       {children}
-    </button>
+    </SharedButton>
   );
 }

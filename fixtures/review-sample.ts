@@ -10,7 +10,8 @@ export const presetAssessors: Assessor[] = [
     field: "Biomedical engineering",
     harshness: 3,
     focus: ["mark scheme", "handbook requirements"],
-    avatar: "module-lead",
+    personality: "Marks against the mark scheme and your notes.",
+    avatar: "avatar-006",
   },
   {
     id: "methodologist",
@@ -19,7 +20,8 @@ export const presetAssessors: Assessor[] = [
     field: "Experimental design and statistics",
     harshness: 4,
     focus: ["sample size", "controls", "analysis"],
-    avatar: "methodologist",
+    personality: "\u201cHow did you actually find this?\u201d Rigour first.",
+    avatar: "avatar-012",
   },
   {
     id: "literature-hawk",
@@ -28,7 +30,8 @@ export const presetAssessors: Assessor[] = [
     field: "Related work in compression therapy",
     harshness: 3,
     focus: ["citations", "novelty"],
-    avatar: "literature-hawk",
+    personality: "Related work and novelty. Knows what you missed.",
+    avatar: "avatar-008",
   },
   {
     id: "communicator",
@@ -37,7 +40,8 @@ export const presetAssessors: Assessor[] = [
     field: "Scientific writing",
     harshness: 2,
     focus: ["structure", "flow", "clarity"],
-    avatar: "communicator",
+    personality: "Structure, flow and clarity. Can a reader follow it?",
+    avatar: "avatar-014",
   },
   {
     id: "outsider",
@@ -46,7 +50,8 @@ export const presetAssessors: Assessor[] = [
     field: "Medical device industry",
     harshness: 3,
     focus: ["cost", "adoption", "market"],
-    avatar: "outsider",
+    personality: "The industry view. Who pays, and why would they care?",
+    avatar: "avatar-016",
   },
   {
     id: "sceptic",
@@ -55,7 +60,8 @@ export const presetAssessors: Assessor[] = [
     field: "Clinical research methods",
     harshness: 5,
     focus: ["weakest claim", "bias"],
-    avatar: "sceptic",
+    personality: "Goes straight for your weakest claim and pushes.",
+    avatar: "avatar-004",
   },
 ];
 

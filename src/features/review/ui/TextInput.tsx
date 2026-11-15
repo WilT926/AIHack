@@ -1,3 +1,4 @@
+/** §5 pill input with the 1.5px line. */
 export function TextInput({
   value,
   onChange,
@@ -18,7 +19,7 @@ export function TextInput({
       placeholder={placeholder}
       autoFocus={autoFocus}
       aria-label={ariaLabel}
-      className="w-full rounded-full border border-rule bg-surface px-4 py-2 text-sm text-ink placeholder:text-text-muted focus:border-ink focus:outline-none"
+      className="w-full rounded-full border-line border-grey-150 bg-white px-4.5 py-3 text-body text-ink placeholder:text-grey-500 focus:border-ink focus:outline-none"
     />
   );
 }

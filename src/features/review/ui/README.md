@@ -1,6 +1,6 @@
-# Temporary base components (Lane 2)
+# Lane 2 UI pieces
 
-`src/components/ui` does not exist yet (Lane 1 foundation, Lane 3 styling).
-These are the minimum pieces the review screen needs, styled only through the
-variables in `../styles/review.css`. When the shared components land, swap the
-imports in `../components/*` and delete this folder.
+Thin wrappers over the shared base components in `src/components/ui` and the
+`ui-*` classes in `src/styles/ui.css` (design/DESIGN_SYSTEM.md §9), keeping the
+props the review and project screens already use. Anything with a shared
+equivalent delegates to it; the rest is styled only through the shared tokens.

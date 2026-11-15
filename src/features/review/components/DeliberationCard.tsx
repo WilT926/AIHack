@@ -37,29 +37,57 @@ export function DeliberationCard({
           </Pill>
         )}
       </div>
-      <h2 className="mt-2 text-title font-bold tracking-heading">
+      <h2 className="mt-2 font-display text-h3-lg font-semibold tracking-h3">
         Split on {paragraphLabel}: {split.topic}
       </h2>
 
       <div className="mt-4 flex h-2.5 gap-1" aria-label={`${approve.length} keep it, ${object.length} object`}>
         {approve.length > 0 && <div className="rounded-full bg-surface" style={{ flexGrow: approve.length }} />}
-        {object.length > 0 && <div className="rounded-full bg-accent" style={{ flexGrow: object.length }} />}
+        {object.length > 0 && <div className="rounded-full bg-orange" style={{ flexGrow: object.length }} />}
       </div>
 
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <AvatarStack people={approve} size="sm" />
+          <AvatarStack people={approve} size="md" invert />
           <Label tone="inverse">{approve.length} keep it</Label>
         </div>
         <div className="flex items-center gap-2.5">
           <Label tone="accent">
             {object.length} {object.length === 1 ? "objects" : "object"}
           </Label>
-          <AvatarStack people={object} size="sm" ringFor={() => "accent"} />
+          <AvatarStack people={object} size="md" invert ringFor={() => "accent"} />
         </div>
       </div>
 
-      <p className="mt-4 text-body text-rule">{split.advice}</p>
+      <p className="mt-4 text-body text-grey-200">{split.advice}</p>
+    </Card>
+  );
+}
+
+/** When the board deliberated and nobody split: say so, rather than showing nothing. */
+export function ConsensusCard({
+  seconds,
+  agreements,
+  fixCount,
+  onShowFixes,
+}: {
+  seconds: number;
+  agreements: string[];
+  fixCount: number;
+  onShowFixes: () => void;
+}) {
+  return (
+    <Card variant="dark" className="p-6">
+      <Label tone="accent">The board deliberated · {seconds} sec</Label>
+      <h2 className="mt-2 font-display text-h3-lg font-semibold tracking-h3">No splits: the board agrees.</h2>
+      {agreements[0] && <p className="mt-3 text-body text-grey-200">{agreements[0]}</p>}
+      {fixCount > 0 && (
+        <div className="mt-4">
+          <Pill variant="outline-inverse" onClick={onShowFixes}>
+            See the fix list · {fixCount}
+          </Pill>
+        </div>
+      )}
     </Card>
   );
 }

@@ -40,7 +40,7 @@ export function TemplateIcon({ name, active }: { name: IconName; active?: boolea
     <svg
       viewBox="0 0 40 40"
       aria-hidden="true"
-      className={cn("size-10 fill-none", active ? "stroke-accent" : "stroke-ink")}
+      className={cn("size-10 fill-none", active ? "stroke-orange" : "stroke-ink")}
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"

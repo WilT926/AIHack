@@ -7,15 +7,23 @@ import { allWeakSpots } from "../context";
 import { cn } from "../../review/ui/cn";
 import { Label } from "../../review/ui/Label";
 import { Pill } from "../../review/ui/Pill";
+import { Chip, DotRating } from "@/components/ui";
 import { TextInput } from "../../review/ui/TextInput";
 import { TextArea } from "../../review/ui/TextArea";
 import { Avatar, AvatarStack } from "../../review/ui/Avatar";
 import { Card } from "../../review/ui/Card";
 import { SelectCard } from "../../review/ui/SelectCard";
 import { TemplateIcon } from "./TemplateIcon";
+import { RoundTable } from "./RoundTable";
 
 function pick(ids: string[], assessors: Map<string, Assessor>): Assessor[] {
   return ids.map((id) => assessors.get(id)).filter((a): a is Assessor => Boolean(a));
+}
+
+/** §11: the two-letter project code is the initials of the title. */
+function projectCode(title: string): string {
+  const words = title.replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
+  return (words.length >= 2 ? words[0][0] + words[1][0] : (words[0] ?? "NT").slice(0, 2)).toUpperCase();
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -54,8 +62,8 @@ export function TemplateStep({
                 {active && <Pill variant="accent">Selected</Pill>}
               </div>
             </div>
-            <span className="mt-5 text-2xl font-bold tracking-heading text-ink">{t.title}</span>
-            <span className="text-body text-text-muted">{t.description}</span>
+            <span className="mt-5 font-display text-h2 font-semibold tracking-h2 text-ink">{t.title}</span>
+            <span className="text-body text-grey-700">{t.description}</span>
             {t.boardIds.length > 0 && (
               <span className="mt-auto flex items-center gap-3 pt-4">
                 <AvatarStack people={pick(t.boardIds, assessors)} size="md" />
@@ -98,10 +106,9 @@ export function BriefStep({ draft, onChange }: { draft: ProjectDraft; onChange: 
             {GRADED_OPTIONS.map((g) => {
               const on = draft.graded.includes(g);
               return (
-                <Pill key={g} variant={on ? "ink" : "outline"} onClick={() => onChange({ ...draft, graded: toggle(draft.graded, g) })} title={on ? "Graded" : "Not graded"}>
-                  {on && <span aria-hidden="true">✓</span>}
-                  {g}
-                </Pill>
+                <Chip key={g} active={on} onClick={() => onChange({ ...draft, graded: toggle(draft.graded, g) })}>
+                  {on ? `✓ ${g}` : g}
+                </Chip>
               );
             })}
           </div>
@@ -112,10 +119,9 @@ export function BriefStep({ draft, onChange }: { draft: ProjectDraft; onChange: 
             {template.weakSpotSuggestions.map((w) => {
               const on = draft.weakSpots.includes(w);
               return (
-                <Pill key={w} variant={on ? "accent" : "outline"} onClick={() => onChange({ ...draft, weakSpots: toggle(draft.weakSpots, w) })}>
-                  <span aria-hidden="true">{on ? "●" : "+"}</span>
-                  {w}
-                </Pill>
+                <Chip key={w} active={on} onClick={() => onChange({ ...draft, weakSpots: toggle(draft.weakSpots, w) })}>
+                  {on ? w : `+ ${w}`}
+                </Chip>
               );
             })}
           </div>
@@ -142,21 +148,21 @@ function MarkSchemePanel({ draft }: { draft: ProjectDraft }) {
   const top = heaviest?.id;
 
   return (
-    <aside className="self-start rounded-lg bg-paper p-7" aria-label="Mark scheme">
+    <aside className="self-start rounded-sheet bg-grey-50 p-7" aria-label="Mark scheme">
       <Label tone="ink" className="block">Mark scheme</Label>
       <Label className="block">Optional · board marks against it</Label>
 
       {criteria.length === 0 ? (
-        <p className="mt-6 rounded-md border-2 border-dashed border-rule px-5 py-8 text-center text-body text-text-muted">
+        <p className="mt-6 rounded-card border-2 border-dashed border-grey-250 px-5 py-8 text-center text-body text-grey-700">
           No mark scheme yet. The board will use the brief and what&apos;s graded.
         </p>
       ) : (
         <>
-          <div className="mt-5 flex items-center gap-3 rounded-md border-2 border-ink bg-surface px-5 py-4">
+          <div className="mt-5 flex items-center gap-3 rounded-card-sm border-line border-ink bg-white px-5 py-4">
             <TemplateIcon name="document" />
             <div className="flex flex-col">
-              <span className="font-semibold text-ink">{draft.markScheme?.source}</span>
-              <Label tone="accent">
+              <span className="font-display text-h3 font-semibold tracking-h3 text-ink">{draft.markScheme?.source}</span>
+              <Label>
                 {criteria.length} criteria · {criteria.reduce((n, c) => n + c.weight, 0)}%
               </Label>
             </div>
@@ -168,14 +174,14 @@ function MarkSchemePanel({ draft }: { draft: ProjectDraft }) {
                   <span>{c.name}</span>
                   <span className="font-mono text-label">{c.weight}%</span>
                 </div>
-                <div className="mt-1.5 h-1.5 rounded-full bg-rule">
-                  <div className={cn("h-full rounded-full", c.id === top ? "bg-accent" : "bg-ink")} style={{ width: `${(c.weight / max) * 100}%` }} />
+                <div className="mt-1.5 h-1.5 rounded-full bg-grey-100">
+                  <div className={cn("h-full rounded-full", c.id === top ? "bg-orange" : "bg-ink")} style={{ width: `${(c.weight / max) * 100}%` }} />
                 </div>
               </li>
             ))}
           </ul>
           {heaviest && lightest && heaviest !== lightest && (
-            <p className="mt-5 text-body text-text-muted">
+            <p className="mt-5 text-body text-grey-700">
               The board will weight its comments by these. {heaviest.name} gets the most attention, {lightest.name.toLowerCase()} the
               least.
             </p>
@@ -198,36 +204,45 @@ export function BoardStep({
   onChange: (d: ProjectDraft) => void;
 }) {
   const suggested = getTemplate(draft.template).boardIds;
+  const byId = new Map(presets.map((a) => [a.id, a]));
+  const code = projectCode(draft.name);
   const toggle = (id: string) =>
     onChange({ ...draft, boardIds: draft.boardIds.includes(id) ? draft.boardIds.filter((x) => x !== id) : [...draft.boardIds, id] });
 
   return (
-    <div className="grid grid-cols-3 gap-5">
-      {presets.map((a) => {
-        const seated = draft.boardIds.includes(a.id);
-        return (
-          <SelectCard key={a.id} role="checkbox" checked={seated} onSelect={() => toggle(a.id)} dashed={false} className="gap-3 p-5">
-            <div className="flex items-start gap-3">
-              <Avatar avatar={a.avatar} name={a.name} size="lg" ring={seated ? "accent" : "ink"} />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="font-semibold text-ink">{a.name}</span>
-                <Label tone="accent">{a.role}</Label>
-              </div>
-              {seated ? <Pill variant="accent">Seated</Pill> : <Pill variant="outline">+ Seat</Pill>}
-            </div>
-            <p className="text-body text-text-muted">{a.field}</p>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1" aria-label={`Harshness ${a.harshness} of 5`}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <span key={n} className={cn("size-2 rounded-full", n <= a.harshness ? "bg-ink" : "bg-rule")} />
-                ))}
-                <Label className="ml-2">Harshness</Label>
-              </span>
-              {suggested.includes(a.id) && <Label>Suggested</Label>}
-            </div>
-          </SelectCard>
-        );
-      })}
+    <div className="grid grid-cols-table-aside items-start gap-10">
+      <RoundTable label={draft.name} seated={pick(draft.boardIds, byId)} onRemove={toggle} />
+
+      <div className="flex flex-col gap-3.5">
+        <div className="flex items-center gap-3">
+          <Label tone="ink">Add assessors</Label>
+          <Label>{presets.length} presets · seat or unseat</Label>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {presets.map((a) => {
+            const seated = draft.boardIds.includes(a.id);
+            return (
+              <SelectCard key={a.id} role="checkbox" checked={seated} onSelect={() => toggle(a.id)} direction="row" className="items-start gap-3.5 p-4.5">
+                <Avatar avatar={a.avatar} name={a.name} size="xl" ring={seated ? "accent" : "none"} />
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="font-display text-h3 font-semibold tracking-h3 text-ink">{a.name}</span>
+                  <Label size="sm">{a.role}</Label>
+                  <span className="line-clamp-2 text-small text-grey-700">{a.personality ?? a.field}</span>
+                  <span className="mt-1.5 flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-ink">
+                      <DotRating value={a.harshness} max={5} label="Harshness" />
+                      {suggested.includes(a.id) && <Label size="xs">Suggested</Label>}
+                    </span>
+                    <span className={cn("ui-btn ui-btn--sm", seated ? "ui-btn--secondary" : "ui-btn--primary")} aria-hidden="true">
+                      {seated ? "Unseat" : `Seat at ${code}`}
+                    </span>
+                  </span>
+                </span>
+              </SelectCard>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -248,9 +263,9 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
   ];
 
   return (
-    <div className="grid grid-cols-summary-aside gap-10">
+    <div className="grid grid-cols-summary-aside items-start gap-10">
       <Card className="p-7">
-        <dl className="flex flex-col divide-y divide-rule">
+        <dl className="flex flex-col divide-y divide-grey-100">
           {rows.map(([k, v]) => (
             <div key={k} className="grid grid-cols-label-value gap-4 py-3.5">
               <dt>
@@ -261,21 +276,12 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
           ))}
         </dl>
       </Card>
-      <Card variant="dark" className="self-start p-7">
-        <Label tone="accent">Your board · {board.length} seated</Label>
-        <ul className="mt-4 flex flex-col gap-3">
-          {board.map((a) => (
-            <li key={a.id} className="flex items-center gap-3">
-              <Avatar avatar={a.avatar} name={a.name} size="md" />
-              <div className="flex flex-col">
-                <span className="font-semibold">{a.name}</span>
-                <Label tone="accent">{a.role}</Label>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-5 text-body text-rule">Next: upload your document. Each assessor reads it on their own, then the board deliberates.</p>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <RoundTable label={draft.name} seated={board} compact />
+        <p className="text-body text-grey-700">
+          Next: upload your document. Each assessor reads it on their own, then the board deliberates.
+        </p>
+      </div>
     </div>
   );
 }
