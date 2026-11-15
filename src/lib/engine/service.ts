@@ -4,12 +4,14 @@ import "server-only";
 // and save the finished review.
 import { engine } from "@/config";
 import { assessorNotes, assessors, boards, callLogs, documents, getProfile, projects, reviews } from "@/lib/data";
-import type { Comment, ReplySource, Review } from "@/lib/schemas";
+import type { BoardMemory, Comment, ReplySource, Review } from "@/lib/schemas";
 import { checkComments, checkDeliberation } from "./check";
 import { callClaude, EngineError, hasClaude, type CallLogger } from "./claude";
 import type { SharedContext } from "./prompts";
 import { runAssessor, runDeliberation, type AssessorRunResult } from "./run";
 import { sampleAssessorReply, sampleDeliberationReply } from "./sample";
+import { attemptFromReview, memoryForAssessor, memoryForBoard, sinceLastTime } from "./memory";
+import { recordAttempt } from "./memoryStore";
 
 const logCall: CallLogger = async (entry) => {
   await callLogs.save({ id: crypto.randomUUID(), ...entry });
@@ -27,14 +29,25 @@ function requireSource(): ReplySource {
   return s;
 }
 
-async function loadContext(projectId: string, documentId: string): Promise<{ context: SharedContext; boardIds: string[] }> {
+async function loadContext(projectId: string, documentId: string): Promise<{ context: SharedContext; boardIds: string[]; memory: BoardMemory }> {
   const [project, document, profile] = await Promise.all([projects.get(projectId), documents.get(documentId), getProfile()]);
   if (!project) throw new EngineError("That project does not exist.", "invalid_reply", false);
   if (!document || document.projectId !== projectId) throw new EngineError("That document does not belong to this project.", "invalid_reply", false);
   if (!document.paragraphs.some((p) => p.type !== "heading")) throw new EngineError("The document has no paragraphs to review.", "invalid_reply", false);
   if (!profile) throw new EngineError("The student profile is missing.", "invalid_reply", false);
   const board = project.boardId ? await boards.get(project.boardId) : null;
-  return { context: { profile, project, document }, boardIds: board?.assessorIds ?? [] };
+  return { context: { profile, project, document }, boardIds: board?.assessorIds ?? [], memory: project.memory };
+}
+
+/**
+ * Everything one assessor's call is built from, including layer three: what
+ * this assessor (and the board) said on earlier attempts at this project.
+ */
+export async function assessorInput(input: { projectId: string; documentId: string; assessorId: string; reviewId?: string | null }) {
+  const { context, memory } = await loadContext(input.projectId, input.documentId);
+  const [assessor, notes] = await Promise.all([assessors.get(input.assessorId), assessorNotes.list({ assessorId: input.assessorId })]);
+  if (!assessor) throw new EngineError("That assessor does not exist.", "invalid_reply", false);
+  return { context, assessor, notes, earlierSummary: memoryForAssessor(memory, assessor.id, input.reviewId) };
 }
 
 /** One assessor reads one document. Failures come back as status "failed". */
@@ -44,17 +57,15 @@ export async function reviewWithAssessor(input: {
   assessorId: string;
 }): Promise<AssessorRunResult & { replySource: ReplySource }> {
   const source = requireSource();
-  const { context } = await loadContext(input.projectId, input.documentId);
-  const [assessor, notes] = await Promise.all([assessors.get(input.assessorId), assessorNotes.list({ assessorId: input.assessorId })]);
-  if (!assessor) throw new EngineError("That assessor does not exist.", "invalid_reply", false);
+  const { context, assessor, notes, earlierSummary } = await assessorInput(input);
 
   if (source === "sample") {
     // A short pause so the Reading state is visible; sample replies are instant otherwise.
     await new Promise((r) => setTimeout(r, engine.sampleDelayMs * (1 + Math.random())));
-    const checked = checkComments(sampleAssessorReply(context, assessor, assessor.id.length), context.document, assessor.id);
+    const checked = checkComments(sampleAssessorReply(context, assessor, assessor.id.length, earlierSummary), context.document, assessor.id);
     return { assessorId: assessor.id, status: "done", comments: checked.value, dropped: checked.dropped, angles: [], replySource: "sample" };
   }
-  const result = await runAssessor({ context, assessor, notes }, { call: callClaude, log: logCall });
+  const result = await runAssessor({ context, assessor, notes, earlierSummary }, { call: callClaude, log: logCall });
   return { ...result, replySource: "claude" };
 }
 
@@ -79,7 +90,8 @@ export async function deliberateAndSave(input: {
   doneCommentIds?: string[];
 }): Promise<Review> {
   const source = requireSource();
-  const { context } = await loadContext(input.projectId, input.documentId);
+  const { context, memory } = await loadContext(input.projectId, input.documentId);
+  const boardMemory = memoryForBoard(memory, input.reviewId);
 
   const board = (await Promise.all(input.results.map((r) => assessors.get(r.assessorId)))).filter((a) => a !== null);
   const known = new Set(board.map((b) => b.id));
@@ -99,10 +111,12 @@ export async function deliberateAndSave(input: {
   let outcome;
   if (source === "sample") {
     const reply = sampleDeliberationReply(board, finished, context.project.brief.graded);
-    outcome = checkDeliberation(reply, context.document, board.map((b) => b.id)).value;
+    outcome = { ...checkDeliberation(reply, context.document, board.map((b) => b.id)).value, since: reply.sinceLastTime };
   } else {
-    outcome = await runDeliberation({ context, board, results: finished }, { call: callClaude, log: logCall });
+    outcome = await runDeliberation({ context, board, results: finished, memory: boardMemory }, { call: callClaude, log: logCall });
   }
+  // "Since last time": improved and raised again from the board, still open from code.
+  outcome = { ...outcome, report: { ...outcome.report, sinceLastTime: sinceLastTime(memory, input.reviewId, outcome.since) } };
 
   // Keep what the student already marked done: comments marked during the
   // run, and anything saved on an earlier deliberation of this review (a
@@ -116,7 +130,7 @@ export async function deliberateAndSave(input: {
   const doneActions = new Set(previous?.report?.actions.filter((a) => a.done).map((a) => key(a.what)) ?? []);
   const report = { ...outcome.report, actions: outcome.report.actions.map((a) => ({ ...a, done: a.done || doneActions.has(key(a.what)) })) };
 
-  return reviews.save({
+  const saved = await reviews.save({
     id: input.reviewId || crypto.randomUUID(),
     projectId: input.projectId,
     documentId: input.documentId,
@@ -131,4 +145,7 @@ export async function deliberateAndSave(input: {
     report,
     replySource: anySample ? "sample" : "claude",
   });
+  // The session has ended: the board remembers it.
+  await recordAttempt(input.projectId, attemptFromReview(saved, context.document.title));
+  return saved;
 }

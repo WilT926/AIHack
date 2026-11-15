@@ -43,6 +43,9 @@ export const pitchReportReplySchema = z.object({
   escalations: z.array(z.object({ reason: z.string(), whoToAsk: z.string() })),
   delivery: z.object({ structure: z.string(), clarity: z.string() }),
   questionReview: z.array(z.object({ questionId: z.string(), howWell: z.string().describe("strong, adequate or weak."), strongerAnswer: z.string() })),
+  sinceLastTime: z
+    .object({ improved: z.array(z.string()), raisedAgain: z.array(z.string()) })
+    .describe("Compare with the board's memory: earlier points now fixed, and earlier points raised again. Empty lists if no earlier attempt."),
 });
 
 // ---------- Prompts ----------
@@ -54,6 +57,10 @@ export type PitchContext = {
   project: Pick<Project, "title" | "brief" | "markSchemeText" | "weakSpots">;
   transcript: string;
   board: PitchBoardMember[];
+  /** What the board said on earlier attempts at this project (both session kinds). */
+  memory?: string | null;
+  /** The previous attempt's unticked actions. */
+  lastOpen?: string[];
 };
 
 const PITCH_RULES = `You are a board of judges who have just listened to a student's spoken pitch. You receive the transcript, made by speech recognition, so expect small recognition errors.
@@ -84,6 +91,9 @@ function contextBlock(ctx: PitchContext): string {
       : "<judging_criteria>None supplied. Do not invent any.</judging_criteria>",
     ctx.project.weakSpots.length ? `<weak_spots>${ctx.project.weakSpots.join("; ")}</weak_spots>` : "",
     `<board>\n${boardBlock(ctx.board)}\n</board>`,
+    ctx.memory
+      ? `<board_memory>\nWhat the board said on earlier attempts at this project.\n${ctx.memory}\n</board_memory>`
+      : "<board_memory>This is the first attempt at this project.</board_memory>",
     `<transcript>\n${ctx.transcript.replace(/<\/?transcript/gi, (m) => m.replace("<", "‹"))}\n</transcript>`,
   ]
     .filter(Boolean)
@@ -93,7 +103,9 @@ function contextBlock(ctx: PitchContext): string {
 export function questionsPrompt(ctx: PitchContext, count: number) {
   return {
     system: { rules: PITCH_RULES, context: contextBlock(ctx) },
-    user: `The board steps out and agrees its questions. Write exactly ${count} question${count === 1 ? "" : "s"}, the ones most worth asking. Spread them across different judges where you can, each from their own field. Each must be answerable in under a minute and must point at something said (or left out). Use only the judge ids listed.`,
+    user: `The board steps out and agrees its questions. Write exactly ${count} question${count === 1 ? "" : "s"}, the ones most worth asking. Spread them across different judges where you can, each from their own field. Each must be answerable in under a minute and must point at something said (or left out). Use only the judge ids listed.${
+      ctx.memory ? " Where an earlier point is still open, one question may check whether it has been dealt with. Do not ask a question identical to one asked last time." : ""
+    }`,
   };
 }
 
@@ -203,6 +215,13 @@ export function sampleQuestionsReply(ctx: PitchContext, count: number): z.infer<
   return {
     questions: Array.from({ length: count }, (_, i) => {
       const a = ctx.board[i % Math.max(1, ctx.board.length)];
+      if (i === 0 && ctx.lastOpen?.length) {
+        return {
+          assessorId: a?.id ?? "",
+          text: `Sample question 1 from ${a?.name ?? "the board"}: last time the board asked you to "${ctx.lastOpen[0]}". What have you changed?`,
+          reason: "Sample reason: it is still open from the last attempt.",
+        };
+      }
       return {
         assessorId: a?.id ?? "",
         text: `Sample question ${i + 1} from ${a?.name ?? "the board"}: what is the strongest evidence for your main claim, from the point of view of ${a?.field || "their field"}?`,
@@ -225,5 +244,6 @@ export function samplePitchReportReply(ctx: PitchContext, questionIds: string[])
     escalations: [],
     delivery: { structure: "Sample note on structure.", clarity: "Sample note on clarity." },
     questionReview: questionIds.map((id) => ({ questionId: id, howWell: "adequate", strongerAnswer: "Sample outline of a stronger answer." })),
+    sinceLastTime: { improved: ["Sample: a point from last time now looks fixed."], raisedAgain: ["Sample: one point from last time came up again."] },
   };
 }

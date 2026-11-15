@@ -54,7 +54,13 @@ export async function runAssessor(
   }
 }
 
-export type DeliberationResult = { deliberation: Deliberation; report: FeedbackReport; dropped: number };
+export type DeliberationResult = {
+  deliberation: Deliberation;
+  report: FeedbackReport;
+  dropped: number;
+  /** The model's "improved" and "raised again" lists, before code adds "still open". */
+  since: { improved: string[]; raisedAgain: string[] } | null;
+};
 
 /** The board deliberates over every finished assessor's comments. Throws EngineError on failure. */
 export async function runDeliberation(
@@ -62,6 +68,7 @@ export async function runDeliberation(
     context: SharedContext;
     board: Pick<Assessor, "id" | "name" | "role" | "field">[];
     results: { assessorId: string; comments: Comment[] }[];
+    memory?: string | null;
   },
   deps: EngineDeps,
 ): Promise<DeliberationResult> {
@@ -85,5 +92,5 @@ export async function runDeliberation(
     input.context.document,
     input.board.map((b) => b.id),
   );
-  return { ...checked.value, dropped: checked.dropped };
+  return { ...checked.value, dropped: checked.dropped, since: result.output.sinceLastTime ?? null };
 }

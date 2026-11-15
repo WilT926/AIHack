@@ -197,6 +197,7 @@ export function utterancePrompt(input: {
   judge: { name: string; role: string; field: string };
   plannedQuestion: string;
   transcriptExcerpt: string;
+  memory?: string | null;
   history: { text: string; answer?: string | null }[];
 }) {
   const asked = input.history.map((h, i) => `${i + 1}. Q: ${h.text}${h.answer ? `\n   A: ${h.answer}` : ""}`).join("\n");
@@ -205,7 +206,7 @@ export function utterancePrompt(input: {
       ? `Respond to the student's last answer, about this question: "${input.plannedQuestion}".`
       : `Move on to this planned question and ask it in your own words, in the tone of the mode: "${input.plannedQuestion}".`;
   return {
-    system: { rules: UTTERANCE_RULES, context: `<pitch_excerpt>\n${input.transcriptExcerpt}\n</pitch_excerpt>` },
+    system: { rules: UTTERANCE_RULES, context: `${input.memory ? `<board_memory>\n${input.memory}\n</board_memory>\n` : ""}<pitch_excerpt>\n${input.transcriptExcerpt}\n</pitch_excerpt>` },
     user: `${MODE_BLOCKS[input.mode](input.conditions)}\n\nYou are ${input.judge.name}, ${input.judge.role} (${input.judge.field}).\n\n<asked_so_far>\n${asked || "(nothing yet)"}\n</asked_so_far>\n\n${task}`,
   };
 }

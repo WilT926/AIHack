@@ -33,7 +33,14 @@ export function reportAsText(r: Report, name: (id: string) => string, questions:
     lines.push("", `Q: ${asked?.text ?? q.questionId} (${q.howWell})`, `A stronger answer: ${q.strongerAnswer}`);
   });
   if (r.escalations.length) lines.push("", "Take this to your supervisor:", ...r.escalations.map((e) => `- ${e.reason} (ask: ${e.whoToAsk})`));
-  if (r.sinceLastTime) lines.push("", "Since last time:", ...r.sinceLastTime.improved.map((s) => `+ ${s}`), ...r.sinceLastTime.stillWeak.map((s) => `Raised again: ${s}`));
+  if (r.sinceLastTime)
+    lines.push(
+      "",
+      "Since last time:",
+      ...r.sinceLastTime.improved.map((s) => `Improved: ${s}`),
+      ...r.sinceLastTime.raisedAgain.map((s) => `Raised again: ${s}`),
+      ...r.sinceLastTime.stillOpen.map((s) => `Still open: ${s}`),
+    );
   return lines.filter((l) => l !== undefined).join("\n");
 }
 
@@ -246,20 +253,28 @@ export function FeedbackReport({
       )}
 
       {/* 8. Since last time */}
-      {report.sinceLastTime && (report.sinceLastTime.improved.length > 0 || report.sinceLastTime.stillWeak.length > 0) && (
-        <Section title="Since last time">
-          <ul className="fb-list fb-plain">
-            {report.sinceLastTime.improved.map((s) => (
-              <li key={`i-${s}`}>{s}</li>
-            ))}
-            {report.sinceLastTime.stillWeak.map((s) => (
-              <li key={`w-${s}`}>
-                <Label tone="orange" size="sm">Raised again</Label> {s}
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
+      {report.sinceLastTime &&
+        (report.sinceLastTime.improved.length > 0 || report.sinceLastTime.raisedAgain.length > 0 || report.sinceLastTime.stillOpen.length > 0) && (
+          <Section title="Since last time">
+            <ul className="fb-list fb-plain">
+              {report.sinceLastTime.improved.map((s) => (
+                <li key={`i-${s}`}>
+                  <Label size="sm" tone="ink">Improved</Label> {s}
+                </li>
+              ))}
+              {report.sinceLastTime.raisedAgain.map((s) => (
+                <li key={`r-${s}`}>
+                  <Label tone="orange" size="sm">Raised again</Label> {s}
+                </li>
+              ))}
+              {report.sinceLastTime.stillOpen.map((s) => (
+                <li key={`o-${s}`}>
+                  <Label size="sm">Still open</Label> {s}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
 
       {footer}
     </article>

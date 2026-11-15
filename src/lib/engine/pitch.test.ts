@@ -57,6 +57,7 @@ describe("pitch prompts and checks", () => {
         escalations: [],
         delivery: { structure: "s", clarity: "c" },
         questionReview: [{ questionId: "q1", howWell: "weak", strongerAnswer: "Say who pays." }, { questionId: "q9", howWell: "weak", strongerAnswer: "" }],
+        sinceLastTime: { improved: [], raisedAgain: [] },
       },
       { boardIds: ["investor", "design-judge"], spoken: [ctx.transcript], questionIds: ["q1"], lengthSeconds: 187, wordsPerMinute: 142 },
     );

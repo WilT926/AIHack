@@ -8,6 +8,8 @@
 // - PitchSession.settings.boardId and .capture: the board chosen for the run
 //   and whether the transcript came from the microphone or was typed.
 // - PitchQuestion.followUpAnswer: the answer to the one follow-up question.
+// - Project.memory: the board's memory across attempts (both session kinds).
+// - FeedbackReport.sinceLastTime is improved / raisedAgain / stillOpen.
 // - PitchSession.settings.conditions and PitchSession.qa: coaching or exam
 //   conditions, and the routed Q&A (turns, assessments, modes, struggles,
 //   escalations).
@@ -88,6 +90,30 @@ export const briefSchema = z.object({
 });
 export type Brief = z.infer<typeof briefSchema>;
 
+// ---------- Board memory (judging criterion: session state and memory) ----------
+
+const memoryRatingSchema = z.enum(["strong", "adequate", "weak"]);
+
+/** One finished attempt, as the board remembers it. */
+export const memoryAttemptSchema = z.object({
+  sessionId: id,
+  kind: z.enum(["report", "pitch"]),
+  at: timestamp,
+  title: z.string().max(300),
+  verdict: shortText,
+  /** What each assessor raised, in a few short points. */
+  raised: z.array(z.object({ assessorId: id, points: z.array(z.string().max(300)).max(8) })).max(12),
+  /** The board's actions, and whether the student ticked them. */
+  actions: z.array(z.object({ id, what: shortText, done: z.boolean(), raisedBy: z.array(id).max(12) })).max(30),
+  /** Each criterion's rating on this attempt. */
+  criteria: z.array(z.object({ criterion: z.string().max(300), rating: memoryRatingSchema })).max(20),
+});
+export type MemoryAttempt = z.infer<typeof memoryAttemptSchema>;
+
+/** Per project: every attempt, oldest first. Passed into every assessor and pitch question call. */
+export const boardMemorySchema = z.object({ attempts: z.array(memoryAttemptSchema).max(30) });
+export type BoardMemory = z.infer<typeof boardMemorySchema>;
+
 export const projectSchema = z.object({
   id,
   title: z.string().min(1).max(200),
@@ -99,6 +125,8 @@ export const projectSchema = z.object({
   boardId: id.nullish(),
   createdAt: timestamp,
   updatedAt: timestamp,
+  /** What the board remembers across attempts. Updated when a session ends. */
+  memory: boardMemorySchema.default({ attempts: [] }),
 });
 export type Project = z.infer<typeof projectSchema>;
 
@@ -197,8 +225,9 @@ export const feedbackReportSchema = z.object({
   actions: z.array(feedbackActionSchema).max(30),
   assessorVerdicts: z.array(z.object({ assessorId: id, line: shortText })).max(12),
   escalations: z.array(z.object({ reason: shortText, whoToAsk: z.string().max(300) })).max(10),
+  /** Against the previous attempt: what improved, what was raised again, which earlier actions are still open. */
   sinceLastTime: z
-    .object({ improved: z.array(shortText).max(20), stillWeak: z.array(shortText).max(20) })
+    .object({ improved: z.array(shortText).max(20), raisedAgain: z.array(shortText).max(20), stillOpen: z.array(shortText).max(20) })
     .nullish(),
   // Report only
   likelyQuestions: z.array(z.object({ assessorId: id, question: shortText })).max(20).nullish(),
