@@ -14,6 +14,8 @@ export type PitchSeat = {
   talkingClip?: string | null;
   /** Synthesia interactive avatar for the live call (only when LIVE_AVATAR=1). */
   interactiveId?: string | null;
+  /** LiveKit Inference voice for the live avatar. */
+  liveVoiceId?: string | null;
   /** Picks a distinct browser voice when ElevenLabs is off. */
   voiceIndex: number;
 };

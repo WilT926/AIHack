@@ -17,7 +17,11 @@ function LiveFace({ stream }: { stream: MediaStream }) {
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream;
   }, [stream]);
-  return <video ref={ref} className="ps-tile__media" autoPlay muted playsInline aria-hidden />;
+  return (
+    <span className="ps-tile__live">
+      <video ref={ref} className="ps-tile__media ps-tile__media--live" autoPlay muted playsInline aria-hidden />
+    </span>
+  );
 }
 
 function Face({ seat, speaking }: { seat: PitchSeat; speaking: boolean }) {

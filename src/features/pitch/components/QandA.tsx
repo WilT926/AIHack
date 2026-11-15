@@ -74,7 +74,7 @@ export function QandA({
         let said = false;
         if (live?.ready && seat.interactiveId) {
           setLiveSeat(seat.id);
-          said = await live.say(seat.interactiveId, t.text);
+          said = await live.say(seat.interactiveId, t.text, seat.liveVoiceId);
           setLiveSeat(null);
         }
         if (!said && !endedRef.current) await speaker.say(seat.id, t.text, seat.voiceIndex);

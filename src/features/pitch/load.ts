@@ -3,7 +3,7 @@ import { defaults, features } from "@/config";
 import { assessors, boards, dataSource, getProfile, pitchSessions, projects } from "@/lib/data";
 import { replySource } from "@/lib/engine/service";
 import { hasElevenLabs } from "@/lib/voice/elevenlabs";
-import { hasLiveAvatar, interactiveIdFor } from "@/lib/live/config";
+import { hasLiveAvatar, liveFaceFor } from "@/lib/live/config";
 import { projectCode, shortName } from "@/features/home/model";
 import type { PitchSetupData } from "./types";
 
@@ -32,7 +32,7 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
           listenClip: s.idleClip && /\/idle\.mp4$/.test(s.idleClip) ? s.idleClip.replace(/idle\.mp4$/, "listen.mp4") : null,
           talkingClip: s.talkingClip,
           voiceIndex: voiceIndex.get(s.id) ?? 0,
-          ...(live ? { interactiveId: interactiveIdFor(s.id) } : {}),
+          ...(live ? liveFaceFor(s.id) : {}),
         })),
     })),
     initialProjectId,

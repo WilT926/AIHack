@@ -14,7 +14,8 @@ export function hasLiveAvatar(): boolean {
 /** The agent's name, as registered in agent/agent.py. */
 export const LIVE_AGENT_NAME = "panel-board";
 
-/** Synthesia interactive avatar for an assessor, if one was made for them. */
-export function interactiveIdFor(assessorId: string): string | null {
-  return avatars.avatars.find((a) => a.assessorId === assessorId)?.interactiveId ?? null;
+/** Synthesia interactive avatar and live voice for an assessor, if one was made for them. */
+export function liveFaceFor(assessorId: string): { interactiveId: string | null; liveVoiceId: string | null } {
+  const a = avatars.avatars.find((x) => x.assessorId === assessorId);
+  return { interactiveId: a?.interactiveId ?? null, liveVoiceId: a?.liveVoiceId ?? null };
 }

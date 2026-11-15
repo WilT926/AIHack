@@ -7,7 +7,8 @@
       "drawing": "avatar-027",
       "videoAvatarId": "e6273b45-30d7-4e57-8e8b-7adeff702217",
       "interactiveId": "13ad3cee-d791-4d75-b12e-0a64f3944738",
-      "status": "ready"
+      "status": "ready",
+      "liveVoiceId": "a167e0f3-df7e-4d52-a9c3-f949145efdab"
     },
     {
       "synthesiaName": "Hana Ito",
@@ -15,7 +16,8 @@
       "drawing": "avatar-048",
       "videoAvatarId": "875ad066-944a-4bde-8c4b-a9f705d22336",
       "interactiveId": "e826be2c-87ee-49e6-ad58-ed88350c46fe",
-      "status": "ready"
+      "status": "ready",
+      "liveVoiceId": "9626c31c-bec5-4cca-baa8-f8ba9e84c8bc"
     },
     {
       "synthesiaName": "Helen Leane",
@@ -23,7 +25,8 @@
       "drawing": null,
       "videoAvatarId": "635dda01-864a-4004-936c-1373462322bb",
       "interactiveId": "e908b313-243e-4abe-abca-4d2ed3fe1bb3",
-      "status": "ready"
+      "status": "ready",
+      "liveVoiceId": "f31cc6a7-c1e8-4764-980c-60a361443dd1"
     },
     {
       "synthesiaName": "Martin Stevens",
@@ -31,7 +34,9 @@
       "drawing": null,
       "videoAvatarId": "cdbe4acf-e442-4847-9b00-5a5ee0e11d4a",
       "interactiveId": "7a54f6f4-fa84-4957-9cc9-8f64e9230156",
-      "status": "ready"
+      "status": "ready",
+      "liveVoiceId": "a167e0f3-df7e-4d52-a9c3-f949145efdab"
     }
-  ]
+  ],
+  "_voices": "liveVoiceId: LiveKit Inference cartesia/sonic-3 voice, from the suggested voices in LiveKit's docs (Blake, Jacqueline, Robyn)."
 }

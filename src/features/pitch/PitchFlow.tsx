@@ -21,6 +21,9 @@ import { FeedbackReport } from "@/features/feedback/FeedbackReport";
 import { setActionDone } from "@/features/feedback/actions";
 import { Button } from "@/components/ui";
 
+/** How long "the board is conferring" may wait for the live avatar to join. */
+const LIVE_JOIN_WAIT_MS = 45_000;
+
 const message = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Try again.");
 
 export function PitchFlow({ data }: { data: PitchSetupData }) {
@@ -37,15 +40,20 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     conditions: "coaching",
   });
   const [phase, setPhase] = useState<Phase>("setup");
-  // Live avatars (LIVE_AVATAR=1 only): join as soon as the student starts, so
+  // Live avatars (LIVE_AVATAR=1 only): join when the set-up screen opens, so
   // the avatar (about 30 s to join) is ready by the first question.
   const liveAvatar = useLiveAvatar(data.liveAvatar);
   const { connect: liveConnect, disconnect: liveDisconnect } = liveAvatar;
   useEffect(() => {
     if (!data.liveAvatar) return;
-    if (phase === "listening" || phase === "typing" || phase === "conferring" || phase === "questions") void liveConnect();
-    else if (phase === "setup" || phase === "report") liveDisconnect();
+    if (phase === "report") liveDisconnect();
+    else void liveConnect();
   }, [phase, data.liveAvatar, liveConnect, liveDisconnect]);
+  // Read inside confer(): is the avatar ready, or still joining?
+  const liveStateRef = useRef({ ready: false, active: false });
+  useEffect(() => {
+    liveStateRef.current = { ready: liveAvatar.ready, active: liveAvatar.active };
+  }, [liveAvatar.ready, liveAvatar.active]);
   const [session, setSession] = useState<PitchSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,15 +76,23 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const confer = useCallback(async (id: string) => {
     setBoardError(null);
     setPhase("conferring");
+    const startedAt = Date.now();
     const [res] = await Promise.all([boardQuestions(id), new Promise((r) => setTimeout(r, voice.minConferMs))]);
     if (!res.ok) {
       setBoardError(res.error);
       return;
     }
+    // Keep conferring while the live avatar is still joining, up to a limit;
+    // if it fails or runs out of time, the questions use the ordinary voice.
+    if (data.liveAvatar && res.value.settings.mode === "spoken") {
+      while (liveStateRef.current.active && !liveStateRef.current.ready && Date.now() - startedAt < LIVE_JOIN_WAIT_MS) {
+        await new Promise((r) => setTimeout(r, 250));
+      }
+    }
     sessionRef.current = res.value;
     setSession(res.value);
     setPhase("questions");
-  }, []);
+  }, [data.liveAvatar]);
 
   const writeFeedback = useCallback(async () => {
     const s = sessionRef.current;

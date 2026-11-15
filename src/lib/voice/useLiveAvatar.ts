@@ -17,6 +17,7 @@ export function useLiveAvatar(enabled: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
   const rafRef = useRef<number | null>(null);
   const mutedRef = useRef(false);
+  const [active, setActive] = useState(false);
   const [boardReady, setBoardReady] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -37,6 +38,7 @@ export function useLiveAvatar(enabled: boolean) {
     const room = roomRef.current;
     roomRef.current = null;
     boardRef.current = null;
+    setActive(false);
     setBoardReady(false);
     setStream(null);
     setSpeaking(false);
@@ -48,6 +50,7 @@ export function useLiveAvatar(enabled: boolean) {
     if (!enabled || roomRef.current) return;
     const room = new Room({ adaptiveStream: false, dynacast: false });
     roomRef.current = room;
+    setActive(true);
     try {
       const res = await fetch("/api/live/token", { method: "POST" });
       if (!res.ok) throw new Error("no token");
@@ -119,7 +122,7 @@ export function useLiveAvatar(enabled: boolean) {
   }, [enabled, disconnect]);
 
   /** Speak through the live avatar. Resolves true when said, false to fall back. */
-  const say = useCallback(async (interactiveId: string | null | undefined, text: string): Promise<boolean> => {
+  const say = useCallback(async (interactiveId: string | null | undefined, text: string, voiceId?: string | null): Promise<boolean> => {
     const room = roomRef.current;
     const board = boardRef.current;
     if (!room || !board || !interactiveId) return false;
@@ -128,7 +131,7 @@ export function useLiveAvatar(enabled: boolean) {
       const reply = await room.localParticipant.performRpc({
         destinationIdentity: board,
         method: "say",
-        payload: JSON.stringify({ interactiveId, voiceId: null, text }),
+        payload: JSON.stringify({ interactiveId, voiceId: voiceId ?? null, text }),
         responseTimeout: SAY_TIMEOUT_MS,
       });
       return reply === "done";
@@ -154,7 +157,7 @@ export function useLiveAvatar(enabled: boolean) {
 
   useEffect(() => () => disconnect(), [disconnect]);
 
-  return { enabled, connect, disconnect, ready, stream, speaking, loudness, say, stop, setMuted };
+  return { enabled, active, connect, disconnect, ready, stream, speaking, loudness, say, stop, setMuted };
 }
 
 export type LiveAvatar = ReturnType<typeof useLiveAvatar>;
