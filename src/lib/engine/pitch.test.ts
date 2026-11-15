@@ -8,8 +8,8 @@ const ctx: PitchContext = {
   project: { title: "Hackathon Pitch", brief: { what: "Pitch", topic: "Panel", graded: ["Originality", "Design"], goal: "" }, markSchemeText: "", weakSpots: [] },
   transcript: "Hello judges. Panel builds a board of AI assessors modelled on your markers. Thank you.",
   board: [
-    { id: "investor", name: "Tom Achebe", role: "Investor", field: "Early-stage venture", personality: "", harshness: 4, focusAreas: ["Market"], notes: [] },
-    { id: "design-judge", name: "Mira Santos", role: "Design Judge", field: "Product design", personality: "", harshness: 3, focusAreas: ["Clarity"], notes: [{ text: "Wants to see it live.", source: "other" }] },
+    { id: "investor", name: "Martin Stevens", role: "Investor", field: "Early-stage venture", personality: "", harshness: 4, focusAreas: ["Market"], notes: [] },
+    { id: "design-judge", name: "Helen Leane", role: "Design Judge", field: "Product design", personality: "", harshness: 3, focusAreas: ["Clarity"], notes: [{ text: "Wants to see it live.", source: "other" }] },
   ],
 };
 

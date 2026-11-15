@@ -9,6 +9,8 @@ export type PitchSeat = {
   /** Realistic counterpart for the call (optional, Lane 3 step 3.2c). */
   portrait?: string | null;
   idleClip?: string | null;
+  /** Listening loop for the board row while the student presents (sits beside idle.mp4). */
+  listenClip?: string | null;
   talkingClip?: string | null;
   /** Picks a distinct browser voice when ElevenLabs is off. */
   voiceIndex: number;

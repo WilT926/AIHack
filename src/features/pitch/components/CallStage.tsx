@@ -6,17 +6,21 @@
 import { useEffect, useRef, useState } from "react";
 import { Avatar, Button, Label, cn } from "@/components/ui";
 import type { PitchSeat } from "../types";
+import { LoopClip } from "./LoopClip";
 
 export type TileState = "idle" | "speaking" | "listening" | "thinking";
 
 const STATE_LABEL: Record<TileState, string | null> = { idle: null, speaking: "Speaking", listening: "Listening", thinking: "Thinking" };
 
 function Face({ seat, speaking }: { seat: PitchSeat; speaking: boolean }) {
-  const clip = speaking ? seat.talkingClip : seat.idleClip;
-  if (clip) return <video className="ps-tile__media" src={clip} autoPlay loop muted playsInline aria-hidden />;
-  // eslint-disable-next-line @next/next/no-img-element
-  if (seat.portrait) return <img className="ps-tile__media" src={seat.portrait} alt="" />;
-  return <Avatar avatar={seat.avatar} size="fill" className="ps-tile__avatar" />;
+  const clip = (speaking && seat.talkingClip) || seat.idleClip;
+  const drawing = seat.portrait ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img className="ps-tile__media" src={seat.portrait} alt="" />
+  ) : (
+    <Avatar avatar={seat.avatar} size="fill" className="ps-tile__avatar" />
+  );
+  return <LoopClip src={clip} className="ps-tile__media" fallback={drawing} />;
 }
 
 export function CallStage({

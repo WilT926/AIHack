@@ -27,6 +27,7 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
           avatar: s.avatar,
           portrait: s.portrait,
           idleClip: s.idleClip,
+          listenClip: s.idleClip && /\/idle\.mp4$/.test(s.idleClip) ? s.idleClip.replace(/idle\.mp4$/, "listen.mp4") : null,
           talkingClip: s.talkingClip,
           voiceIndex: voiceIndex.get(s.id) ?? 0,
         })),

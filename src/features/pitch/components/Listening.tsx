@@ -39,7 +39,7 @@ export function Listening({
 
   return (
     <section className="ps-listen" aria-label="Presenting">
-      <BoardRow seats={seats} />
+      <BoardRow seats={seats} clips />
 
       <div className="ps-status" aria-live="polite">
         <span className="ps-status__dot" data-on={listening} aria-hidden />

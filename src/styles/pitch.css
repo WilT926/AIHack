@@ -46,6 +46,7 @@
 .ps-board { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; transition: opacity 0.4s; }
 .ps-board[data-dim="true"] { opacity: 0.4; }
 .ps-board__seat { width: 96px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.ps-board__clip { width: 84px; height: 84px; object-fit: cover; border-radius: var(--radius-round); background: var(--grey-100); }
 .ps-board__name { font: 600 12px/1.2 var(--font-body); }
 .ps-board__seat .ui-label { text-transform: uppercase; }
 
