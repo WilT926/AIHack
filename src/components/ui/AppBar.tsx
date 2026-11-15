@@ -148,7 +148,7 @@ export function ProfileMenu({ profile }: { profile: AppBarProfile }) {
         </MenuItem>
       </MenuSection>
       <MenuSection>
-        <MenuItem href="/login" icon={<i className="ui-ico-signout" />}>
+        <MenuItem href="/api/signout" icon={<i className="ui-ico-signout" />}>
           Sign out
         </MenuItem>
       </MenuSection>

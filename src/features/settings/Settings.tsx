@@ -212,7 +212,7 @@ export function Settings({ profile: initial, initialSection = "profile" }: { pro
         <>
           <SettingRow title="Signed in as" hint={profile.name} />
           <SettingRow title="Sign out" hint="Back to the sign-in page">
-            <Button variant="secondary" size="sm" href="/login">
+            <Button variant="secondary" size="sm" href="/api/signout">
               Sign out
             </Button>
           </SettingRow>
@@ -250,7 +250,7 @@ export function Settings({ profile: initial, initialSection = "profile" }: { pro
           <span className="settings__sub">{[profile.university, profile.course].filter(Boolean).join(" · ")}</span>
           <span className="settings__sub">{LEVEL_SHORT[profile.level]}</span>
           <div className="settings__card-foot">
-            <Button variant="quiet" block href="/login">
+            <Button variant="quiet" block href="/api/signout">
               Sign out
             </Button>
             <TextButton className="settings__delete" onClick={() => setDeleteNote(true)}>

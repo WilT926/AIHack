@@ -14,7 +14,12 @@ const SEATED = ["avatar-070", "avatar-064", "avatar-100", "avatar-092"];
 export function SignIn() {
   const router = useRouter();
   const [note, setNote] = useState(false);
-  const enter = () => router.push("/");
+  // Demo sign-in: remember it for this browser, so the app opens on the floor
+  // instead of the landing page. Sign out (/api/signout) clears it.
+  const enter = () => {
+    document.cookie = "panel_signed_in=1; path=/; max-age=2592000; samesite=lax";
+    router.push("/");
+  };
 
   return (
     <div className="auth">

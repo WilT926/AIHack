@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SkeletonFloor } from "@/components/ui";
 import { LoadingChrome } from "@/components/ui/PageFrame";
 import { Floor } from "@/features/home/Floor";
@@ -9,6 +11,8 @@ import { buildFloor } from "@/features/home/model";
 // Home: the Floor, read fresh from the database on every request.
 async function FloorFromData() {
   await connection();
+  // The app starts on the landing page until you sign in.
+  if (!(await cookies()).get("panel_signed_in")) redirect("/welcome");
   const { workspace, sample } = await loadWorkspace();
   return <Floor model={{ ...buildFloor(workspace), sample }} />;
 }
