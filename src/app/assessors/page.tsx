@@ -26,5 +26,5 @@ async function AssessorGallery() {
   </div>;
 }
 export default function AssessorsPage() {
-  return <PageFrame title="Assessors" active="assessors"><Suspense fallback={<SkeletonPage label="Fetching the board" />}><AssessorGallery /></Suspense></PageFrame>;
+  return <PageFrame title="Assessor studio" active="assessors"><Suspense fallback={<SkeletonPage label="Fetching the board" />}><AssessorGallery /></Suspense></PageFrame>;
 }

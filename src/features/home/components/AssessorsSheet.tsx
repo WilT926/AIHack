@@ -31,15 +31,9 @@ export function AssessorsSheet({
       <div className="fl-sheet__head">
         <div className="fl-sheet__titles">
           <h2 className="fl-sheet__title">Assessors</h2>
-          <span className="fl-sheet__sub">Select someone to see the tables they sit at</span>
+          <span className="fl-sheet__sub">Select someone to see the panels they sit on</span>
         </div>
         <div className="fl-sheet__actions">
-          <Button variant="secondary" size="sm" href="/studio">
-            Avatar studio
-          </Button>
-          <Button variant="primary" size="sm" href="/assessors">
-            All assessors
-          </Button>
           <IconButton label="Previous assessors" disabled={carIdx <= 0} onClick={() => onCarIdx(Math.max(0, carIdx - 1))}>
             ←
           </IconButton>
@@ -53,7 +47,7 @@ export function AssessorsSheet({
       </div>
       <div className="fl-cards">
         <div className="fl-cards__track" style={{ transform: `translateX(${-carIdx * step}px)` }}>
-          {features.newAssessor && <div className="fl-card ui-card--dashed"><span className="fl-card__name">New assessor</span><p className="fl-card__focus">Copy a preset and add what your marker wants.</p><Button variant="secondary" href="/assessors">Copy an assessor</Button></div>}
+          {features.newAssessor && <div className="fl-card ui-card--dashed"><span className="fl-card__name">New assessor</span><p className="fl-card__focus">Build one from a preset and add what your marker wants.</p><Button variant="secondary" href="/assessors">Assessor studio</Button></div>}
           {assessors.map((a) => {
             const selected = a.id === selectedId;
             const seatedHere = !!focusCode && a.tables.includes(focusCode);
