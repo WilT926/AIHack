@@ -106,6 +106,33 @@ docker build -t panel .
 docker run --rm -p 3000:3000 --env-file .env.local panel
 ```
 
+## Privacy and security
+
+In place:
+
+- API keys are read only on the server. Nothing secret reaches the browser,
+  and no key or `.env` file is in this repository.
+- Uploaded documents are never committed. With Supabase configured, row-level
+  security is on with no public policies, so only the server reads or writes.
+- The presenter's camera is shown on screen only. It is not recorded or sent
+  anywhere.
+- Text inside an uploaded document that addresses the reviewer is treated as
+  material to assess, never as instructions.
+- Every reply passes the integrity pipeline described above, and each check
+  that fires is shown in the feedback report.
+
+Where your data goes:
+
+- Report text, pitch transcripts and answers are sent to Anthropic's API to
+  produce the feedback.
+- Chrome's speech recognition sends microphone audio to Google to transcribe.
+- With the live avatar switched on, each question's text is sent to LiveKit
+  (speech) and Synthesia (video).
+
+Not in place yet: accounts (planned as Google sign-in limited to university
+accounts), usage limits per person, automatic deletion of uploads, and a
+notice before the first upload naming the services above.
+
 ## Not built yet
 
 - Live lip-synced video assessors. The plan is in
