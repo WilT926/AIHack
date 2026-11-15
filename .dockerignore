@@ -7,6 +7,8 @@ node_modules
 .vercel
 coverage
 design
+# ...except the Synthesia avatar IDs, which the live-avatar code reads (src/lib/live/config.ts).
+!design/synthesia/avatars.json
 docs
 *.zip
 *.pdf
