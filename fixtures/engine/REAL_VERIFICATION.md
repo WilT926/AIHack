@@ -35,3 +35,27 @@ Opt-in reruns (will spend API credit, uses `.env.local` without printing it):
 PANEL_VERIFY_LIVE=1 npm test -- src/lib/engine/live-verification.test.ts
 PANEL_VERIFY_LIVE=1 npm test -- src/lib/engine/live-router.test.ts
 ```
+
+## Guarded rerun (Part C)
+
+`guarded-real-review.json` and `guarded-real-pitch.json` record another real run
+through the shared integrity pipeline. All six assessors returned usable
+comments; the review consolidated its actions to six. Pitch guidance is now
+stored as lists of points. The final report discusses the follow-up questions.
+No boundary events fired on this benign content; injected failures and ignored
+reviewer text are covered separately by `pipeline.test.ts`.
+
+- Pitch finish to first question: 2,271 ms.
+- Answer to next question: 2,535 / 2,734 / 3,723 / 2,475 ms.
+- Review deliberation remains slow: 63.3 seconds. This does not affect live Q&A
+  but the review needs its deliberating state throughout the wait.
+- Router intents remained `answering` for the repeated ordinary answer.
+- Boundary checks use conservative patterns plus prompt rules, not a guarantee
+  against every semantic paraphrase. No-key fallback, microphone, voice,
+  browser visual QA and the unconfigured database retain the limits above.
+
+Guarded rerun:
+
+```
+PANEL_VERIFY_LIVE=1 PANEL_VERIFY_GUARDS=1 npm test -- src/lib/engine/live-verification.test.ts
+```

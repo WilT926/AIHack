@@ -1,0 +1,417 @@
+{
+  "provenance": "Real Claude replies on an invented typed pitch; microphone and audio not verified",
+  "verifiedAt": "2026-11-15T02:45:30.305Z",
+  "firstQuestionMs": 2271,
+  "answerToQuestionMs": [
+    2535,
+    2734,
+    3723,
+    2475
+  ],
+  "pitch": {
+    "id": "edf6d6d2-c0ab-4b3b-9172-902eaa591fb1",
+    "projectId": "proj-hp",
+    "status": "done",
+    "transcript": "Panel helps students practise before marking. A student builds a board of AI assessors with different fields, uploads a report or gives a pitch, then receives questions and feedback linked to their own words. Each assessor reads independently before the board deliberates. We tested a clickable prototype with twelve students; nine found the actions useful, but we have not measured learning gains or compared against a generic chatbot. The prototype uses one demo profile and stores invented projects. It does not assign grades or write answers. Our next test will compare students' revisions against blind marker feedback. Thank you.",
+    "createdAt": "2026-11-15T02:44:55.444Z",
+    "startedAt": "2026-11-15T02:00:00Z",
+    "endedAt": "2026-11-15T02:01:30Z",
+    "settings": {
+      "questionCount": 2,
+      "mode": "text",
+      "boardId": null,
+      "capture": "typed",
+      "conditions": "coaching"
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "assessorId": "education-lead",
+        "text": "You say nine of twelve students found the actions useful, but you have not measured learning gains. What would you need to see from the revision comparison against blind marker feedback before you could claim students learn better with the panel?",
+        "reason": "The pitch states the usefulness result and explicitly admits learning gains are unmeasured, so the evidence gap needs to be addressed.",
+        "answerTranscript": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+        "followUp": "You mention balancing prior attainment across groups, but what happens if the students who chose to use the panel are simply more motivated than those who did not? How would your design separate the effect of the panel from the effect of that self-selection?",
+        "followUpAnswer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline."
+      },
+      {
+        "id": "q2",
+        "assessorId": "technical-judge",
+        "text": "You mention a clickable prototype that uses one demo profile and stores invented projects. Can you show me the live flow, from building the board to receiving linked feedback on a real upload, and tell me which parts of that flow are actually working?",
+        "reason": "The transcript describes the prototype only in words and limits it to a demo profile with invented data, so I want to see what genuinely runs.",
+        "answerTranscript": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+        "followUp": "I won't answer that for you, but let's keep to the question at hand: think about which stage of your pitch would show a real upload being handled, and whether the pilot you describe actually tested that step. Then tell me what you did observe working, and what you did not.",
+        "followUpAnswer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline."
+      }
+    ],
+    "qa": {
+      "mode": "steering",
+      "struggles": 0,
+      "turns": [
+        {
+          "id": "t1",
+          "questionId": "q1",
+          "assessorId": "education-lead",
+          "kind": "question",
+          "mode": null,
+          "text": "You say nine of twelve students found the actions useful, but you have not measured learning gains. What would you need to see from the revision comparison against blind marker feedback before you could claim students learn better with the panel?",
+          "answer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+          "assessment": {
+            "answerQuality": "strong",
+            "studentIntent": "answering"
+          },
+          "timing": null
+        },
+        {
+          "id": "t2",
+          "questionId": "q1",
+          "assessorId": "education-lead",
+          "kind": "follow-up",
+          "mode": "pressing",
+          "text": "You mention balancing prior attainment across groups, but what happens if the students who chose to use the panel are simply more motivated than those who did not? How would your design separate the effect of the panel from the effect of that self-selection?",
+          "answer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+          "assessment": {
+            "answerQuality": "partial",
+            "studentIntent": "answering"
+          },
+          "timing": {
+            "routerMs": 1352,
+            "utteranceMs": 1183,
+            "gapMs": 2535
+          }
+        },
+        {
+          "id": "t3",
+          "questionId": "q2",
+          "assessorId": "technical-judge",
+          "kind": "question",
+          "mode": "probing",
+          "text": "You mentioned the prototype uses one demo profile and invented projects, so I'm not sure how the software behaves with real uploads. Can you walk me through the flow from building the board to receiving linked feedback on an actual upload, and tell me which parts of that are working?",
+          "answer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+          "assessment": {
+            "answerQuality": "off-topic",
+            "studentIntent": "answering"
+          },
+          "timing": {
+            "routerMs": 956,
+            "utteranceMs": 1778,
+            "gapMs": 2734
+          }
+        },
+        {
+          "id": "t4",
+          "questionId": "q2",
+          "assessorId": "technical-judge",
+          "kind": "steer",
+          "mode": "steering",
+          "text": "I won't answer that for you, but let's keep to the question at hand: think about which stage of your pitch would show a real upload being handled, and whether the pilot you describe actually tested that step. Then tell me what you did observe working, and what you did not.",
+          "answer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+          "assessment": {
+            "answerQuality": "partial",
+            "studentIntent": "answering"
+          },
+          "timing": {
+            "routerMs": 1835,
+            "utteranceMs": 1888,
+            "gapMs": 3723
+          }
+        },
+        {
+          "id": "t5",
+          "questionId": "q2",
+          "assessorId": "technical-judge",
+          "kind": "follow-up",
+          "mode": "probing",
+          "text": "Your answer repeats the same evidence about the usability pilot and the planned study, but it does not address the question about the software itself. As a technical judge, I still don't know whether any real upload has ever passed through the board-to-feedback flow, or whether the linking between feedback and the student's own words has been tested beyond the demo profile. Which specific step in that flow have you actually run with a real file, and what happened at that step?",
+          "answer": "Our evidence is a usability pilot with twelve students, nine of whom found the actions useful. That does not establish learning gains. We will compare revisions against blind marker feedback in a controlled study, with prior attainment balanced across groups and a generic chatbot as the baseline.",
+          "assessment": {
+            "answerQuality": "off-topic",
+            "studentIntent": "answering"
+          },
+          "timing": {
+            "routerMs": 1177,
+            "utteranceMs": 1298,
+            "gapMs": 2475
+          }
+        }
+      ],
+      "escalations": []
+    },
+    "report": {
+      "kind": "pitch",
+      "verdict": "The pitch sets out what the panel does and states its limits plainly, and the planned comparison against blind marker feedback is a sound next step. The evidence is a twelve-student usability pilot with no measured learning gain. The technical judge pressed twice on whether a real upload has passed through the flow, and the answers did not address it.",
+      "criteria": [
+        {
+          "criterion": "Problem",
+          "rating": "adequate",
+          "evidence": "The transcript opens with the need: Panel helps students practise before marking. The need is stated in one line with no account of how students currently get feedback before marking."
+        },
+        {
+          "criterion": "Evidence",
+          "rating": "weak",
+          "evidence": "The transcript reports that nine of twelve students found the actions useful and says we have not measured learning gains or compared against a generic chatbot. The answer to the education question repeats this limit and the follow-up on self-selection went unanswered."
+        },
+        {
+          "criterion": "Design",
+          "rating": "adequate",
+          "evidence": "The transcript describes the design: a board of AI assessors with different fields, an upload, and questions and feedback linked to the student's own words. It also says each assessor reads independently before deliberation. The answers did not show how the linking works on a real upload, and the prototype uses one demo profile and invented projects."
+        }
+      ],
+      "strengths": [
+        "States the limits of the prototype and the evidence openly, including the demo profile, invented projects and missing learning measures.",
+        "Describes the product clearly: it does not assign grades or write answers, and each assessor reads independently before the board deliberates.",
+        "Names a concrete next test, comparing students' revisions against blind marker feedback."
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "what": "Show the board-to-feedback flow working on a real upload, or state plainly which steps have and have not been run with a real file, and what happened at each step.",
+          "why": "The technical judge asked this twice and got no answer about the software itself. Without it, the design claim rests on the demo profile alone.",
+          "raisedBy": [
+            "technical-judge"
+          ],
+          "evidence": {
+            "paragraphIds": [],
+            "quote": "The prototype uses one demo profile and stores invented projects."
+          },
+          "effort": "substantial",
+          "done": false
+        },
+        {
+          "id": "a2",
+          "what": "Say how the feedback is linked to the student's own words, using an example from the prototype.",
+          "why": "Linked feedback is central to the design, yet the transcript states it without showing how it works.",
+          "raisedBy": [
+            "technical-judge",
+            "design-judge"
+          ],
+          "evidence": {
+            "paragraphIds": [],
+            "quote": "receives questions and feedback linked to their own words."
+          },
+          "effort": "moderate",
+          "done": false
+        },
+        {
+          "id": "a3",
+          "what": "Add one sentence on the market and who would pay for the panel.",
+          "why": "The investor's focus areas are market and who pays, and neither is mentioned in the pitch.",
+          "raisedBy": [
+            "investor"
+          ],
+          "evidence": {
+            "paragraphIds": [],
+            "quote": "Panel helps students practise before marking."
+          },
+          "effort": "quick",
+          "done": false
+        }
+      ],
+      "assessorVerdicts": [
+        {
+          "assessorId": "technical-judge",
+          "line": "The design is described clearly, but the working software on a real upload has not been shown or evidenced, and I would want to see it before trusting the linking claim."
+        },
+        {
+          "assessorId": "education-lead",
+          "line": "The usability pilot is honestly reported, but it does not establish learning, and the self-selection question is still open."
+        },
+        {
+          "assessorId": "investor",
+          "line": "The pitch does not address market or who pays, so I cannot judge the commercial case from what was said."
+        },
+        {
+          "assessorId": "design-judge",
+          "line": "The structure is easy to follow and the limits are stated plainly, though the terms panel and board are used interchangeably."
+        }
+      ],
+      "escalations": [
+        {
+          "reason": "The brief lists running over time as a weak spot, but the measured length is 1 min 30 s against a five-minute slot. The recording may be partial, so the board cannot tell whether timing is a real problem.",
+          "whoToAsk": "Event organisers, to confirm the full pitch length."
+        },
+        {
+          "reason": "The market and who-pays questions were not addressed, and the board cannot judge the commercial case from the transcript alone.",
+          "whoToAsk": "Tom Achebe, Investor, to set out what market evidence would be needed."
+        }
+      ],
+      "sinceLastTime": null,
+      "behavior": {
+        "modeShifts": [
+          {
+            "turnId": "t2",
+            "mode": "pressing",
+            "reason": "strong answer · answering"
+          },
+          {
+            "turnId": "t3",
+            "mode": "probing",
+            "reason": "partial answer · answering"
+          },
+          {
+            "turnId": "t4",
+            "mode": "steering",
+            "reason": "off-topic answer · answering"
+          },
+          {
+            "turnId": "t5",
+            "mode": "probing",
+            "reason": "partial answer · answering"
+          }
+        ],
+        "guardrailEvents": []
+      },
+      "likelyQuestions": null,
+      "delivery": {
+        "lengthSeconds": 90,
+        "wordsPerMinute": 66,
+        "structure": "The pitch moves from the problem to what the panel does, then to the pilot, its limits and the next test, which is easy to follow.",
+        "clarity": "Statements are concrete and specific. The terms panel and board are used interchangeably and could be made consistent. Pace measured at 66 words per minute over a length of 1 min 30 s; the recorded length is well within the five-minute slot, so the running-over-time weak spot is not visible in this recording."
+      },
+      "questionReview": [
+        {
+          "questionId": "q1",
+          "howWell": "adequate",
+          "strongerAnswer": [
+            "Say what a fair comparison needs: how students are allocated to panel and non-panel groups, and whether allocation is random or chosen.",
+            "Explain how self-selection would be measured or controlled, such as comparing prior motivation or attainment across groups.",
+            "Address the follow-up question directly rather than repeating the pilot result."
+          ]
+        },
+        {
+          "questionId": "q2",
+          "howWell": "weak",
+          "strongerAnswer": [
+            "Name the specific step in the flow that has been run with a real file, and what happened at that step.",
+            "State which parts of the flow have not yet been run with a real upload.",
+            "Explain how the linking between feedback and the student's own words was tested beyond the demo profile.",
+            "Answer what the software does, rather than repeating the usability pilot and the planned study."
+          ]
+        }
+      ]
+    },
+    "replySource": "claude"
+  },
+  "calls": [
+    {
+      "id": "4f95b407-1c4d-442a-a774-860c7d0e1be4",
+      "kind": "questions",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:44:55.447Z",
+      "durationMs": 2267,
+      "inputTokens": 1509,
+      "outputTokens": 273,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "d301b7c4-2006-44a6-b205-b981b68fd81a",
+      "kind": "router",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:44:57.719Z",
+      "durationMs": 1348,
+      "inputTokens": 937,
+      "outputTokens": 25,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "6fdbdea0-2428-40b6-94fe-b0ee3509f9e3",
+      "kind": "utterance",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:44:59.069Z",
+      "durationMs": 1182,
+      "inputTokens": 1178,
+      "outputTokens": 76,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "4f8973ad-2955-45a1-8d16-e039c545cc32",
+      "kind": "router",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:00.257Z",
+      "durationMs": 953,
+      "inputTokens": 942,
+      "outputTokens": 25,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "8c12926b-fe86-4802-ae59-dec8c8ff9fa2",
+      "kind": "utterance",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:01.210Z",
+      "durationMs": 1772,
+      "inputTokens": 1348,
+      "outputTokens": 92,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "668ac214-8760-4ff7-aa84-954bde414df7",
+      "kind": "router",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:03.032Z",
+      "durationMs": 1798,
+      "inputTokens": 958,
+      "outputTokens": 27,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "e2e6a79f-df87-49e4-b45f-f82e34304e48",
+      "kind": "utterance",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:04.830Z",
+      "durationMs": 1888,
+      "inputTokens": 1546,
+      "outputTokens": 84,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "bf8ee211-4bd5-4e4c-b24e-4835ae658632",
+      "kind": "router",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:06.719Z",
+      "durationMs": 1177,
+      "inputTokens": 951,
+      "outputTokens": 25,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "32503e45-a87b-4b8f-86a0-d5141e51e55a",
+      "kind": "utterance",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:07.896Z",
+      "durationMs": 1298,
+      "inputTokens": 1696,
+      "outputTokens": 138,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "31944247-dea6-44b5-bc4c-e97ac142ff3a",
+      "kind": "router",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:09.196Z",
+      "durationMs": 1537,
+      "inputTokens": 1004,
+      "outputTokens": 27,
+      "ok": true,
+      "error": null
+    },
+    {
+      "id": "83de1bdf-1853-4d88-9bd7-40c58b7e8a76",
+      "kind": "pitchReport",
+      "model": "claude-haiku-5-5",
+      "startedAt": "2026-11-15T02:45:10.738Z",
+      "durationMs": 19558,
+      "inputTokens": 5022,
+      "outputTokens": 3557,
+      "ok": true,
+      "error": null
+    }
+  ]
+}

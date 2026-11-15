@@ -5,12 +5,14 @@ import "server-only";
 import { engine } from "@/config";
 import { assessorNotes, assessors, boards, callLogs, documents, getProfile, projects, reviews } from "@/lib/data";
 import type { BoardMemory, Comment, ReplySource, Review } from "@/lib/schemas";
-import { checkComments, checkDeliberation } from "./check";
+import { checkComments } from "./check";
 import { callClaude, EngineError, hasClaude, type CallLogger } from "./claude";
 import type { SharedContext } from "./prompts";
 import { runAssessor, runDeliberation, type AssessorRunResult } from "./run";
 import { sampleAssessorReply, sampleDeliberationReply } from "./sample";
 import { attemptFromReview, memoryForAssessor, memoryForBoard, sinceLastTime } from "./memory";
+import { behaviorFor, recordGuardrailEvents } from "./eventStore";
+import { guardrailEscalations, runIntegrityPipeline } from "./pipeline";
 import { recordAttempt } from "./memoryStore";
 
 const logCall: CallLogger = async (entry) => {
@@ -55,18 +57,21 @@ export async function reviewWithAssessor(input: {
   projectId: string;
   documentId: string;
   assessorId: string;
+  reviewId?: string | null;
 }): Promise<AssessorRunResult & { replySource: ReplySource }> {
   const source = requireSource();
   const { context, assessor, notes, earlierSummary } = await assessorInput(input);
 
-  if (source === "sample") {
-    // A short pause so the Reading state is visible; sample replies are instant otherwise.
-    await new Promise((r) => setTimeout(r, engine.sampleDelayMs * (1 + Math.random())));
-    const checked = checkComments(sampleAssessorReply(context, assessor, assessor.id.length, earlierSummary), context.document, assessor.id);
-    return { assessorId: assessor.id, status: "done", comments: checked.value, dropped: checked.dropped, angles: [], replySource: "sample" };
+  if (source === "sample") await new Promise((r) => setTimeout(r, engine.sampleDelayMs * (1 + Math.random())));
+  const result = await runAssessor({ context, assessor, notes, earlierSummary }, {
+    call: source === "sample" ? async (req) => ({ output: req.schema.parse(sampleAssessorReply(context, assessor, assessor.id.length, earlierSummary)), model: "sample", inputTokens: 0, outputTokens: 0 }) : callClaude,
+    log: source === "sample" ? async () => {} : logCall,
+  });
+  if (input.reviewId && result.guardrailEvents?.length) {
+    const review = await reviews.get(input.reviewId);
+    if (review?.projectId === input.projectId && review.documentId === input.documentId) await recordGuardrailEvents(input.reviewId, result.guardrailEvents);
   }
-  const result = await runAssessor({ context, assessor, notes, earlierSummary }, { call: callClaude, log: logCall });
-  return { ...result, replySource: "claude" };
+  return { ...result, replySource: source };
 }
 
 export type FinishedResult = {
@@ -92,10 +97,13 @@ export async function deliberateAndSave(input: {
   const source = requireSource();
   const { context, memory } = await loadContext(input.projectId, input.documentId);
   const boardMemory = memoryForBoard(memory, input.reviewId);
+  const reviewId = input.reviewId || crypto.randomUUID();
 
   const board = (await Promise.all(input.results.map((r) => assessors.get(r.assessorId)))).filter((a) => a !== null);
   const known = new Set(board.map((b) => b.id));
-  const results = input.results
+  const incoming = await runIntegrityPipeline({ material: {}, supplied: JSON.stringify({ document: context.document, brief: context.project.brief, markScheme: context.project.markSchemeText }), assess: async () => input.results });
+  await recordGuardrailEvents(reviewId, incoming.events);
+  const results = incoming.value
     .filter((r) => known.has(r.assessorId))
     .map((r) => ({
       assessorId: r.assessorId,
@@ -108,13 +116,13 @@ export async function deliberateAndSave(input: {
   // Anything made without Claude makes the whole review a sample.
   const anySample = source === "sample" || results.some((r) => r.replySource === "sample");
 
-  let outcome;
-  if (source === "sample") {
-    const reply = sampleDeliberationReply(board, finished, context.project.brief.graded);
-    outcome = { ...checkDeliberation(reply, context.document, board.map((b) => b.id)).value, since: reply.sinceLastTime };
-  } else {
-    outcome = await runDeliberation({ context, board, results: finished, memory: boardMemory }, { call: callClaude, log: logCall });
-  }
+  let outcome = await runDeliberation({ context, board, results: finished, memory: boardMemory }, {
+    call: source === "sample" ? async (req) => ({ output: req.schema.parse(sampleDeliberationReply(board, finished, context.project.brief.graded)), model: "sample", inputTokens: 0, outputTokens: 0 }) : callClaude,
+    log: source === "sample" ? async () => {} : logCall,
+  });
+  await recordGuardrailEvents(reviewId, outcome.guardrailEvents);
+  const behavior = await behaviorFor(reviewId);
+  outcome = { ...outcome, report: { ...outcome.report, behavior, escalations: [...outcome.report.escalations, ...guardrailEscalations(behavior.guardrailEvents)].filter((e, i, all) => all.findIndex((x) => x.reason === e.reason) === i) } };
   // "Since last time": improved and raised again from the board, still open from code.
   outcome = { ...outcome, report: { ...outcome.report, sinceLastTime: sinceLastTime(memory, input.reviewId, outcome.since) } };
 
@@ -131,7 +139,7 @@ export async function deliberateAndSave(input: {
   const report = { ...outcome.report, actions: outcome.report.actions.map((a) => ({ ...a, done: a.done || doneActions.has(key(a.what)) })) };
 
   const saved = await reviews.save({
-    id: input.reviewId || crypto.randomUUID(),
+    id: reviewId,
     projectId: input.projectId,
     documentId: input.documentId,
     createdAt: previous?.createdAt ?? new Date().toISOString(),

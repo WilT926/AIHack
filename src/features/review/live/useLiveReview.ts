@@ -65,7 +65,7 @@ export function useLiveReview(start: Inputs): {
       try {
         const data = await postJson<AssessorReply>(
           "/api/engine/assessor",
-          { projectId: inputs.projectId, documentId: inputs.documentId, assessorId },
+          { projectId: inputs.projectId, documentId: inputs.documentId, reviewId: inputs.reviewId, assessorId },
           s,
         );
         if (data.status !== "done") throw new Error(data.error ?? "The review did not finish.");

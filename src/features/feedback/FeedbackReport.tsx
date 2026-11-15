@@ -30,7 +30,7 @@ export function reportAsText(r: Report, name: (id: string) => string, questions:
   if (r.delivery) lines.push("", `Delivery: ${clock(r.delivery.lengthSeconds)}, ${r.delivery.wordsPerMinute} words per minute.`, r.delivery.structure, r.delivery.clarity);
   (r.questionReview ?? []).forEach((q) => {
     const asked = questions.find((x) => x.id === q.questionId);
-    lines.push("", `Q: ${asked?.text ?? q.questionId} (${q.howWell})`, `A stronger answer: ${q.strongerAnswer}`);
+    lines.push("", `Q: ${asked?.text ?? q.questionId} (${q.howWell})`, "A stronger answer would cover:", ...q.strongerAnswer.map((p) => `- ${p}`));
   });
   if (r.escalations.length) lines.push("", "Take this to your supervisor:", ...r.escalations.map((e) => `- ${e.reason} (ask: ${e.whoToAsk})`));
   if (r.sinceLastTime)
@@ -229,7 +229,7 @@ export function FeedbackReport({
                     <b>{asked?.text ?? q.questionId}</b>
                     <DotRating value={RATING[q.howWell]} max={3} label={`Answer: ${q.howWell}`} />
                   </span>
-                  <span className="fb-quiet">A stronger answer: {q.strongerAnswer}</span>
+                  <div className="fb-quiet">A stronger answer would cover:<ul className="fb-list fb-plain">{q.strongerAnswer.map((point, i) => <li key={i}>{point}</li>)}</ul></div>
                 </li>
               );
             })}

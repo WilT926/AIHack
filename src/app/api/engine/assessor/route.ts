@@ -8,6 +8,7 @@ import { errorResponse } from "../http";
 export const maxDuration = 120;
 
 const body = z.object({
+  reviewId: z.string().min(1).max(100).nullish(),
   projectId: z.string().min(1).max(100),
   documentId: z.string().min(1).max(100),
   assessorId: z.string().min(1).max(100),
