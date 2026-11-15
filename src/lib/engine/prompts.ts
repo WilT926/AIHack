@@ -45,6 +45,11 @@ Rules:
 - Likely questions: questions each assessor would ask in a viva or Q&A, by assessor id.
 - Escalations: points the board cannot settle, or that fall outside every assessor's field, with who the student should ask (for example their supervisor). Leave empty if there are none.
 - Only use assessor ids from the list you are given. Do not cite sources that were not supplied.
+- Keep the synthesis compact: summary at most 45 words; verdict at most 45 words; at most four short agreements; each criterion evidence at most 35 words; at most three strengths; each action's what at most 45 words and why at most 20 words; each assessor verdict at most 18 words; likely questions at most 25 words each. Aim for at most 850 words across the whole reply.
+- Preserve every major concern by consolidating related points into the six actions. Keep a concrete writing/clarity action when assessors raised one. Do not lose limitations, measurement validity, analysis, or human escalation merely to shorten the reply.
+- Keep source attribution exact: a lecturer's preference is not a handbook or mark-scheme requirement. Only attribute a requirement to a handbook when the supplied handbook explicitly states it.
+- Preserve unresolved clinical safety limits or ethics as human escalations; the board cannot set safe limits from this excerpt. Keep the literature assessor's contribution visible through an action, verdict or question.
+- Disagreements must be genuinely incompatible recommendations. Different emphases on the same concern are agreements, not disagreements. Avoid repeating the same rationale across summary, verdict, criteria and actions.
 - Write in British English. Never give a mark, a grade or a percentage.`;
 
 /** The document with every paragraph numbered by its id. */

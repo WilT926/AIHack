@@ -1,0 +1,33 @@
+[
+  {
+    "effort": "low",
+    "totalMs": 16484,
+    "apiMs": 16470,
+    "localMs": 14,
+    "inputTokens": 9229,
+    "outputTokens": 3649,
+    "thinkingTokens": 1505,
+    "approximateVisibleTokens": 2144,
+    "quality": {
+      "criteria": [
+        "Analysis",
+        "Methods",
+        "Writing"
+      ],
+      "boardVerdicts": 6,
+      "actions": 6,
+      "anchoredActions": true,
+      "coverage": {
+        "sampleRationale": true,
+        "randomisationOrCarryover": true,
+        "missingData": true,
+        "comfortThreshold": true,
+        "calibration": true,
+        "writing": true
+      },
+      "hasEscalations": true,
+      "dropped": 0,
+      "guardrailEvents": []
+    }
+  }
+]
