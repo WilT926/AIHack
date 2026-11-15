@@ -12,6 +12,14 @@ export type TileState = "idle" | "speaking" | "listening" | "thinking";
 
 const STATE_LABEL: Record<TileState, string | null> = { idle: null, speaking: "Speaking", listening: "Listening", thinking: "Thinking" };
 
+function LiveFace({ stream }: { stream: MediaStream }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+  }, [stream]);
+  return <video ref={ref} className="ps-tile__media" autoPlay muted playsInline aria-hidden />;
+}
+
 function Face({ seat, speaking }: { seat: PitchSeat; speaking: boolean }) {
   const clip = (speaking && seat.talkingClip) || seat.idleClip;
   const drawing = seat.portrait ? (
@@ -32,6 +40,7 @@ export function CallStage({
   caption,
   presenter,
   controls,
+  live = null,
 }: {
   seats: PitchSeat[];
   speakerId: string | null;
@@ -41,6 +50,8 @@ export function CallStage({
   loudness: number;
   caption: string | null;
   presenter: { initials: string; answering: boolean };
+  /** The live avatar's video, shown in this seat's tile while it speaks. */
+  live?: { seatId: string; stream: MediaStream } | null;
   controls: {
     muted: boolean;
     onMute: () => void;
@@ -90,7 +101,7 @@ export function CallStage({
           return (
             <article key={s.id} className={cn("ps-tile", isSpeaker && "ps-tile--speaker")} data-state={state} aria-label={`${s.name}, ${STATE_LABEL[state] ?? "listening quietly"}`}>
               <div className="ps-tile__face">
-                <Face seat={s} speaking={state === "speaking"} />
+                {live?.seatId === s.id ? <LiveFace stream={live.stream} /> : <Face seat={s} speaking={state === "speaking"} />}
               </div>
               <div className="ps-tile__meta">
                 <span className="ps-tile__name">{s.name}</span>

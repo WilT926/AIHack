@@ -4,6 +4,7 @@
 // live transcript with auto-resume, Finish or "thank you" to end, a typed
 // fallback, a hidden "load last transcript" control, and timing.
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLiveAvatar } from "@/lib/voice/useLiveAvatar";
 import { voice } from "@/config";
 import { recognitionErrorText, useRecognitionSupported, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { clock, endsWithThanks, joinTranscript, parseClock, wordCount } from "@/lib/voice/transcript";
@@ -36,6 +37,15 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     conditions: "coaching",
   });
   const [phase, setPhase] = useState<Phase>("setup");
+  // Live avatars (LIVE_AVATAR=1 only): join as soon as the student starts, so
+  // the avatar (about 30 s to join) is ready by the first question.
+  const liveAvatar = useLiveAvatar(data.liveAvatar);
+  const { connect: liveConnect, disconnect: liveDisconnect } = liveAvatar;
+  useEffect(() => {
+    if (!data.liveAvatar) return;
+    if (phase === "listening" || phase === "typing" || phase === "conferring" || phase === "questions") void liveConnect();
+    else if (phase === "setup" || phase === "report") liveDisconnect();
+  }, [phase, data.liveAvatar, liveConnect, liveDisconnect]);
   const [session, setSession] = useState<PitchSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -307,6 +317,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
           seats={seats}
           initials={data.initials}
           elevenLabs={data.elevenLabs}
+          live={data.liveAvatar ? liveAvatar : null}
           canListen={canListen}
           onSession={(s) => {
             sessionRef.current = s;

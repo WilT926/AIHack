@@ -42,3 +42,5 @@ next-env.d.ts
 
 # the example env file is safe to commit
 !.env.example
+agent/.venv/
+agent/__pycache__/

@@ -11,6 +11,7 @@ import type { PitchSession, QaMode, QaTurn } from "@/lib/schemas";
 import { joinTranscript } from "@/lib/voice/transcript";
 import { recognitionErrorText, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { useSpeaker } from "@/lib/voice/useSpeaker";
+import type { LiveAvatar } from "@/lib/voice/useLiveAvatar";
 import { submitAnswer } from "../actions";
 import type { PitchSeat } from "../types";
 import { CallStage, type TileState } from "./CallStage";
@@ -31,6 +32,7 @@ export function QandA({
   seats,
   initials,
   elevenLabs,
+  live = null,
   canListen,
   onSession,
   onEnd,
@@ -39,6 +41,8 @@ export function QandA({
   seats: PitchSeat[];
   initials: string;
   elevenLabs: boolean;
+  /** The live board, when LIVE_AVATAR=1. Any failure falls back to `speaker`. */
+  live?: LiveAvatar | null;
   canListen: boolean;
   onSession: (s: PitchSession) => void;
   onEnd: () => void;
@@ -52,6 +56,7 @@ export function QandA({
   const [step, setStep] = useState<Step>("waiting");
   const [typed, setTyped] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [liveSeat, setLiveSeat] = useState<string | null>(null);
   const endedRef = useRef(false);
 
   const asker = seats.find((s) => s.id === turn?.assessorId);
@@ -65,7 +70,15 @@ export function QandA({
       rec.reset();
       setTyped("");
       const seat = seats.find((s) => s.id === t.assessorId);
-      if (spoken && seat) await speaker.say(seat.id, t.text, seat.voiceIndex);
+      if (spoken && seat) {
+        let said = false;
+        if (live?.ready && seat.interactiveId) {
+          setLiveSeat(seat.id);
+          said = await live.say(seat.interactiveId, t.text);
+          setLiveSeat(null);
+        }
+        if (!said && !endedRef.current) await speaker.say(seat.id, t.text, seat.voiceIndex);
+      }
       if (endedRef.current) return;
       if (t.kind === "pause") {
         setStep("paused");
@@ -74,7 +87,7 @@ export function QandA({
       setStep("answering");
       if (canListen) rec.start();
     },
-    [rec, seats, speaker, spoken, canListen],
+    [rec, seats, speaker, spoken, canListen, live],
   );
 
   // The board comes back: a short pause, then the opening question.
@@ -92,6 +105,7 @@ export function QandA({
     if (!turn) return;
     if (step === "asking") {
       speaker.stop(); // skip the rest and answer now
+      live?.stop();
       return;
     }
     if (step !== "answering") return;
@@ -112,18 +126,19 @@ export function QandA({
     onSession(res.value.session);
     if (res.value.next) void deliver(res.value.next);
     else onEnd();
-  }, [turn, step, speaker, takeAnswerText, session.id, canListen, rec, onSession, deliver, onEnd]);
+  }, [turn, step, speaker, live, takeAnswerText, session.id, canListen, rec, onSession, deliver, onEnd]);
 
   const end = useCallback(async () => {
     endedRef.current = true;
     speaker.stop();
+    live?.stop();
     const answer = step === "answering" ? takeAnswerText() : "";
     if (answer) {
       const res = await submitAnswer(session.id, answer);
       if (res.ok) onSession(res.value.session);
     } else if (rec.listening) rec.stop();
     onEnd();
-  }, [speaker, step, takeAnswerText, session.id, onSession, rec, onEnd]);
+  }, [speaker, live, step, takeAnswerText, session.id, onSession, rec, onEnd]);
 
   const states: Record<string, TileState> = {};
   if (asker) states[asker.id] = step === "asking" ? "speaking" : step === "thinking" ? "thinking" : step === "waiting" || step === "paused" ? "idle" : "listening";
@@ -139,7 +154,7 @@ export function QandA({
           {turn && turn.kind !== "question" ? ` · ${turn.kind.replace("-", " ")}` : ""}
           {session.settings.conditions === "exam" ? " · exam conditions" : ""}
         </Label>
-        {speaker.source && spoken && <Label size="sm">{speaker.source === "elevenlabs" ? "Voice: ElevenLabs" : speaker.source === "browser" ? "Voice: browser" : "Caption only"}</Label>}
+        {liveSeat && spoken ? <Label size="sm">Voice: live avatar</Label> : speaker.source && spoken && <Label size="sm">{speaker.source === "elevenlabs" ? "Voice: ElevenLabs" : speaker.source === "browser" ? "Voice: browser" : "Caption only"}</Label>}
       </div>
 
       <CallStage
@@ -147,12 +162,16 @@ export function QandA({
         speakerId={asker?.id ?? null}
         states={states}
         modeLabel={step === "waiting" ? null : modeLabel}
-        loudness={speaker.loudness}
+        loudness={liveSeat && live ? live.loudness : speaker.loudness}
+        live={liveSeat && live?.stream ? { seatId: liveSeat, stream: live.stream } : null}
         caption={step === "waiting" ? null : (turn?.text ?? null)}
         presenter={{ initials, answering }}
         controls={{
           muted: speaker.muted,
-          onMute: speaker.toggleMute,
+          onMute: () => {
+            live?.setMuted(!speaker.muted);
+            speaker.toggleMute();
+          },
           onNext: () => void next(),
           nextLabel,
           nextDisabled: step === "thinking" || step === "waiting" || step === "paused",

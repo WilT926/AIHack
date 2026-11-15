@@ -3,12 +3,14 @@ import { defaults, features } from "@/config";
 import { assessors, boards, dataSource, getProfile, pitchSessions, projects } from "@/lib/data";
 import { replySource } from "@/lib/engine/service";
 import { hasElevenLabs } from "@/lib/voice/elevenlabs";
+import { hasLiveAvatar, interactiveIdFor } from "@/lib/live/config";
 import { projectCode, shortName } from "@/features/home/model";
 import type { PitchSetupData } from "./types";
 
 /** Everything the set-up screen needs, from the data layer. */
 export async function loadPitchSetup(initialProjectId: string | null): Promise<PitchSetupData> {
   const [p, b, a, profile] = await Promise.all([projects.list(), boards.list(), assessors.list(), getProfile()]);
+  const live = hasLiveAvatar();
   const voiceIndex = new Map(a.map((x, i) => [x.id, i]));
   const byId = new Map(a.map((x) => [x.id, x]));
   return {
@@ -30,6 +32,7 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
           listenClip: s.idleClip && /\/idle\.mp4$/.test(s.idleClip) ? s.idleClip.replace(/idle\.mp4$/, "listen.mp4") : null,
           talkingClip: s.talkingClip,
           voiceIndex: voiceIndex.get(s.id) ?? 0,
+          ...(live ? { interactiveId: interactiveIdFor(s.id) } : {}),
         })),
     })),
     initialProjectId,
@@ -39,6 +42,7 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
     preview: !features.pitch,
     sampleReplies: replySource() !== "claude",
     elevenLabs: hasElevenLabs(),
+    liveAvatar: live,
     initials: (profile?.name ?? "You")
       .split(/\s+/)
       .map((w) => w[0])
