@@ -26,7 +26,7 @@ export const MOTION = {
   focusMs: 1000,
   /** easeOutBack overshoot (§8: c1 = 1.5). */
   c1: 1.5,
-  quoteMs: 3600,
+  quoteMs: 3000,
   toastMs: 2400,
 } as const;
 
@@ -60,14 +60,15 @@ export const PAPER = {
 } as const;
 
 export const QUOTE = {
-  /** Bubble offset from the seat centre, × avatar size. */
-  dx: 0.42,
-  dy: -0.62,
-  /** Estimated bubble size, for choosing a side that covers no table. */
-  height: 38,
-  charWidth: 6.6,
-  chrome: 46,
-  gap: 6,
+  /** Bounded two-line preview; the full question stays in the feedback report. */
+  width: 280,
+  height: 64,
+  maxCharacters: 68,
+  gap: 18,
+  tailSize: 10,
+  /** Thought dots sit off-centre while still pointing back to the speaker. */
+  tailAcross: 0.28,
+  tailDown: 0.72,
 } as const;
 
 /** The dashed "New table" circle: centre and radius. */
@@ -85,6 +86,7 @@ export const COMPACT = {
   statusMinR: 78,
   padFull: 30,
   padCompact: 10,
+  titleLift: 8,
 } as const;
 
 /** Opacity of tables that do not match the filter. */

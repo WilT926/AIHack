@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { assessorNotes, assessors } from "@/lib/data";
+import { assessorNotes, assessors, boards } from "@/lib/data";
 import { harshnessSchema, noteSourceSchema } from "@/lib/schemas";
 
 const id = z.string().min(1).max(100);
@@ -59,6 +59,28 @@ export async function deleteAssessorNote(raw: { assessorId: string; id: string }
     if (!note || note.assessorId !== v.assessorId) return { ok: false as const, error: "That note does not belong to this assessor." };
     await assessorNotes.remove(v.id);
     refresh(v.assessorId);
+    return { ok: true as const };
+  } catch (e) { return { ok: false as const, error: errorMessage(e) }; }
+}
+
+/** Only student-created assessors can be removed. Saved feedback is retained. */
+export async function removeAssessor(assessorId: string) {
+  try {
+    const assessor = await assessors.get(id.parse(assessorId));
+    if (!assessor) return { ok: false as const, error: "That assessor no longer exists." };
+    if (assessor.isPreset) return { ok: false as const, error: "Built-in assessors cannot be removed." };
+    // Board membership is a JSON list rather than a foreign key.
+    for (const board of await boards.list()) {
+      if (board.assessorIds.includes(assessor.id)) {
+        await boards.save({ ...board, assessorIds: board.assessorIds.filter((member) => member !== assessor.id) });
+      }
+    }
+    // Match the database's ON DELETE SET NULL in the temporary store too.
+    for (const copy of await assessors.list({ basedOn: assessor.id })) {
+      await assessors.save({ ...copy, basedOn: null });
+    }
+    await assessors.remove(assessor.id); // also removes their notes
+    refresh(assessor.id);
     return { ok: true as const };
   } catch (e) { return { ok: false as const, error: errorMessage(e) }; }
 }

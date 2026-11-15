@@ -5,6 +5,7 @@ import { Avatar, Button, DotRating, Label, Spinner } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
 import { CopyAssessor } from "@/features/assessors/CopyAssessor";
 import { Notes } from "@/features/assessors/Notes";
+import { RemoveAssessor } from "@/features/assessors/RemoveAssessor";
 import { assessorNotes, assessors, dataSource } from "@/lib/data";
 
 async function Profile({ params }: { params: Promise<{ id: string }> }) {
@@ -25,6 +26,7 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
         <div className="as-choices"><Label size="sm">Harshness</Label><DotRating value={assessor.harshness} max={5} label="Harshness" /></div>
         <div><Label size="sm">Focus areas</Label><ul className="as-focus">{assessor.focusAreas.map((focus) => <li key={focus}>{focus}</li>)}</ul></div>
         <CopyAssessor assessors={[assessor]} initialId={assessor.id} label="Copy this assessor" />
+        {!assessor.isPreset && <RemoveAssessor id={assessor.id} name={assessor.name} />}
       </div>
     </section>
     <Notes assessorId={assessor.id} notes={notes} />

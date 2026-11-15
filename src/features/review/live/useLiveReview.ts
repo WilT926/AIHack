@@ -117,7 +117,9 @@ export function useLiveReview(start: Inputs): {
         replySource: r.replySource,
       });
       // Reopening or refreshing now loads the saved review, without the engine.
-      window.history.replaceState(null, "", `/review?review=${encodeURIComponent(r.id)}`);
+      const params = new URLSearchParams({ review: r.id });
+      if (new URL(window.location.href).searchParams.get("tab") === "report") params.set("tab", "report");
+      window.history.replaceState(null, "", `/review?${params}`);
     } catch (err) {
       if (s.aborted) return;
       setDelib({ state: "failed", message: err instanceof Error ? err.message : "Something went wrong." });

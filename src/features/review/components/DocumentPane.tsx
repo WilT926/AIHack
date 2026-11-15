@@ -54,7 +54,7 @@ export function DocumentPane({
       </div>
 
       {doc.paragraphs.length === 0 ? (
-        <p className="py-16 text-center text-body text-grey-700">This document has no paragraphs yet.</p>
+        <p className="py-16 text-center text-body text-grey-700">The saved text is unavailable for this document. Sample documents may include a title and feedback only. Upload a new version to review your own text.</p>
       ) : (
         <ol className="mt-6 -ml-12 flex flex-col gap-4">
           {doc.paragraphs.map((p) => {

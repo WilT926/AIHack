@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-import { assessorNotes, assessors } from "@/lib/data";
-import { copyAssessor, deleteAssessorNote, saveAssessorNote } from "./actions";
+import { assessorNotes, assessors, boards, reviews } from "@/lib/data";
+import { copyAssessor, deleteAssessorNote, removeAssessor, saveAssessorNote } from "./actions";
 
 beforeEach(() => { delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SECRET_KEY; delete process.env.SUPABASE_SERVICE_ROLE_KEY; });
 it("copies traits with a new identity and empty notes, then saves, edits and deletes an owned note", async () => {
@@ -27,4 +27,23 @@ it("rejects empty notes, unsupported avatars and edits to another assessor's not
   expect((await saveAssessorNote({ assessorId: "module-lead", text: "   ", source: "other" })).ok).toBe(false);
   expect((await saveAssessorNote({ assessorId: "sceptic", id: "n1", text: "Changed", source: "other" })).ok).toBe(false);
   expect((await copyAssessor({ basedOn: "module-lead", name: "x", field: "x", harshness: 3, focusAreas: [], avatar: "avatar-101" })).ok).toBe(false);
+});
+
+it("removes a custom assessor and their notes from boards, keeps copies and saved feedback, and protects presets", async () => {
+  const original = (await assessors.get("module-lead"))!;
+  expect((await removeAssessor(original.id)).ok).toBe(false);
+  expect(await assessors.get(original.id)).toEqual(original);
+  const custom = await assessors.save({ ...original, id: "delete-test-assessor", name: "Temporary assessor", isPreset: false, basedOn: original.id });
+  await assessors.save({ ...custom, id: "delete-test-copy", basedOn: custom.id });
+  const board = await boards.save({ id: "delete-test-board", name: "Deletion test", assessorIds: [original.id, custom.id] });
+  const note = await saveAssessorNote({ assessorId: custom.id, text: "Synthetic test note", source: "other" });
+  expect(note.ok).toBe(true);
+  const savedReviews = await reviews.list();
+  expect((await removeAssessor(custom.id)).ok).toBe(true);
+  expect(await assessors.get(custom.id)).toBeNull();
+  expect(await assessorNotes.list({ assessorId: custom.id })).toEqual([]);
+  expect((await boards.get(board.id))?.assessorIds).toEqual([original.id]);
+  expect((await assessors.get("delete-test-copy"))?.basedOn).toBeNull();
+  expect(await reviews.list()).toEqual(savedReviews);
+  expect((await removeAssessor("missing-assessor")).ok).toBe(false);
 });

@@ -53,10 +53,12 @@ export function Floor({ model }: { model: FloorModel }) {
   const [filter, setFilter] = useState<FloorFilter>("all");
   const [assessorId, setAssessorId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [allDeskTables, setAllDeskTables] = useState(false);
   const [carIdx, setCarIdx] = useState(0);
   const [plus, setPlus] = useState<PlusState>("closed");
   const [palette, setPalette] = useState(false);
   const [quoteTick, setQuoteTick] = useState(0);
+  const [quotePaused, setQuotePaused] = useState(false);
   const [beads, setBeads] = useState<Record<string, number>>({});
 
   const curRef = useRef(cur);
@@ -76,6 +78,9 @@ export function Floor({ model }: { model: FloorModel }) {
       if (i === focusRef.current && !animRef.current) return;
       focusRef.current = i;
       setFocus(i);
+      setAllDeskTables(false);
+      setQuoteTick(0);
+      setQuotePaused(false);
       setPlus("closed");
       cancelAnimationFrame(rafRef.current);
       if (reduced) {
@@ -114,11 +119,21 @@ export function Floor({ model }: { model: FloorModel }) {
     [model.assessors],
   );
 
-  // Speech bubble cycles every 3.6s.
+  // Give each excerpt three seconds; pause while reading or using another surface.
   useEffect(() => {
+    if (quotePaused || sheet || palette || plus !== "closed" || anim || reduced) return;
     const t = setInterval(() => setQuoteTick((q) => q + 1), MOTION.quoteMs);
     return () => clearInterval(t);
-  }, []);
+  }, [quotePaused, sheet, palette, plus, anim, reduced, focus]);
+
+  useEffect(() => {
+    if (!sheet) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest(".fl-sheet, .fl-dock")) setSheet(null);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [sheet]);
 
   // Keyboard: ⌘K or / opens the palette, Esc closes, ← → cycle the focus.
   useEffect(() => {
@@ -166,22 +181,13 @@ export function Floor({ model }: { model: FloorModel }) {
     : 0;
 
   return (
-    <div className="fl-viewport">
+    <div className="fl-viewport" style={{ "--floor-scale": scale || 1 } as React.CSSProperties}>
       <div
         className="fl-stage"
         data-ready={scale > 0}
         style={{ transform: `scale(${scale || 1})` }}
         aria-label="Your floor"
       >
-        <svg width={0} height={0} style={{ position: "absolute" }} aria-hidden>
-          <defs>
-            <filter id="fl-goo" x="-20%" y="-40%" width="140%" height="180%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation={6} result="b" />
-              <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" />
-            </filter>
-          </defs>
-        </svg>
-
         <TopBar
           profile={model.profile}
           onSearch={() => setPalette(true)}
@@ -199,7 +205,15 @@ export function Floor({ model }: { model: FloorModel }) {
           selectedAssessorId={assessorId}
           quoteTick={quoteTick}
           fadeKey={fadeKey}
-          onFocus={focusTable}
+          onQuotePause={setQuotePaused}
+          deskOpen={sheet === "desk"}
+          onFocus={(i) => {
+            if (i === focusRef.current && !animRef.current) {
+              setAllDeskTables(false);
+              setSheet(sheet === "desk" ? null : "desk");
+              setPlus("closed");
+            } else focusTable(i);
+          }}
           onNewTable={() => {
             setSheet(null);
             setPlus((p) => (p === "closed" ? "menu" : "closed"));
@@ -222,11 +236,9 @@ export function Floor({ model }: { model: FloorModel }) {
         <DeskSheet
           open={sheet === "desk"}
           desk={model.desk}
-          onOpenDoc={(code) => {
-            const i = model.tables.findIndex((t) => t.code === code);
-            setSheet(null);
-            if (i >= 0) focusTable(i);
-          }}
+          table={table}
+          allTables={allDeskTables}
+          onScope={setAllDeskTables}
           onClose={() => setSheet(null)}
         />
 
@@ -241,29 +253,7 @@ export function Floor({ model }: { model: FloorModel }) {
           onPrev={() => focusTable((focus + n - 1) % n)}
           onNext={() => focusTable((focus + 1) % n)}
           onPerson={(id) => openAssessor(id)}
-          onDocs={() => {
-            setSheet("desk");
-            setPlus("closed");
-          }}
           onEditBoard={() => openAssessor(null)}
-        />
-
-        <Dock
-          sheet={sheet}
-          openActions={model.openActions}
-          plus={plus}
-          tables={model.tables}
-          newProjectHref={model.newProjectHref}
-          onSheet={(s) => {
-            setSheet((cur) => (s === null ? null : cur === s ? null : s));
-            setPlus("closed");
-          }}
-          onProfile={() => router.push("/profile")}
-          onSettings={() => router.push("/settings")}
-          onPlus={(p) => {
-            setPlus(p);
-            if (p !== "closed") setSheet(null);
-          }}
         />
 
         {palette && (
@@ -279,11 +269,29 @@ export function Floor({ model }: { model: FloorModel }) {
             onAssessor={(id) => openAssessor(id)}
             onDoc={() => {
               setPalette(false);
+              setAllDeskTables(true);
               setSheet("desk");
             }}
           />
         )}
       </div>
+      <Dock
+        sheet={sheet}
+        openActions={model.openActions}
+        plus={plus}
+        tables={model.tables}
+        newProjectHref={model.newProjectHref}
+        onSheet={(s) => {
+          setSheet((cur) => (s === null ? null : cur === s ? null : s));
+          setPlus("closed");
+        }}
+        onProfile={() => router.push("/profile")}
+        onSettings={() => router.push("/settings")}
+        onPlus={(p) => {
+          setPlus(p);
+          if (p !== "closed") setSheet(null);
+        }}
+      />
     </div>
   );
 }

@@ -15,7 +15,6 @@ export function SidePanel({
   onPrev,
   onNext,
   onPerson,
-  onDocs,
   onEditBoard,
 }: {
   table: FloorTable | undefined;
@@ -28,7 +27,6 @@ export function SidePanel({
   onPrev: () => void;
   onNext: () => void;
   onPerson: (assessorId: string) => void;
-  onDocs: () => void;
   onEditBoard: () => void;
 }) {
   if (!table) {
@@ -136,13 +134,13 @@ export function SidePanel({
         ) : (
           <div className="fl-docs">
             {table.docs.map((d) => (
-              <button type="button" key={d.id} className="fl-doc" onClick={onDocs}>
+              <Link key={d.id} href={d.href} className="fl-doc">
                 <i className="fl-doc__icon" aria-hidden />
                 <span className="fl-doc__title">{d.title}</span>
                 <span className="fl-doc__count" data-open={d.open > 0}>
                   {d.open ? `${d.open} OPEN` : "CLEAN"}
                 </span>
-              </button>
+              </Link>
             ))}
             {table.hasMarkScheme && (
               <div className="fl-doc" data-static>

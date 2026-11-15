@@ -17,7 +17,7 @@ const startInput = z.object({
 export type StartedReview = { documentId: string; reviewId: string; replySource: ReplySource; boardIds: string[] };
 
 /** Save the document and a review in progress, so the floor shows the table in session. */
-export async function startReview(raw: z.input<typeof startInput>): Promise<{ ok: true; value: StartedReview } | { ok: false; error: string }> {
+async function beginReview(raw: z.input<typeof startInput>, existingDocumentId?: string): Promise<{ ok: true; value: StartedReview } | { ok: false; error: string }> {
   try {
     const v = startInput.parse(raw);
     const source = replySource();
@@ -26,14 +26,14 @@ export async function startReview(raw: z.input<typeof startInput>): Promise<{ ok
     if (!project) return { ok: false, error: "That project no longer exists." };
     const board = project.boardId ? await boards.get(project.boardId) : null;
     if (!board || board.assessorIds.length === 0) return { ok: false, error: "No one is seated at this project's board yet." };
-    if (!v.paragraphs.some((p) => p.type !== "heading")) return { ok: false, error: "The document has no paragraphs to review." };
+    if (!v.paragraphs.some((p) => p.type !== "heading" && p.text.trim())) return { ok: false, error: "The document has no paragraphs to review." };
 
     const now = new Date().toISOString();
-    const doc = await documents.save({ id: crypto.randomUUID(), projectId: project.id, title: v.title.trim(), paragraphs: v.paragraphs, createdAt: now });
+    const documentId = existingDocumentId ?? (await documents.save({ id: crypto.randomUUID(), projectId: project.id, title: v.title.trim(), paragraphs: v.paragraphs, createdAt: now })).id;
     const review = await reviews.save({
       id: crypto.randomUUID(),
       projectId: project.id,
-      documentId: doc.id,
+      documentId,
       createdAt: now,
       status: "running",
       assessorResults: board.assessorIds.map((id) => ({ assessorId: id, status: "reading" as const, comments: [] })),
@@ -42,9 +42,26 @@ export async function startReview(raw: z.input<typeof startInput>): Promise<{ ok
       replySource: source,
     });
     await projects.save({ ...project, updatedAt: now });
-    return { ok: true, value: { documentId: doc.id, reviewId: review.id, replySource: source, boardIds: board.assessorIds } };
+    return { ok: true, value: { documentId, reviewId: review.id, replySource: source, boardIds: board.assessorIds } };
   } catch (e) {
     return { ok: false, error: e instanceof z.ZodError ? "The document could not be read." : e instanceof Error ? e.message : "Something went wrong." };
+  }
+}
+
+export async function startReview(raw: z.input<typeof startInput>) {
+  return beginReview(raw);
+}
+
+/** Reuse the saved text and identity; the client cannot replace either. */
+export async function startStoredReview(documentId: string) {
+  const parsed = z.string().min(1).max(100).safeParse(documentId);
+  if (!parsed.success) return { ok: false as const, error: "That document was not found." };
+  try {
+    const doc = await documents.get(parsed.data);
+    if (!doc) return { ok: false as const, error: "That document was not found." };
+    return beginReview({ projectId: doc.projectId, title: doc.title, paragraphs: doc.paragraphs }, doc.id);
+  } catch {
+    return { ok: false as const, error: "Could not open the saved document. Please try again." };
   }
 }
 

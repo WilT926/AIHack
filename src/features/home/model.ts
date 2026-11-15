@@ -30,7 +30,7 @@ export type FloorSeat = {
   avatar: string;
 };
 
-export type FloorDoc = { id: string; title: string; open: number; href?: string };
+export type FloorDoc = { id: string; title: string; open: number; href: string };
 
 export type FloorTable = {
   id: string;
@@ -70,8 +70,8 @@ export type FloorAssessor = {
   tables: string[];
 };
 
-export type DeskReport = { id: string; title: string; code: string; date: string; state: SessionState; href?: string };
-export type DeskDoc = FloorDoc & { code: string; project: string };
+export type DeskReport = { id: string; projectId: string; title: string; code: string; date: string; state: SessionState; href?: string };
+export type DeskDoc = FloorDoc & { projectId: string; code: string; project: string };
 
 export type FloorModel = {
   profile: { name: string; sub: string; avatar: string };
@@ -175,7 +175,7 @@ export function buildFloor(ws: Workspace): FloorModel {
       const reportHref =
         features.feedbackReport && s.state === "done" && s.report
           ? s.kind === "review"
-            ? `/review?review=${s.id}`
+            ? `/review?review=${encodeURIComponent(s.id)}&tab=report`
             : `/pitch?session=${s.id}`
           : undefined;
       return {
@@ -214,7 +214,7 @@ export function buildFloor(ws: Workspace): FloorModel {
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map((d) => {
         const latest = [...raw].reverse().find((s) => s.documentId === d.id && s.state === "done");
-        return { id: d.id, title: d.title, open: openCount(latest?.report) };
+        return { id: d.id, title: d.title, open: openCount(latest?.report), href: `/review?document=${encodeURIComponent(d.id)}` };
       });
 
     let status: string, short: string;
@@ -288,11 +288,11 @@ export function buildFloor(ws: Workspace): FloorModel {
     tables: tables.filter((t) => t.seats.some((s) => s.assessorId === a.id)).map((t) => t.code),
   }));
 
-  const deskDocs: DeskDoc[] = tables.flatMap((t) => t.docs.map((d) => ({ ...d, code: t.code, project: t.name })));
+  const deskDocs: DeskDoc[] = tables.flatMap((t) => t.docs.map((d) => ({ ...d, projectId: t.id, code: t.code, project: t.name })));
   const deskReports: DeskReport[] = tables.flatMap((t) =>
     t.sessions
       .filter((s) => s.state === "done")
-      .map((s) => ({ id: s.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
+      .map((s) => ({ id: s.id, projectId: t.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
   );
 
   const liveIdx = tables.findIndex((t) => t.live);
