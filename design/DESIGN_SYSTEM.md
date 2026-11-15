@@ -360,10 +360,10 @@ Levels are shown as a row of dots, never as a colour, a number or a percentage.
 - Filled dots are ink. Empty dots have a 1.5px ink outline. Dots are 8px with a 4px gap.
 
 ### Comment anchors (report review)
-- Every comment is tied to a numbered paragraph. Its anchor is a numbered disc in the document margin, and the words it refers to carry a 1.5px ink underline.
-- Open major comment: orange disc, ink numeral. Other open comments: white disc with a 1.5px ink outline. Done: `--grey-300` outline and numeral.
-- The comment card shows the assessor's avatar (24px), name, mono field, the comment and its suggestion.
-- Where several assessors comment on the same paragraph, stack their avatars on one anchor. Agreement and disagreement in the board discussion are shown the same way.
+- Works like comments in Word: the document on the left and a comment margin on the right scroll together as one page. Each card sits level with its passage; cards never overlap, and a card pushed down keeps a thin `--grey-300` connector back to its passage.
+- Highlights: a major passage has an `--orange-halo` fill with an `--orange` 1.5px underline; a minor one has a 1.5px ink underline and no fill. Praise is not marked in the text; it is listed under the card as **Keep**. A passage is orange if any comment on it is major. A comment with no quote marks the whole paragraph with a bar in the margin.
+- One card per passage. It shows the avatars of every assessor who commented, in a row; the one shown has an ink ring. The avatars, or the previous and next arrows, step through their comments ("2 of 3"). Each comment shows the name, mono field, severity, comment, suggestion and a Mark done tick.
+- Clicking a highlight selects its card; clicking a card scrolls to and selects its highlight. One highlight colour, no per-assessor colours.
 
 ### AI states (design every one; never show a bare spinner)
 | State | Where | How it looks |

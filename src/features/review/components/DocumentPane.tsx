@@ -1,8 +1,7 @@
 import type { Assessor, Comment, Document } from "../types";
-import { dominantSeverity, plural, quoteRuns } from "../lib";
+import { plural, quoteRuns } from "../lib";
 import { cn } from "../ui/cn";
 import { Label } from "../ui/Label";
-import { AvatarStack } from "../ui/Avatar";
 
 /**
  * The document, with §9 comment anchors: every commented paragraph gets a
@@ -15,7 +14,6 @@ export function DocumentPane({
   openByParagraph,
   openCommentCount,
   openMajorCount,
-  assessors,
   selectedParagraphId,
   onParagraphClick,
   registerParagraph,
@@ -43,12 +41,10 @@ export function DocumentPane({
         <Label>{meta}</Label>
         <span className="flex items-center gap-3" aria-label="Anchor key">
           <span className="flex items-center gap-1.5">
-            <span className="size-3 rounded-full bg-orange" />
-            <Label>Major</Label>
+            <mark className="bg-orange-halo px-1 text-inherit underline decoration-orange decoration-[1.5px] underline-offset-4"><Label>Major</Label></mark>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-3 rounded-full border-line border-ink bg-white" />
-            <Label>Minor or praise</Label>
+            <span className="underline decoration-ink decoration-[1.5px] underline-offset-4"><Label>Minor</Label></span>
           </span>
         </span>
       </div>
@@ -59,54 +55,51 @@ export function DocumentPane({
         <ol className="mt-6 -ml-12 flex flex-col gap-4">
           {doc.paragraphs.map((p) => {
             const open = openByParagraph.get(p.id) ?? [];
-            const kind = dominantSeverity(open);
-            const runs = quoteRuns(p.text, open.map((c) => c.quote ?? ""));
-            const commenters = [...new Set(open.map((c) => c.assessorId))]
-              .map((id) => assessors.get(id))
-              .filter((a): a is Assessor => Boolean(a));
+            // Praise is never marked in the text; it is listed under the card as Keep.
+            const marked = open.filter((c) => c.severity !== "praise");
+            const major = marked.some((c) => c.severity === "major");
+            const quoted = marked.filter((c) => c.quote);
+            const bar = marked.length > quoted.length;
+            const runs = quoteRuns(p.text, quoted.map((c) => c.quote ?? ""));
             const selected = selectedParagraphId === p.id;
             const Text = p.type === "heading" ? "h2" : "p";
             const activate = () => onParagraphClick(p.id);
 
             return (
               <li key={p.id} ref={(el) => registerParagraph(p.id, el)} className="grid scroll-mt-6 grid-cols-paragraph items-start gap-2">
-                {kind ? (
-                  <button
-                    type="button"
-                    onClick={activate}
-                    aria-label={`Paragraph ${p.index}: ${open.length} open ${open.length === 1 ? "comment" : "comments"}`}
-                    className={cn(
-                      "mt-0.5 flex size-7 items-center justify-center justify-self-center rounded-full font-mono text-label font-medium text-ink",
-                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange",
-                      kind === "major" ? "bg-orange" : "border-line border-ink bg-white",
-                    )}
-                  >
-                    {p.index}
-                  </button>
-                ) : (
-                  <span className="justify-self-center pt-1.5 font-mono text-label text-grey-300">{p.index}</span>
-                )}
+                <span className="justify-self-center pt-1.5 font-mono text-label text-grey-300">{p.index}</span>
                 <Text
-                  onClick={kind ? activate : undefined}
+                  onClick={open.length ? activate : undefined}
+                  role={open.length ? "button" : undefined}
+                  tabIndex={open.length ? 0 : undefined}
+                  onKeyDown={open.length ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); } } : undefined}
+                  aria-label={open.length ? `Paragraph ${p.index}: ${open.length} open ${open.length === 1 ? "comment" : "comments"}` : undefined}
                   className={cn(
                     p.type === "heading" ? "font-display text-h3-lg font-semibold tracking-h3 text-ink" : "text-reading text-grey-900",
-                    kind && "cursor-pointer",
+                    open.length > 0 && "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange",
+                    bar && "-ml-3 border-l-line pl-3",
+                    bar && (major ? "border-orange" : "border-ink"),
                     selected && "rounded-row bg-grey-50",
                   )}
                 >
                   {runs.map((r, i) =>
                     r.quoted ? (
-                      <span key={i} className="underline decoration-ink decoration-[1.5px] underline-offset-4">
+                      <mark
+                        key={i}
+                        className={cn(
+                          "text-inherit underline decoration-[1.5px] underline-offset-4",
+                          major ? "bg-orange-halo decoration-orange" : "bg-transparent decoration-ink",
+                          selected && "outline-line outline-ink",
+                        )}
+                      >
                         {r.text}
-                      </span>
+                      </mark>
                     ) : (
                       <span key={i}>{r.text}</span>
                     ),
                   )}
                 </Text>
-                <span className="flex justify-center pt-0.5">
-                  {commenters.length > 0 && <AvatarStack people={commenters} size="sm" />}
-                </span>
+                <span aria-hidden />
               </li>
             );
           })}

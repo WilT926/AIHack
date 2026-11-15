@@ -7,7 +7,7 @@ import { commentsByParagraph, indexAssessors, paragraphLabel, paragraphOrder, so
 import { Tabs, type TabItem } from "./ui/Tabs";
 import { TopBar } from "./components/TopBar";
 import { DocumentPane } from "./components/DocumentPane";
-import { CommentCard } from "./components/CommentCard";
+import { CommentMargin, type Passage } from "./components/CommentMargin";
 import { BoardDiscussion } from "./components/DeliberationCard";
 import { BoardLiveCard, EmptyState, FailedCard } from "./components/StatusCards";
 import { FeedbackReport } from "@/features/feedback/FeedbackReport";
@@ -55,7 +55,7 @@ export function ReviewScreen({
     () => new Set(review.comments.filter((c) => c.done).map((c) => c.id)),
   );
   const [selectedParagraphId, setSelectedParagraphId] = useState<string>();
-  const [selectedCommentIds, setSelectedCommentIds] = useState<Set<string>>(() => new Set());
+  const [, setSelectedCommentIds] = useState<Set<string>>(() => new Set());
   const [scrollRequest, setScrollRequest] = useState<ScrollRequest>();
   const [kindFilter, setKindFilter] = useState<CommentSeverity | "all">("all");
   const [assessorFilter, setAssessorFilter] = useState<Set<string>>(() => new Set());
@@ -88,6 +88,15 @@ export function ReviewScreen({
     () => boardMembers.filter((a) => openComments.some((c) => c.assessorId === a.id)),
     [boardMembers, openComments],
   );
+  /** One margin card per commented paragraph, in document order. */
+  const passages: Passage[] = useMemo(
+    () =>
+      [...visibleByParagraph]
+        .sort(([a], [b]) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
+        .map(([paragraphId, comments]) => ({ paragraphId, label: paragraphLabel(doc, paragraphId), comments })),
+    [visibleByParagraph, order, doc],
+  );
+  const paragraphEl = useCallback((id: string) => paragraphEls.current.get(id), []);
   const openMajorCount = openComments.filter((c) => c.severity === "major").length;
 
   // Scroll after the DOM has updated (e.g. after switching back to the Comments tab).
@@ -167,8 +176,9 @@ export function ReviewScreen({
         onUpload={onUpload ?? (() => router.push(`/review/new?project=${encodeURIComponent(view.project.id)}`))}
       />
 
-      <main className="flex min-h-0 flex-1 gap-6 px-14">
-        <section className="min-w-0 flex-1 overflow-y-auto pt-6" aria-label="Document">
+      {/* Document and comment margin scroll together as one page (§9 Comment anchors). */}
+      <main className="flex min-h-0 flex-1 items-start gap-6 overflow-y-auto px-14">
+        <section className="min-w-0 flex-1 pt-6" aria-label="Document">
           <DocumentPane
             doc={doc}
             openByParagraph={visibleByParagraph}
@@ -182,9 +192,11 @@ export function ReviewScreen({
         </section>
 
         <aside className="flex w-full max-w-rail shrink-0 flex-col pt-6" aria-label="Board feedback">
-          <Tabs items={tabs} active={tab} onChange={chooseTab} />
+          <div className="sticky top-0 z-10 bg-white pb-3">
+            <Tabs items={tabs} active={tab} onChange={chooseTab} />
+          </div>
 
-          <div key={tab} className="mt-5 min-h-0 flex-1 overflow-y-auto pb-10">
+          <div key={tab} className="mt-2 pb-10">
             {tab === "comments" && (
               <div className="flex flex-col gap-3">
                 {startControl}
@@ -234,18 +246,18 @@ export function ReviewScreen({
                   <EmptyState title="No comments match these filters" body="Choose All to see every open comment." />
                 )}
 
-                {visibleComments.map((c) => (
-                  <CommentCard
-                    key={c.id}
-                    ref={(el) => registerComment(c.id, el)}
-                    comment={c}
-                    assessor={assessors.get(c.assessorId)}
-                    paragraphLabel={paragraphLabel(doc, c.paragraphId)}
-                    selected={selectedCommentIds.has(c.id)}
-                    onShowInText={() => showParagraph(c.paragraphId, c.id)}
-                    onDone={() => resolve(c.id)}
+                {passages.length > 0 && (
+                  <CommentMargin
+                    passages={passages}
+                    assessors={assessors}
+                    paragraphEl={paragraphEl}
+                    selectedParagraphId={selectedParagraphId}
+                    layoutKey={`${visibleComments.length}-${review.deliberation ? 1 : 0}-${isLive ? 1 : 0}-${failed.length}`}
+                    onSelect={(pid, cid) => showParagraph(pid, cid)}
+                    onDone={resolve}
+                    registerComment={registerComment}
                   />
-                ))}
+                )}
 
 
                 {live?.deliberationError && (
