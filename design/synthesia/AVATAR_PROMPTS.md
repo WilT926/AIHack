@@ -122,8 +122,8 @@ where `<app id>` is the assessor's id in the app: `technical-judge`, `education-
 
 | App id | Drawing | Synthesia name | Avatar ID (video) | Interactive ID (`av_…`) | Voice | Clips done |
 |---|---|---|---|---|---|---|
-| technical-judge | avatar-027 | Panel · Ezra Cole | | | | ☐ listen ☐ idle ☐ talk ☐ poster |
-| education-lead | avatar-048 | Panel · Hana Ito | | | | ☐ listen ☐ idle ☐ talk ☐ poster |
+| technical-judge | avatar-027 | Ezra Cole | `e6273b45-30d7-4e57-8e8b-7adeff702217` | `13ad3cee-d791-4d75-b12e-0a64f3944738` | | ☐ listen ☐ idle ☐ talk ☐ poster |
+| education-lead | avatar-048 | Hana Ito | `875ad066-944a-4bde-8c4b-a9f705d22336` | `e826be2c-87ee-49e6-ad58-ed88350c46fe` | | ☐ listen ☐ idle ☐ talk ☐ poster |
 | investor | avatar-064 | Panel · Tom Achebe | | | | ☐ listen ☐ idle ☐ talk ☐ poster |
 | design-judge | avatar-035 | Panel · Mira Santos | | | | ☐ listen ☐ idle ☐ talk ☐ poster |
 | module-lead | avatar-006 | Panel · Alan Marsh | | | | ☐ |
@@ -133,11 +133,53 @@ where `<app id>` is the assessor's id in the app: `technical-judge`, `education-
 | outsider | avatar-016 | Panel · Marcus Reid | | | | ☐ |
 | sceptic | avatar-004 | Panel · Nina Volkova | | | | ☐ |
 
-IDs are not secret, so they can go in the repo. Keys are secret: they stay in `.env.local`.
+**Also created in Synthesia, not yet matched to an assessor in the app:**
+
+| Synthesia name | Avatar ID (video) | Interactive ID | Status | App assessor |
+|---|---|---|---|---|
+| Helen Leane | `635dda01-864a-4004-936c-1373462322bb` | `e908b313-243e-4abe-abca-4d2ed3fe1bb3` | Ready | ? |
+| Martin Stevens | `cdbe4acf-e442-4847-9b00-5a5ee0e11d4a` | `7a54f6f4-fa84-4957-9cc9-8f64e9230156` | Ready | ? |
+
+The same IDs are in `design/synthesia/avatars.json`.
+- These are video avatar IDs (UUIDs). The live plugin's examples use IDs starting `av_`, so check in Synthesia whether each avatar shows a separate Interactive Avatar ID, and add it to the `av_` column.
+- IDs are not secret, so they can go in the repo. Keys are secret: they stay in `.env.local`.
 
 ---
 
-## 7. For whoever implements it
+## 7. Line drawings from the real avatars (fal)
+
+Each judge's pen drawing is made **from their real avatar's first frame** (`poster.jpg`), so the drawing lines up with the video for the line-to-video reveal.
+
+### Prepare the input
+1. Crop `poster.jpg` to a **square** around the head and shoulders, exactly as the app's tile crops it: head centred, a little space above the hair, shoulders running off the bottom edge. Keep this crop, because the video uses it too.
+2. Give fal **two images**: the cropped frame (the person) and **one existing Panel avatar** as the style reference (any PNG in `design/synthesia/refs/`, e.g. `technical-judge-avatar-027.png`).
+3. Use an image-editing model that accepts a reference image (check fal's current model list), at 1024×1024 output.
+
+### Prompt
+> Redraw the person in the first image as a minimal black-ink line illustration in exactly the style of the second image. **Trace them precisely: same pose, head position, size and proportions as the photo, with nothing moved, re-centred or re-cropped.** Keep what makes them recognisable: hairstyle and hairline, glasses shape, facial hair, ears, neckline and clothing.
+>
+> Style rules:
+> - **Only two colours: solid ink black (#111111) and pure white.** No grey, no shading, no gradients, no hatching, no cross-hatching, no texture, no outlines in any other colour.
+> - **Bold, even, smooth outlines** with rounded ends, about 1.2% of the image width; thinner lines for small inner details.
+> - Hair, beard, eyebrows, glasses frames and dark clothing (jackets, ties) as **flat solid black shapes**. Skin and light clothing stay **white**, with no shading.
+> - **Very simple face:** small solid dots or short curves for eyes, one simple line for the nose, a short curve for the mouth, simple C-shaped ears, at most one or two small lines for a smile or cheek. No eyelashes, no lips, no wrinkles, no pores, no teeth unless smiling broadly.
+> - Patterns only if they define the person (e.g. bold black-and-white stripes on a top), drawn as a few clean bands.
+> - Head-and-shoulders, front-facing, shoulders running off the bottom edge.
+> - **Plain pure white background, with nothing else in the image.** No text, no frame, no shadow, no signature.
+>
+> Friendly, calm, flat vector look, as one more face from the same hand-drawn set as the reference.
+
+**Negative prompt** (if the model takes one): `photo, realistic, 3D, shading, gradient, grey, gray, hatching, cross-hatching, sketch lines, pencil, watercolour, texture, colour, orange, background objects, text, watermark, border, drop shadow, extra people, cropped head`
+
+### After fal
+1. **Check** against the photo: same hair, glasses, facial hair and clothing, and the outline sitting on the same place as the person in the frame. Regenerate if the head has moved or features are lost.
+2. **Vectorise** in black-and-white mode, e.g. `pip install vtracer`, `vtracer --input drawing.png --output drawing.svg --colormode binary`. Then make the white areas `fill="#fff"`, the black `fill="#111"` and the background transparent, and set the SVG to `viewBox="0 0 300 300"`.
+3. **Save** as `public/avatars/avatar-1NN.svg`, continuing after `avatar-100`; the app only accepts the `avatar-NNN` pattern. Point the assessor's `avatar` at it, and note it in the ID sheet (section 6).
+4. **Line-up test:** in a browser, place the SVG at the same size over the cropped `poster.jpg`. The lines should sit on the person's edges. That's what makes the reveal look like one person turning real.
+
+---
+
+## 8. For whoever implements it
 
 **Keys** (all in `AIHack/lane3/.env.local`, git-ignored; server code only):
 - `SYNTHESIA_API_KEY`: must have Interactive Avatar access for live, or Synthesia returns `FEATURE_NOT_IN_PLAN`.
@@ -151,7 +193,7 @@ IDs are not secret, so they can go in the repo. Keys are secret: they stay in `.
 
 **Line drawing → video:**
 1. Trace `poster.jpg` into a pen SVG matching `public/avatars/` (fal image-to-image with an existing avatar as the style reference, then vectorise).
-2. Show the SVG over the paused poster, wipe the video in underneath, and fade the lines out. Steps are in `docs/plan/lane-3-handoff.md` §3, steps 4–5.
+2. Show the SVG over the paused poster, wipe the video in underneath, and fade the lines out. Prompt and steps in section 7 above; app wiring in `docs/plan/lane-3-handoff.md` §3, step 5.
 
 **Live questions (Interactive Avatars):**
 1. Run a small **agent worker** using LiveKit Agents with `livekit-plugins-synthesia`, with `AvatarConfig(avatar_ids=[up to 5 av_ IDs])`. Use `swap_avatar(id)` to switch to whichever judge is asking.

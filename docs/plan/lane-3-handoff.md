@@ -1,7 +1,42 @@
 # Lane 3 handoff: where things run, what's left, and the Synthesia trial
 
-Written Sunday 15 Nov, about 05:45. **Freeze 11:30, submission 12:00.**
+First written Sunday 15 Nov, about 05:45; "Start here" updated about 10:00. **Freeze 11:30, submission 12:00.**
 Read `CLAUDE.md`, `docs/plan/README.md` and `docs/plan/lane-3.md` first. Lane 3 owns `design/`, `src/styles`, `src/components/ui`, `public/avatars`, `src/features/{assessors,boards,home}` and `src/app/{assessors,boards,profile,page.tsx}`.
+
+---
+
+## Start here (current state of `lane3/final`)
+
+**Branch:** `lane3/final` on GitHub, built on `staging` as of 04:25 (nothing newer is on `staging`). **Not merged into `staging` yet.** The build, lint and 107 tests passed at the last commit.
+
+### Documents
+| File | What it's for |
+|---|---|
+| `docs/plan/lane-3-handoff.md` (this file) | Where things run (Docker, dev server, folders, keys), the file map of every Lane 3 change, small fixes left |
+| `docs/plan/live-presentation-setup.md` | **The next big job:** looping clips while presenting, and live Synthesia avatars with Claude questions and ElevenLabs voices. What's in place, what's missing, build order, owners, test plan |
+| `design/synthesia/AVATAR_PROMPTS.md` | How the Synthesia avatars were made: style block, per-person prompts, clip recipes, fal line-drawing prompt (§7), ID sheet (§6) |
+| `design/synthesia/avatars.json` | Video and Interactive Avatar IDs for Ezra Cole, Hana Ito, Helen Leane and Martin Stevens (IDs are not secret) |
+| `design/synthesia/refs/` | The ten assessors' drawings as 1024px PNGs, for Synthesia and fal references |
+| `AVATAR_VIDEOS/<Name>/*.mp4` | The Synthesia listening and reaction loops, 1080p. Source files: copy the chosen ones into `public/avatars/real/<assessorId>/` (see `live-presentation-setup.md` §3C) |
+| `scripts/synthesia/` | `test-video.mjs` (render a video; `--id` to download one) and `list-videos.mjs` (status) |
+
+### Done on this branch
+- **Sign-in page**; sign-out returns to it.
+- **Shared top bar** on every page:
+  - logo;
+  - split search pill with Filters (status, assessors, recent tables);
+  - profile menu (Profile settings, Help, Sign out).
+- **Dock:** gooey ink bubbles, with a larger orange "+" in the middle (**Panel room** / **Live doc review**, click only). Floor, Desk, Assessors and Profile.
+- **Adaptive floor:** tables scale to the space; the side panel is pinned to the right and scaled so all of it fits.
+- **Settings page** (Panel defaults and the other sections), **avatar studio**, **help page**, **skeleton loaders**.
+- **Synthesia** avatars, IDs, guides and scripts.
+
+### Next, in order
+1. **Decide** whether Helen Leane and Martin Stevens replace Tom Achebe and Mira Santos on the pitch judges board, or join as new judges.
+2. **Keys** in `.env.local` (git-ignored): add `ANTHROPIC_API_KEY` and `ELEVENLABS_API_KEY`. They're missing locally, so the app uses sample questions and the browser voice. Then switch on `features.elevenLabs` and set each judge's `voiceId`.
+3. **Clips into the app:** listening loop while presenting, idle loop in the call (`live-presentation-setup.md` §3C).
+4. **Live avatar:** Python agent, token route, browser (`live-presentation-setup.md` §3D). Lane 1's code; fall back to steps 2–3 if it isn't stable by about 10:45.
+5. **Merge** `lane3/final` into `staging` once the build and lint pass (CLAUDE.md rule). Only Lane 1 merges `staging` into `main`.
 
 ---
 
