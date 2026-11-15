@@ -10,7 +10,18 @@ export function cn(...parts: (string | false | null | undefined)[]): string {
 // ---------- Logo ----------
 
 /** The Panel mark and wordmark. The same on every page, with no sub text (§2). */
-export function Logo() {
+/**
+ * The Panel mark and wordmark. With `href` it is a link: every signed-in page
+ * links it to the floor ("/"); sign-in and the landing page do not.
+ */
+export function Logo({ href }: { href?: string } = {}) {
+  if (href) {
+    return (
+      <Link href={href} className="ui-logo-link" aria-label="Panel, back to your floor">
+        <Logo />
+      </Link>
+    );
+  }
   return (
     <div className="ui-logo" aria-label="Panel">
       <div className="ui-logo__mark" aria-hidden>

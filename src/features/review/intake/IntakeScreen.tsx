@@ -95,7 +95,7 @@ export function IntakeScreen({ context, sampleReplies, backHref = null }: { cont
   return (
     <div className="flex min-h-dvh flex-col bg-white">
       <header className="flex h-topbar shrink-0 items-center gap-6 bg-white px-8">
-        <Logo />
+        <Logo href="/" />
         <div className="h-7 w-px bg-grey-100" />
         <Label tone="ink">{context.project.name}  /  Upload document</Label>
       </header>

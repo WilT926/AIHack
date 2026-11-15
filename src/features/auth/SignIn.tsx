@@ -5,7 +5,6 @@
 // user, no login"), so both routes take you to your floor. Real Google
 // sign-in needs an OAuth client (e.g. Supabase Auth's Google provider).
 // Nothing typed here is stored or sent anywhere.
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, Button, Divider, Label, Logo, TextButton, TextInput } from "@/components/ui";
@@ -19,9 +18,9 @@ export function SignIn() {
 
   return (
     <div className="auth">
-      <Link href="/login" className="auth__logo" aria-label="Panel">
+      <span className="auth__logo">
         <Logo />
-      </Link>
+      </span>
 
       <div className="auth__art" aria-hidden>
         <div className="auth__stage">
