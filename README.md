@@ -55,6 +55,7 @@ npm install
 cp .env.example .env.local      # fill in the keys
 npm run db:migrate              # or paste supabase/migrations/*.sql into the SQL editor
 npm run db:seed                 # add -- --sample for sample projects on the floor
+npm run voices:assign           # once ELEVENLABS_API_KEY is set: a distinct voice per assessor
 npm run dev
 ```
 

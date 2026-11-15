@@ -7,6 +7,7 @@
 // - PitchSession.status: whether a presentation is ready, running or done.
 // - PitchSession.settings.boardId and .capture: the board chosen for the run
 //   and whether the transcript came from the microphone or was typed.
+// - PitchQuestion.followUpAnswer: the answer to the one follow-up question.
 // - Comment.done and FeedbackAction.done: comments can be marked done and
 //   "open actions" are the unticked actions in the latest report.
 // - Paragraph.type: headings are numbered but not commented on.
@@ -246,6 +247,8 @@ export const pitchQuestionSchema = z.object({
   reason: shortText,
   answerTranscript: longText.nullish(),
   followUp: shortText.nullish(),
+  /** The answer to the follow-up, if one was asked. */
+  followUpAnswer: longText.nullish(),
 });
 export type PitchQuestion = z.infer<typeof pitchQuestionSchema>;
 

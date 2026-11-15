@@ -4,6 +4,7 @@
 // validated here before anything reaches the data layer.
 import { z } from "zod";
 import { pitchSessions, projects } from "@/lib/data";
+import { answerQuestion, finishQandA, generateQuestions } from "@/lib/engine/pitchService";
 import type { PitchSession } from "@/lib/schemas";
 
 const iso = z.iso.datetime({ offset: true });
@@ -88,4 +89,47 @@ export async function lastSavedTranscript(projectId: string): Promise<{ transcri
   const seconds =
     last.startedAt && last.endedAt ? Math.max(0, Math.round((Date.parse(last.endedAt) - Date.parse(last.startedAt)) / 1000)) : 0;
   return { transcript: last.transcript, seconds };
+}
+
+// ---------- The board's questions, answers and feedback ----------
+// Errors are returned as messages (not thrown) so the screen can show them.
+
+
+type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+const fail = (e: unknown): { ok: false; error: string } => ({ ok: false, error: e instanceof Error ? e.message : "Something went wrong." });
+const sessionId = z.string().min(1).max(100);
+
+/** The board steps out and comes back with its questions. */
+export async function boardQuestions(id: string): Promise<Result<PitchSession>> {
+  try {
+    return { ok: true, value: await generateQuestions(sessionId.parse(id)) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Save an answer; the asking judge decides on one follow-up at most. */
+export async function submitAnswer(id: string, questionId: string, answer: string): Promise<Result<{ session: PitchSession; followUp: string | null }>> {
+  try {
+    return { ok: true, value: await answerQuestion(sessionId.parse(id), z.string().min(1).max(20).parse(questionId), transcript.parse(answer)) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** End the Q&A and write the feedback report. */
+export async function endQandA(id: string): Promise<Result<PitchSession>> {
+  try {
+    return { ok: true, value: await finishQandA(sessionId.parse(id)) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Tick or untick an action in this session's feedback report. */
+export async function setPitchActionDone(id: string, actionId: string, done: boolean): Promise<void> {
+  const s = await pitchSessions.get(sessionId.parse(id));
+  if (!s?.report) return;
+  const aid = z.string().min(1).max(20).parse(actionId);
+  await pitchSessions.save({ ...s, report: { ...s.report, actions: s.report.actions.map((a) => (a.id === aid ? { ...a, done: !!done } : a)) } });
 }

@@ -26,6 +26,12 @@ export const engine = {
 export const voice = {
   /** Speech recognition language. */
   lang: "en-GB",
+  /** ElevenLabs model: the documented low-latency option. */
+  elevenLabsModel: "eleven_flash_v2_5",
+  /** Longest question sent to ElevenLabs, in characters. */
+  maxSpokenChars: 600,
+  /** The "board steps out" moment lasts at least this long, even when replies are quick. */
+  minConferMs: 2500,
   /** After "thank you", this much silence ends the pitch automatically. */
   thanksPauseMs: 2500,
   /** How often the live transcript is saved while listening. */
@@ -46,12 +52,12 @@ export const features = {
   /** Report review (Lane 2): upload, comments, deliberation. */
   review: true,
   /** Presentation practice (Lane 1, steps 1.3 and 1.4): the floor's entry points. */
-  pitch: false,
+  pitch: true,
   /**
    * Opens /pitch directly while presentation practice is being built, with a
    * PREVIEW label on screen. Switch off once `pitch` is on.
    */
-  pitchPreview: true,
+  pitchPreview: false,
   /** Feedback report screen (Lane 2, step 2.3b). */
   feedbackReport: false,
   /** Seat and unseat assessors from the floor (Lane 3, step 3.4). */

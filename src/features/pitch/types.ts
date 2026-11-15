@@ -1,6 +1,18 @@
 // What the pitch screens need, built on the server from the data layer.
 
-export type PitchSeat = { id: string; name: string; short: string; field: string; avatar: string };
+export type PitchSeat = {
+  id: string;
+  name: string;
+  short: string;
+  field: string;
+  avatar: string;
+  /** Realistic counterpart for the call (optional, Lane 3 step 3.2c). */
+  portrait?: string | null;
+  idleClip?: string | null;
+  talkingClip?: string | null;
+  /** Picks a distinct browser voice when ElevenLabs is off. */
+  voiceIndex: number;
+};
 export type PitchBoard = { id: string; name: string; seats: PitchSeat[] };
 export type PitchProject = { id: string; title: string; code: string; isPitch: boolean; boardId: string | null };
 
@@ -14,6 +26,12 @@ export type PitchSetupData = {
   sample: boolean;
   /** True while presentation practice is still being built. */
   preview: boolean;
+  /** True when replies will be generated samples, not Claude (no API key). */
+  sampleReplies: boolean;
+  /** True when the ElevenLabs route is switched on and has a key. */
+  elevenLabs: boolean;
+  /** The student's initials, for their tile when the camera is off. */
+  initials: string;
 };
 
-export type Phase = "setup" | "listening" | "typing" | "saved";
+export type Phase = "setup" | "listening" | "typing" | "conferring" | "questions" | "feedback" | "report";

@@ -6,15 +6,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { voice } from "@/config";
 import { recognitionErrorText, useRecognitionSupported, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
-import { clock, durationSeconds, endsWithThanks, joinTranscript, parseClock, wordCount, wordsPerMinute } from "@/lib/voice/transcript";
+import { clock, endsWithThanks, joinTranscript, parseClock, wordCount } from "@/lib/voice/transcript";
 import type { PitchSession } from "@/lib/schemas";
-import { finishPitch, lastSavedTranscript, saveTranscript, startPitchSession } from "./actions";
+import { boardQuestions, endQandA, finishPitch, lastSavedTranscript, saveTranscript, setPitchActionDone, startPitchSession } from "./actions";
 import type { Phase, PitchSetupData } from "./types";
 import { SessionFrame } from "./components/SessionFrame";
 import { Setup, type SetupValue } from "./components/Setup";
 import { Listening } from "./components/Listening";
 import { TypedTranscript } from "./components/TypedTranscript";
-import { Saved } from "./components/Saved";
+import { Conferring } from "./components/Conferring";
+import { QandA } from "./components/QandA";
+import { PitchReport } from "./components/PitchReport";
 
 const message = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Try again.");
 
@@ -45,6 +47,38 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const seats = board?.seats ?? [];
   const live = joinTranscript(rec.finalText, rec.interim);
   const seconds = rec.startedAt && now ? Math.max(0, (now - Date.parse(rec.startedAt)) / 1000) : 0;
+
+  // ---------- The board steps out, asks, then writes its feedback ----------
+
+  const [boardError, setBoardError] = useState<string | null>(null);
+
+  const confer = useCallback(async (id: string) => {
+    setBoardError(null);
+    setPhase("conferring");
+    const [res] = await Promise.all([boardQuestions(id), new Promise((r) => setTimeout(r, voice.minConferMs))]);
+    if (!res.ok) {
+      setBoardError(res.error);
+      return;
+    }
+    sessionRef.current = res.value;
+    setSession(res.value);
+    setPhase("questions");
+  }, []);
+
+  const writeFeedback = useCallback(async () => {
+    const s = sessionRef.current;
+    if (!s) return;
+    setBoardError(null);
+    setPhase("feedback");
+    const res = await endQandA(s.id);
+    if (!res.ok) {
+      setBoardError(res.error);
+      return;
+    }
+    sessionRef.current = res.value;
+    setSession(res.value);
+    setPhase("report");
+  }, []);
 
   // ---------- Start ----------
 
@@ -99,14 +133,14 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       const saved = await finishPitch({ sessionId: s.id, transcript: text, capture: "live", startedAt, endedAt });
       sessionRef.current = saved;
       setSession(saved);
-      setPhase("saved");
+      void confer(saved.id);
     } catch (e) {
       finishingRef.current = false;
       setError(message(e));
     } finally {
       setBusy(false);
     }
-  }, [rec]);
+  }, [rec, confer]);
 
   // "Thank you" followed by a pause ends the pitch. The timer restarts only
   // when new words arrive, not on every render (the clock re-renders often).
@@ -174,13 +208,13 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       const saved = await finishPitch({ sessionId: s.id, transcript: typedText.trim(), capture: "typed", startedAt, endedAt });
       sessionRef.current = saved;
       setSession(saved);
-      setPhase("saved");
+      void confer(saved.id);
     } catch (e) {
       setError(message(e));
     } finally {
       setBusy(false);
     }
-  }, [setup, typedText, typedLength]);
+  }, [setup, typedText, typedLength, confer]);
 
   // Hidden control: Ctrl/⌘ + Shift + L loads the last saved transcript.
   const loadLast = useCallback(async () => {
@@ -225,11 +259,11 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   // ---------- Render ----------
 
   const notice = error ?? (rec.error ? recognitionErrorText(rec.error) : null);
-  const savedSeconds = durationSeconds(session?.startedAt, session?.endedAt);
-  const savedWords = wordCount(session?.transcript ?? "");
+  const step = phase === "conferring" ? 1 : phase === "questions" ? 2 : phase === "feedback" || phase === "report" ? 3 : 0;
+  const sampleReplies = session?.replySource === "sample" || (data.sampleReplies && step > 0);
 
   return (
-    <SessionFrame step={phase === "saved" ? 1 : 0} sample={data.sample} preview={data.preview}>
+    <SessionFrame step={step} sample={data.sample} sampleReplies={sampleReplies} preview={data.preview}>
       {phase === "setup" && (
         <Setup data={data} value={setup} onChange={setSetup} canListen={canListen} busy={busy} error={error} onStart={start} />
       )}
@@ -259,13 +293,33 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
           onBack={again}
         />
       )}
-      {phase === "saved" && session && (
-        <Saved
-          seconds={savedSeconds}
-          words={savedWords}
-          wpm={wordsPerMinute(savedWords, savedSeconds)}
-          transcript={session.transcript}
-          capture={session.settings.capture === "typed" ? "typed" : "live"}
+      {phase === "conferring" && (
+        <Conferring seats={seats} label="The board is conferring" error={boardError} onRetry={() => session && void confer(session.id)} />
+      )}
+      {phase === "questions" && session && (
+        <QandA
+          session={session}
+          seats={seats}
+          initials={data.initials}
+          elevenLabs={data.elevenLabs}
+          canListen={canListen}
+          onSession={(s) => {
+            sessionRef.current = s;
+            setSession(s);
+          }}
+          onEnd={() => void writeFeedback()}
+        />
+      )}
+      {phase === "feedback" && (
+        <Conferring seats={seats} label="The board is writing its feedback" error={boardError} onRetry={() => void writeFeedback()} />
+      )}
+      {phase === "report" && session?.report && (
+        <PitchReport
+          report={session.report}
+          seats={seats}
+          questions={session.questions}
+          sample={session.replySource === "sample"}
+          onToggle={(actionId, done) => void setPitchActionDone(session.id, actionId, done)}
           onAgain={again}
         />
       )}

@@ -11,11 +11,13 @@ const STEPS = ["Present", "Board steps out", "Questions", "Feedback"];
 export function SessionFrame({
   step,
   sample,
+  sampleReplies,
   preview,
   children,
 }: {
   step: number;
   sample: boolean;
+  sampleReplies?: boolean;
   preview: boolean;
   children: ReactNode;
 }) {
@@ -39,6 +41,7 @@ export function SessionFrame({
         <div className="ps-head__flags">
           {preview && <Label tone="ink">Preview</Label>}
           {sample && <Label tone="orange">Sample data</Label>}
+          {sampleReplies && <Label tone="orange">Sample replies</Label>}
         </div>
       </header>
       <main className="ps-main">{children}</main>
