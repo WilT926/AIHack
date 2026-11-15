@@ -4,7 +4,7 @@
 // validated here before anything reaches the data layer.
 import { z } from "zod";
 import { pitchSessions, projects } from "@/lib/data";
-import { answerQuestion, finishQandA, generateQuestions } from "@/lib/engine/pitchService";
+import { finishQandA, generateQuestions, takeAnswer, type TurnResult } from "@/lib/engine/pitchService";
 import type { PitchSession } from "@/lib/schemas";
 
 const iso = z.iso.datetime({ offset: true });
@@ -16,6 +16,7 @@ const startInput = z.object({
   questionCount: z.number().int().min(1).max(5),
   mode: z.enum(["spoken", "text"]),
   capture: z.enum(["live", "typed"]),
+  conditions: z.enum(["coaching", "exam"]).default("coaching"),
   startedAt: iso.nullish(),
 });
 
@@ -38,6 +39,7 @@ export async function startPitchSession(input: z.input<typeof startInput>): Prom
       mode: v.mode,
       boardId: v.boardId && v.boardId !== project.boardId ? v.boardId : null,
       capture: v.capture,
+      conditions: v.conditions,
     },
     questions: [],
     report: null,
@@ -108,10 +110,10 @@ export async function boardQuestions(id: string): Promise<Result<PitchSession>> 
   }
 }
 
-/** Save an answer; the asking judge decides on one follow-up at most. */
-export async function submitAnswer(id: string, questionId: string, answer: string): Promise<Result<{ session: PitchSession; followUp: string | null }>> {
+/** Save an answer; the router reads it and the board answers in the chosen mode. */
+export async function submitAnswer(id: string, answer: string): Promise<Result<TurnResult>> {
   try {
-    return { ok: true, value: await answerQuestion(sessionId.parse(id), z.string().min(1).max(20).parse(questionId), transcript.parse(answer)) };
+    return { ok: true, value: await takeAnswer(sessionId.parse(id), transcript.parse(answer)) };
   } catch (e) {
     return fail(e);
   }

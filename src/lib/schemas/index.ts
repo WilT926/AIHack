@@ -8,6 +8,9 @@
 // - PitchSession.settings.boardId and .capture: the board chosen for the run
 //   and whether the transcript came from the microphone or was typed.
 // - PitchQuestion.followUpAnswer: the answer to the one follow-up question.
+// - PitchSession.settings.conditions and PitchSession.qa: coaching or exam
+//   conditions, and the routed Q&A (turns, assessments, modes, struggles,
+//   escalations).
 // - Comment.done and FeedbackAction.done: comments can be marked done and
 //   "open actions" are the unticked actions in the latest report.
 // - Paragraph.type: headings are numbered but not commented on.
@@ -241,6 +244,51 @@ export type Review = z.infer<typeof reviewSchema>;
 
 export const pitchStatusSchema = z.enum(["ready", "listening", "conferring", "questions", "done"]);
 
+// ---------- Q&A routing: how the board thinks and talks, turn by turn ----------
+
+/** The router's read of one answer. */
+export const answerQualitySchema = z.enum(["strong", "partial", "struggling", "off-topic"]);
+export type AnswerQuality = z.infer<typeof answerQualitySchema>;
+export const studentIntentSchema = z.enum(["answering", "asking-for-answer", "changing-rules", "distressed", "wants-to-stop"]);
+export type StudentIntent = z.infer<typeof studentIntentSchema>;
+export const assessmentSchema = z.object({ answerQuality: answerQualitySchema, studentIntent: studentIntentSchema });
+export type Assessment = z.infer<typeof assessmentSchema>;
+
+/** The mode the code picks from the assessment. Each mode has its own prompt block. */
+export const qaModeSchema = z.enum(["pressing", "probing", "coaching", "steering", "holding-the-line", "paused"]);
+export type QaMode = z.infer<typeof qaModeSchema>;
+
+/** Coaching (hints allowed) or exam conditions (no hints). */
+export const conditionsSchema = z.enum(["coaching", "exam"]);
+export type Conditions = z.infer<typeof conditionsSchema>;
+
+/** One thing a judge said, and the answer to it. */
+export const qaTurnSchema = z.object({
+  id,
+  /** The planned question this turn belongs to. */
+  questionId: id,
+  assessorId: id,
+  kind: z.enum(["question", "follow-up", "steer", "hold", "pause"]),
+  /** The mode this utterance was generated in; null for the opening question. */
+  mode: qaModeSchema.nullish(),
+  text: shortText,
+  answer: longText.nullish(),
+  /** The router's read of the answer, once given. */
+  assessment: assessmentSchema.nullish(),
+  /** Milliseconds: router call, utterance call, and the whole gap from answer to next question. */
+  timing: z.object({ routerMs: z.number().min(0), utteranceMs: z.number().min(0), gapMs: z.number().min(0) }).nullish(),
+});
+export type QaTurn = z.infer<typeof qaTurnSchema>;
+
+export const qaStateSchema = z.object({
+  mode: qaModeSchema.nullish(),
+  struggles: z.number().int().min(0),
+  turns: z.array(qaTurnSchema).max(60),
+  /** Points handed to a human, e.g. when the board paused. */
+  escalations: z.array(z.object({ reason: shortText, whoToAsk: z.string().max(300) })).max(10),
+});
+export type QaState = z.infer<typeof qaStateSchema>;
+
 export const pitchQuestionSchema = z.object({
   id,
   assessorId: id,
@@ -268,8 +316,13 @@ export const pitchSessionSchema = z.object({
     boardId: id.nullish(),
     /** How the transcript was captured: live from the microphone, or typed/pasted. */
     capture: z.enum(["live", "typed"]).nullish(),
+    /** Coaching (default) or exam conditions. */
+    conditions: conditionsSchema.default("coaching"),
   }),
+  /** The planned questions, agreed when the board stepped out. */
   questions: z.array(pitchQuestionSchema).max(10),
+  /** The live Q&A: every turn, its assessment and mode, and the struggle count. */
+  qa: qaStateSchema.default({ mode: null, struggles: 0, turns: [], escalations: [] }),
   report: feedbackReportSchema.nullish(),
   replySource: replySourceSchema.default("claude"),
 });

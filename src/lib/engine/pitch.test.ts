@@ -1,8 +1,8 @@
 // Pitch engine tests on hand-written replies; no Claude call is made.
 import { beforeEach, describe, expect, it } from "vitest";
 import { finishPitch, startPitchSession } from "@/features/pitch/actions";
-import { checkFollowUp, checkPitchReport, checkQuestions, pitchReportPrompt, questionsPrompt, type PitchContext } from "./pitch";
-import { answerQuestion, finishQandA, generateQuestions } from "./pitchService";
+import { checkPitchReport, checkQuestions, pitchReportPrompt, questionsPrompt, type PitchContext } from "./pitch";
+import { finishQandA, generateQuestions, takeAnswer } from "./pitchService";
 
 const ctx: PitchContext = {
   project: { title: "Hackathon Pitch", brief: { what: "Pitch", topic: "Panel", graded: ["Originality", "Design"], goal: "" }, markSchemeText: "", weakSpots: [] },
@@ -40,13 +40,6 @@ describe("pitch prompts and checks", () => {
       2,
     );
     expect(qs.map((q) => [q.id, q.assessorId, q.text])).toEqual([["q1", "investor", "Who pays?"], ["q2", "design-judge", "Can we see it?"]]);
-  });
-
-  it("asks a follow-up only when the decision says so", () => {
-    expect(checkFollowUp({ decision: "follow_up", followUp: "Which market?", reason: "" })).toBe("Which market?");
-    expect(checkFollowUp({ decision: "Follow-up", followUp: "Which?", reason: "" })).toBe("Which?");
-    expect(checkFollowUp({ decision: "move_on", followUp: "ignored", reason: "" })).toBeNull();
-    expect(checkFollowUp({ decision: "follow_up", followUp: " ", reason: "" })).toBeNull();
   });
 
   it("keeps only actions that quote what was really said, and uses measured delivery", () => {
@@ -92,10 +85,9 @@ describe("pitch session with no key (sample replies)", () => {
     expect(asked.questions).toHaveLength(2);
     expect(asked.replySource).toBe("sample");
 
-    const first = await answerQuestion(s.id, "q1", "Students rehearse with it.");
-    expect(first.followUp).toMatch(/^Sample follow-up/);
-    const second = await answerQuestion(s.id, "q1", "For example a viva.");
-    expect(second.followUp).toBeNull(); // at most one follow-up per question
+    const first = await takeAnswer(s.id, "Students rehearse with it before the real marking.");
+    expect(first.next?.kind).toBe("follow-up");
+    const second = await takeAnswer(s.id, "For example a viva.");
     expect(second.session.questions[0].followUpAnswer).toBe("For example a viva.");
 
     const done = await finishQandA(s.id);

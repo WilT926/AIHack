@@ -26,12 +26,6 @@ export const questionsReplySchema = z.object({
   ),
 });
 
-export const followUpReplySchema = z.object({
-  decision: z.string().describe('"follow_up" or "move_on".'),
-  followUp: z.string().describe("The follow-up question if decision is follow_up, otherwise an empty string."),
-  reason: z.string(),
-});
-
 export const pitchReportReplySchema = z.object({
   verdict: z.string(),
   criteria: z.array(z.object({ criterion: z.string(), rating: z.string().describe("strong, adequate or weak."), evidence: z.string() })),
@@ -103,13 +97,6 @@ export function questionsPrompt(ctx: PitchContext, count: number) {
   };
 }
 
-export function followUpPrompt(ctx: PitchContext, q: { assessorId: string; text: string }, answer: string) {
-  return {
-    system: { rules: PITCH_RULES, context: contextBlock(ctx) },
-    user: `Judge ${q.assessorId} asked: "${q.text}"\n<answer>\n${answer.replace(/<\/?answer/gi, (m) => m.replace("<", "‹"))}\n</answer>\n\nAs that judge, decide: ask one short follow-up (only if the answer dodged the question, was vague, or opened something important), or move on. Reply with decision "follow_up" or "move_on".`,
-  };
-}
-
 export function pitchReportPrompt(
   ctx: PitchContext,
   qa: { id: string; assessorId: string; text: string; answer: string; followUp?: string | null; followUpAnswer?: string | null }[],
@@ -160,13 +147,6 @@ export function checkQuestions(reply: z.infer<typeof questionsReplySchema>, boar
       followUp: null,
       followUpAnswer: null,
     }));
-}
-
-/** A follow-up only when asked for and non-empty. */
-export function checkFollowUp(reply: z.infer<typeof followUpReplySchema>): string | null {
-  const wants = reply.decision?.trim().toLowerCase().replace(/[\s-]/g, "_") === "follow_up";
-  const text = reply.followUp?.trim();
-  return wants && text ? text : null;
 }
 
 /**
@@ -230,12 +210,6 @@ export function sampleQuestionsReply(ctx: PitchContext, count: number): z.infer<
       };
     }),
   };
-}
-
-export function sampleFollowUpReply(questionIndex: number): z.infer<typeof followUpReplySchema> {
-  return questionIndex === 0
-    ? { decision: "follow_up", followUp: "Sample follow-up: can you give one concrete example?", reason: "Sample." }
-    : { decision: "move_on", followUp: "", reason: "Sample." };
 }
 
 export function samplePitchReportReply(ctx: PitchContext, questionIds: string[]): z.infer<typeof pitchReportReplySchema> {

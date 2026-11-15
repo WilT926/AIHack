@@ -8,6 +8,7 @@ export type SetupValue = {
   questionCount: number;
   mode: "spoken" | "text";
   capture: "live" | "typed";
+  conditions: "coaching" | "exam";
 };
 
 const COUNTS = ["1", "2", "3", "4", "5"] as const;
@@ -96,6 +97,18 @@ export function Setup({
               />
             </div>
             <div className="ps-field">
+              <Label>Conditions</Label>
+              <Tabs
+                label="Conditions"
+                items={[
+                  { id: "coaching", label: "Coaching" },
+                  { id: "exam", label: "Exam conditions" },
+                ]}
+                value={value.conditions}
+                onChange={(c) => onChange({ ...value, conditions: c })}
+              />
+            </div>
+            <div className="ps-field">
               <Label>You present</Label>
               <Tabs
                 label="How you present"
@@ -110,6 +123,9 @@ export function Setup({
           </div>
 
           <p className="ps-note">
+            {value.conditions === "exam"
+              ? "Exam conditions: the board gives no hints. It still steers you back, holds its role and can pause. "
+              : "Coaching: when you struggle, the board softens and breaks the question down. "}
             {canListen
               ? "Chrome turns your speech into text with its own speech service. Panel keeps only the text, never the audio."
               : "This browser cannot listen, so paste or type what you said. Chrome can listen live."}

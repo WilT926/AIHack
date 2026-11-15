@@ -1,11 +1,13 @@
 "use client";
 
-// The board's questions as a video call (lane-1.md step 1.4): each question
-// is said aloud (or shown in writing), the answer is heard live, then the
-// asking judge decides on one follow-up at most. "End Q&A" works at any point.
+// The board's questions as a video call (lane-1.md step 1.4), routed turn by
+// turn: each utterance is said aloud (or shown in writing), the answer is
+// heard live, then the server's router reads the answer, code picks a mode,
+// and the board's next utterance comes back in that mode. A pause stops the
+// questions and points to a person. "End Q&A" works at any point.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Label, TextArea } from "@/components/ui";
-import type { PitchQuestion, PitchSession } from "@/lib/schemas";
+import type { PitchSession, QaMode, QaTurn } from "@/lib/schemas";
 import { joinTranscript } from "@/lib/voice/transcript";
 import { recognitionErrorText, useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { useSpeaker } from "@/lib/voice/useSpeaker";
@@ -13,7 +15,16 @@ import { submitAnswer } from "../actions";
 import type { PitchSeat } from "../types";
 import { CallStage, type TileState } from "./CallStage";
 
-type Step = "waiting" | "asking" | "answering" | "thinking" | "followup-asking" | "followup-answering";
+type Step = "waiting" | "asking" | "answering" | "thinking" | "paused";
+
+export const MODE_LABEL: Record<QaMode, string> = {
+  pressing: "Pressing",
+  probing: "Probing",
+  coaching: "Coaching",
+  steering: "Steering",
+  "holding-the-line": "Holding the line",
+  paused: "Paused",
+};
 
 export function QandA({
   session,
@@ -34,78 +45,64 @@ export function QandA({
 }) {
   const speaker = useSpeaker({ useElevenLabs: elevenLabs });
   const rec = useSpeechRecognition();
-  const questions = session.questions;
   const spoken = session.settings.mode === "spoken";
 
-  const [index, setIndex] = useState(0);
+  const turns = session.qa.turns;
+  const [turn, setTurn] = useState<QaTurn | undefined>(() => turns.findLast((t) => t.answer == null));
   const [step, setStep] = useState<Step>("waiting");
-  const [followUp, setFollowUp] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
   const [error, setError] = useState<string | null>(null);
   const endedRef = useRef(false);
 
-  const q: PitchQuestion | undefined = questions[index];
-  const asker = seats.find((s) => s.id === q?.assessorId);
-  const caption = step.startsWith("followup") || (step === "thinking" && followUp) ? followUp : (q?.text ?? null);
+  const asker = seats.find((s) => s.id === turn?.assessorId);
+  const plannedIndex = Math.max(0, session.questions.findIndex((q) => q.id === turn?.questionId));
 
-  /** Say a line in the asker's voice (or show it), then listen for the answer. */
-  const askThenListen = useCallback(
-    async (text: string, seat: PitchSeat | undefined, asking: Step, answering: Step) => {
-      setStep(asking);
+  /** Say this turn in the asker's voice (or show it), then listen for the answer. */
+  const deliver = useCallback(
+    async (t: QaTurn) => {
+      setTurn(t);
+      setStep("asking");
       rec.reset();
       setTyped("");
-      if (spoken && seat) await speaker.say(seat.id, text, seat.voiceIndex);
+      const seat = seats.find((s) => s.id === t.assessorId);
+      if (spoken && seat) await speaker.say(seat.id, t.text, seat.voiceIndex);
       if (endedRef.current) return;
-      setStep(answering);
+      if (t.kind === "pause") {
+        setStep("paused");
+        return;
+      }
+      setStep("answering");
       if (canListen) rec.start();
     },
-    [rec, speaker, spoken, canListen],
+    [rec, seats, speaker, spoken, canListen],
   );
 
-  const startQuestion = useCallback(
-    (i: number) => {
-      const next = questions[i];
-      if (!next) return;
-      setIndex(i);
-      setFollowUp(null);
-      setError(null);
-      void askThenListen(next.text, seats.find((s) => s.id === next.assessorId), "asking", "answering");
-    },
-    [questions, seats, askThenListen],
-  );
-
-  // The board comes back: a short pause, then the first question.
+  // The board comes back: a short pause, then the opening question.
   useEffect(() => {
-    const t = setTimeout(() => startQuestion(0), 700);
+    const first = turns.findLast((t) => t.answer == null);
+    const t = setTimeout(() => first && void deliver(first), 700);
     return () => clearTimeout(t);
     // Only once, when the call starts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const takeAnswer = useCallback(() => (canListen ? rec.stop() : typed.trim()), [canListen, rec, typed]);
-
-  const advance = useCallback(() => {
-    if (index + 1 < questions.length) startQuestion(index + 1);
-    else onEnd();
-  }, [index, questions.length, startQuestion, onEnd]);
+  const takeAnswerText = useCallback(() => (canListen ? rec.stop() : typed.trim()), [canListen, rec, typed]);
 
   const next = useCallback(async () => {
-    if (!q) return;
-    if (step === "asking" || step === "followup-asking") {
-      // Skip the rest of the question and answer now.
-      speaker.stop();
+    if (!turn) return;
+    if (step === "asking") {
+      speaker.stop(); // skip the rest and answer now
       return;
     }
-    if (step !== "answering" && step !== "followup-answering") return;
-    const answer = takeAnswer();
-    const wasFollowUp = step === "followup-answering";
+    if (step !== "answering") return;
+    const answer = takeAnswerText();
     setStep("thinking");
     setError(null);
-    const res = await submitAnswer(session.id, q.id, answer);
+    const res = await submitAnswer(session.id, answer);
     if (endedRef.current) return;
     if (!res.ok) {
       setError(res.error);
-      setStep(wasFollowUp ? "followup-answering" : "answering");
+      setStep("answering");
       if (canListen) {
         rec.reset(answer);
         rec.start();
@@ -113,40 +110,34 @@ export function QandA({
       return;
     }
     onSession(res.value.session);
-    if (!wasFollowUp && res.value.followUp) {
-      setFollowUp(res.value.followUp);
-      void askThenListen(res.value.followUp, asker, "followup-asking", "followup-answering");
-    } else advance();
-  }, [q, step, speaker, takeAnswer, session.id, canListen, rec, onSession, askThenListen, asker, advance]);
+    if (res.value.next) void deliver(res.value.next);
+    else onEnd();
+  }, [turn, step, speaker, takeAnswerText, session.id, canListen, rec, onSession, deliver, onEnd]);
 
   const end = useCallback(async () => {
     endedRef.current = true;
     speaker.stop();
-    const answering = step === "answering" || step === "followup-answering";
-    const answer = answering ? takeAnswer() : "";
-    if (answering && answer && q) {
-      const res = await submitAnswer(session.id, q.id, answer);
+    const answer = step === "answering" ? takeAnswerText() : "";
+    if (answer) {
+      const res = await submitAnswer(session.id, answer);
       if (res.ok) onSession(res.value.session);
     } else if (rec.listening) rec.stop();
     onEnd();
-  }, [speaker, step, takeAnswer, q, session.id, onSession, rec, onEnd]);
+  }, [speaker, step, takeAnswerText, session.id, onSession, rec, onEnd]);
 
   const states: Record<string, TileState> = {};
-  if (asker) {
-    states[asker.id] =
-      step === "asking" || step === "followup-asking" ? "speaking" : step === "thinking" ? "thinking" : step === "waiting" ? "idle" : "listening";
-  }
-  const answering = step === "answering" || step === "followup-answering";
-  const last = index + 1 >= questions.length;
-  const nextLabel =
-    step === "asking" || step === "followup-asking" ? "Answer now" : step === "thinking" ? "Thinking" : last && (step === "followup-answering" || followUp === null) ? "Finish" : "Next question";
+  if (asker) states[asker.id] = step === "asking" ? "speaking" : step === "thinking" ? "thinking" : step === "waiting" || step === "paused" ? "idle" : "listening";
+  const answering = step === "answering";
+  const modeLabel = turn ? (turn.mode ? MODE_LABEL[turn.mode] : "Opening question") : null;
+  const nextLabel = step === "asking" ? "Answer now" : step === "thinking" ? "Thinking" : step === "paused" ? "Paused" : "Next";
 
   return (
     <div className="ps-qa">
       <div className="ps-qa__count">
         <Label>
-          Question {Math.min(index + 1, questions.length)} of {questions.length}
-          {followUp && step.startsWith("followup") ? " · follow-up" : ""}
+          Question {plannedIndex + 1} of {session.questions.length}
+          {turn && turn.kind !== "question" ? ` · ${turn.kind.replace("-", " ")}` : ""}
+          {session.settings.conditions === "exam" ? " · exam conditions" : ""}
         </Label>
         {speaker.source && spoken && <Label size="sm">{speaker.source === "elevenlabs" ? "Voice: ElevenLabs" : speaker.source === "browser" ? "Voice: browser" : "Caption only"}</Label>}
       </div>
@@ -155,15 +146,16 @@ export function QandA({
         seats={seats}
         speakerId={asker?.id ?? null}
         states={states}
+        modeLabel={step === "waiting" ? null : modeLabel}
         loudness={speaker.loudness}
-        caption={step === "waiting" ? null : caption}
+        caption={step === "waiting" ? null : (turn?.text ?? null)}
         presenter={{ initials, answering }}
         controls={{
           muted: speaker.muted,
           onMute: speaker.toggleMute,
           onNext: () => void next(),
           nextLabel,
-          nextDisabled: step === "thinking" || step === "waiting",
+          nextDisabled: step === "thinking" || step === "waiting" || step === "paused",
           onEnd: () => void end(),
           endDisabled: false,
         }}
@@ -177,12 +169,18 @@ export function QandA({
                 <span className="ps-status__dot" data-on={rec.listening} aria-hidden />
                 <Label tone="ink">{rec.listening ? "Listening" : "Starting the microphone"}</Label>
               </span>
-              <p className="ps-answer__text">{joinTranscript(rec.finalText, rec.interim) || "Answer aloud, then press Next question."}</p>
+              <p className="ps-answer__text">{joinTranscript(rec.finalText, rec.interim) || "Answer aloud, then press Next."}</p>
             </>
           ) : (
             <TextArea id="ps-answer" label="Your answer" value={typed} rows={4} onChange={(e) => setTyped(e.target.value)} placeholder="Type your answer." />
           )}
         </div>
+      )}
+
+      {step === "paused" && (
+        <p className="ui-empty" role="status">
+          The board has paused the questions. Press End Q&amp;A to see your feedback; the pause is noted for a human to follow up.
+        </p>
       )}
 
       {(error || rec.error) && (

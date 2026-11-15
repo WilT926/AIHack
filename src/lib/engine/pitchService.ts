@@ -4,25 +4,35 @@ import "server-only";
 // set, otherwise labelled sample replies (replySource "sample").
 import { engine, models } from "@/config";
 import { assessorNotes, assessors, boards, callLogs, pitchSessions, projects } from "@/lib/data";
-import type { PitchSession } from "@/lib/schemas";
+import type { Assessment, PitchSession, QaMode, QaTurn } from "@/lib/schemas";
 import { durationSeconds, wordCount, wordsPerMinute } from "@/lib/voice/transcript";
 import { callClaude, callWithRetry, EngineError, type CallLogger } from "./claude";
 import {
-  checkFollowUp,
   checkPitchReport,
   checkQuestions,
-  followUpPrompt,
-  followUpReplySchema,
   pitchReportPrompt,
   pitchReportReplySchema,
   questionsPrompt,
   questionsReplySchema,
-  sampleFollowUpReply,
   samplePitchReportReply,
   sampleQuestionsReply,
   type PitchContext,
 } from "./pitch";
 import { replySource } from "./service";
+import {
+  assessmentReplySchema,
+  checkAssessment,
+  decideNext,
+  modeFor,
+  pauseUtterance,
+  routerPrompt,
+  ruleIntent,
+  sampleAssessment,
+  sampleUtterance,
+  turnKind,
+  utterancePrompt,
+  utteranceReplySchema,
+} from "./router";
 
 const logCall: CallLogger = async (entry) => {
   await callLogs.save({ id: crypto.randomUUID(), ...entry });
@@ -80,44 +90,136 @@ export async function generateQuestions(sessionId: string): Promise<PitchSession
   }
   const questions = checkQuestions(reply, boardIds, count);
   if (questions.length === 0) throw new EngineError("The board came back without usable questions. Try again.", "invalid_reply", true);
-  return pitchSessions.save({ ...s, status: "questions", questions, replySource: source === "sample" ? "sample" : s.replySource });
+  const first = questions[0];
+  const qa = {
+    mode: null,
+    struggles: 0,
+    turns: [{ id: "t1", questionId: first.id, assessorId: first.assessorId, kind: "question" as const, mode: null, text: first.text, answer: null, assessment: null, timing: null }],
+    escalations: [],
+  };
+  return pitchSessions.save({ ...s, status: "questions", questions, qa, replySource: source === "sample" ? "sample" : s.replySource });
 }
 
-/** Save the answer, then decide on at most one follow-up for this question. */
-export async function answerQuestion(sessionId: string, questionId: string, answer: string): Promise<{ session: PitchSession; followUp: string | null }> {
+export type TurnResult = {
+  session: PitchSession;
+  /** What the board says next, or null when the Q&A is over. */
+  next: QaTurn | null;
+  assessment: Assessment;
+  mode: QaMode;
+};
+
+/**
+ * One turn of the routed Q&A: input check, router call, code picks the mode
+ * and what happens next, then the next utterance in that mode's prompt
+ * block only. Timings are saved on the new turn.
+ */
+export async function takeAnswer(sessionId: string, answer: string): Promise<TurnResult> {
   const source = requireSource();
+  const started = Date.now();
   const s = await loadSession(sessionId);
-  const index = s.questions.findIndex((q) => q.id === questionId);
-  if (index < 0) throw new EngineError("That question was not asked in this session.", "invalid_reply", false);
-  const q = s.questions[index];
+  const turns = [...s.qa.turns];
+  const currentIndex = turns.findLastIndex((t) => t.answer == null);
+  if (currentIndex < 0) throw new EngineError("There is no question waiting for an answer.", "invalid_reply", false);
+  const current = turns[currentIndex];
+  const planned = s.questions.find((q) => q.id === current.questionId);
+  const conditions = s.settings.conditions;
 
-  // A follow-up has already been asked: this is its answer. No second follow-up.
-  if (q.followUp) {
-    const questions = s.questions.map((x, i) => (i === index ? { ...x, followUpAnswer: answer } : x));
-    return { session: await pitchSessions.save({ ...s, questions }), followUp: null };
+  // 1. Input check, then the router (a clear rule match on intent wins).
+  const ruled = ruleIntent(answer);
+  let assessment: Assessment;
+  if (source === "sample" || !answer.trim()) {
+    assessment = answer.trim() ? sampleAssessment(current.text, answer) : { answerQuality: "struggling", studentIntent: ruled ?? "answering" };
+  } else {
+    const p = routerPrompt(current.text, answer);
+    try {
+      const r = await callWithRetry(
+        { kind: "router", model: models.router, system: p.system, user: p.user, schema: assessmentReplySchema, effort: engine.effort.router, maxTokens: engine.maxTokens.router },
+        callClaude,
+        logCall,
+      );
+      assessment = checkAssessment(r.output);
+    } catch {
+      assessment = sampleAssessment(current.text, answer); // the router failed: fall back to the rule-based reading
+    }
   }
+  if (ruled) assessment = { ...assessment, studentIntent: ruled };
+  const routerMs = Date.now() - started;
 
-  let followUp: string | null = null;
-  if (answer.trim()) {
-    if (source === "sample") followUp = checkFollowUp(sampleFollowUpReply(index));
-    else {
+  // 2. Code picks the mode and the next action.
+  const mode = modeFor(assessment, conditions);
+  turns[currentIndex] = { ...current, answer, assessment };
+  const action = decideNext(mode, { turns }, s.questions, current.questionId);
+
+  // 3. The next utterance, generated with this mode's block only.
+  const utteranceStarted = Date.now();
+  let next: QaTurn | null = null;
+  const escalations = [...s.qa.escalations];
+  if (action.kind === "pause") {
+    next = { id: `t${turns.length + 1}`, questionId: current.questionId, assessorId: current.assessorId, kind: "pause", mode, text: pauseUtterance(assessment.studentIntent), answer: null, assessment: null, timing: null };
+    escalations.push({
+      reason: assessment.studentIntent === "distressed" ? "The student said they were struggling, so the board paused the questions." : "The student asked to stop, so the board paused the questions.",
+      whoToAsk: "Your personal tutor or supervisor",
+    });
+  } else if (action.kind !== "end") {
+    const target = s.questions.find((q) => q.id === action.questionId) ?? planned;
+    const assessorId = action.kind === "follow-up" ? current.assessorId : (target?.assessorId ?? current.assessorId);
+    const blockMode = mode as Exclude<QaMode, "paused">;
+    const plannedText = target?.text ?? current.text;
+    let text: string;
+    if (source === "sample") {
+      text = sampleUtterance(blockMode, action.kind, plannedText, turns.length + 1);
+    } else {
       const ctx = await loadContext(s);
-      const p = followUpPrompt(ctx, q, answer);
+      const judge = ctx.board.find((b) => b.id === assessorId);
+      const p = utterancePrompt({
+        mode: blockMode,
+        conditions,
+        action: action.kind,
+        judge: { name: judge?.name ?? "A judge", role: judge?.role ?? "", field: judge?.field ?? "" },
+        plannedQuestion: plannedText,
+        transcriptExcerpt: s.transcript.slice(0, 6000),
+        history: turns.map((t) => ({ text: t.text, answer: t.answer })),
+      });
       try {
         const r = await callWithRetry(
-          { kind: "followUp", model: models.pitch, system: p.system, user: p.user, schema: followUpReplySchema, effort: engine.effort.followUp, maxTokens: engine.maxTokens.followUp },
+          { kind: "utterance", model: models.router, system: p.system, user: p.user, schema: utteranceReplySchema, effort: engine.effort.utterance, maxTokens: engine.maxTokens.utterance },
           callClaude,
           logCall,
         );
-        followUp = checkFollowUp(r.output);
+        text = r.output.text.trim();
       } catch {
-        followUp = null; // a failed follow-up decision just moves on
+        text = "";
       }
     }
+    // Never repeat a question, and never leave the student with nothing.
+    const said = new Set(turns.map((t) => t.text.trim().toLowerCase()));
+    if (!text || said.has(text.toLowerCase())) {
+      text = action.kind === "next-question" && !said.has(plannedText.trim().toLowerCase()) ? plannedText : "";
+      if (!text) text = `Let's come back to it from another angle, ${turns.length + 1 > 3 ? "briefly" : "one part at a time"}: ${plannedText}`;
+      if (said.has(text.toLowerCase())) text = `${text} (question ${turns.length + 1})`;
+    }
+    next = { id: `t${turns.length + 1}`, questionId: action.kind === "follow-up" ? current.questionId : action.questionId, assessorId, kind: turnKind(mode, action), mode, text, answer: null, assessment: null, timing: null };
   }
-  const questions = s.questions.map((x, i) => (i === index ? { ...x, answerTranscript: answer, followUp } : x));
+  const utteranceMs = Date.now() - utteranceStarted;
+  if (next) next = { ...next, timing: { routerMs, utteranceMs, gapMs: Date.now() - started } };
+
+  // Keep the planned questions' answer fields in step, for the report.
+  const questions = s.questions.map((q) => {
+    if (q.id !== current.questionId) return q;
+    if (current.kind === "question") return { ...q, answerTranscript: answer };
+    if (!q.followUp) return { ...q, followUp: current.text, followUpAnswer: answer };
+    return q;
+  });
+
+  const qa = {
+    mode,
+    struggles: s.qa.struggles + (assessment.answerQuality === "struggling" ? 1 : 0),
+    turns: next ? [...turns, next] : turns,
+    escalations,
+  };
   const replySource = source === "sample" ? "sample" : s.replySource;
-  return { session: await pitchSessions.save({ ...s, questions, replySource }), followUp };
+  const session = await pitchSessions.save({ ...s, questions, qa, replySource });
+  return { session, next, assessment, mode };
 }
 
 /** End the Q&A and write the feedback report. Length and pace are measured here, in code. */
@@ -150,5 +252,7 @@ export async function finishQandA(sessionId: string): Promise<PitchSession> {
     lengthSeconds,
     wordsPerMinute: wpm,
   });
-  return pitchSessions.save({ ...s, status: "done", report, replySource: source === "sample" ? "sample" : s.replySource });
+  // A pause is always handed to a human, whatever the report call wrote.
+  const withEscalations = { ...report, escalations: [...s.qa.escalations, ...report.escalations] };
+  return pitchSessions.save({ ...s, status: "done", report: withEscalations, replySource: source === "sample" ? "sample" : s.replySource });
 }

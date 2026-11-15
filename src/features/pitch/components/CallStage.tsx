@@ -23,6 +23,7 @@ export function CallStage({
   seats,
   speakerId,
   states,
+  modeLabel,
   loudness,
   caption,
   presenter,
@@ -31,6 +32,8 @@ export function CallStage({
   seats: PitchSeat[];
   speakerId: string | null;
   states: Record<string, TileState>;
+  /** The mode the speaking judge is in (router, Part A), shown under their tile. */
+  modeLabel?: string | null;
   loudness: number;
   caption: string | null;
   presenter: { initials: string; answering: boolean };
@@ -88,6 +91,11 @@ export function CallStage({
               <div className="ps-tile__meta">
                 <span className="ps-tile__name">{s.name}</span>
                 <Label size="xs">{s.field}</Label>
+                {isSpeaker && modeLabel && (
+                  <Label size="xs" tone="ink" className="ps-tile__mode">
+                    Mode · {modeLabel}
+                  </Label>
+                )}
               </div>
               {STATE_LABEL[state] && <Label size="xs" tone={state === "speaking" ? "orange" : "ink"} className="ps-tile__state">{STATE_LABEL[state]}</Label>}
               {state === "speaking" && (

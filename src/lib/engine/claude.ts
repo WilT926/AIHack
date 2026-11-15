@@ -12,7 +12,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { z } from "zod";
 import type { CallLog } from "@/lib/schemas";
 
-export type CallKind = "review" | "deliberation" | "questions" | "followUp" | "pitchReport";
+export type CallKind = "review" | "deliberation" | "questions" | "followUp" | "pitchReport" | "router" | "utterance";
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 
 export type StructuredRequest<S extends z.ZodType> = {

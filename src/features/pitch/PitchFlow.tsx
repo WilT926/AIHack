@@ -33,6 +33,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     questionCount: data.defaultQuestionCount,
     mode: data.defaultMode,
     capture: "live",
+    conditions: "coaching",
   });
   const [phase, setPhase] = useState<Phase>("setup");
   const [session, setSession] = useState<PitchSession | null>(null);
@@ -100,6 +101,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
         boardId: setup.boardId,
         questionCount: setup.questionCount,
         mode: setup.mode,
+        conditions: setup.conditions,
         capture: "live",
       });
       sessionRef.current = s;
@@ -202,6 +204,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
           boardId: setup.boardId,
           questionCount: setup.questionCount,
           mode: setup.mode,
+          conditions: setup.conditions,
           capture: "typed",
         });
       }
