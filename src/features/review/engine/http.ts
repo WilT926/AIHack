@@ -5,9 +5,13 @@ import { EngineError } from "./claude";
 
 const MAX_BODY_BYTES = 2_000_000;
 
-export async function readBody<S extends z.ZodType>(request: Request, schema: S): Promise<z.infer<S> | Response> {
+export async function readBody<S extends z.ZodType>(
+  request: Request,
+  schema: S,
+  maxBytes = MAX_BODY_BYTES,
+): Promise<z.infer<S> | Response> {
   const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_BODY_BYTES) return Response.json({ error: "That document is too large to review in one go." }, { status: 413 });
+  if (length > maxBytes) return Response.json({ error: "That document is too large to review in one go." }, { status: 413 });
   let json: unknown;
   try {
     json = await request.json();

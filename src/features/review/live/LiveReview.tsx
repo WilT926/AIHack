@@ -1,7 +1,7 @@
 "use client";
 
-import type { Assessor, Document, ReviewView } from "../types";
-import type { ReviewContext } from "../engine/schemas";
+import type { Assessor, Document, ReviewView, Run } from "../types";
+import type { PreviousRun, ReviewContext } from "../engine/schemas";
 import { ReviewScreen } from "../ReviewScreen";
 import { useLiveReview } from "./useLiveReview";
 
@@ -12,6 +12,8 @@ export function LiveReview({
   assessors,
   context,
   document,
+  runNumber = 1,
+  previous,
   onUpload,
 }: {
   project: ReviewView["project"];
@@ -19,7 +21,11 @@ export function LiveReview({
   assessors: Assessor[];
   context: ReviewContext;
   document: Document;
-  onUpload?: () => void;
+  runNumber?: number;
+  /** The previous run, for a second look at a new version (step 2.5). */
+  previous?: PreviousRun;
+  /** "Upload next version", with the run as it stands, so the next run can compare against it. */
+  onUpload?: (current: Run) => void;
 }) {
   const boardMembers = board.assessorIds
     .map((id) => assessors.find((a) => a.id === id))
@@ -29,14 +35,15 @@ export function LiveReview({
     context,
     document,
     assessors: boardMembers,
-    runId: `run-${document.id}`,
-    runNumber: 1,
+    previous,
+    runId: `run-${document.id}-${runNumber}`,
+    runNumber,
   });
 
   return (
     <ReviewScreen
-      view={{ project, board, assessors, run, live }}
-      onUpload={onUpload}
+      view={{ project, board, assessors, run, live, criteria: context.criteria, qaMode: context.qaMode }}
+      onUpload={onUpload ? () => onUpload(run) : undefined}
       onRetryAssessor={retryAssessor}
       onRetryDeliberation={retryDeliberation}
     />

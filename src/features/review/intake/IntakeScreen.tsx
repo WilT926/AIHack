@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { Document, ReviewView } from "../types";
+import type { Document, ReviewView, Run } from "../types";
 import { buildDocument, titleFromFilename } from "@/lib/documents/split";
-import type { ReviewContext } from "../engine/schemas";
+import type { PreviousRun, ReviewContext } from "../engine/schemas";
+import { toPreviousRun } from "../engine/previous";
 import { extractPdfText, PdfReadError } from "@/lib/documents/pdf";
 import { formatNumber, plural } from "../lib";
 import { cn } from "../ui/cn";
@@ -38,6 +39,11 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
   const [pasteTitle, setPasteTitle] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [error, setError] = useState<string>();
+  // Step 2.5: each finished run is kept; the next version is compared with the last one.
+  const [history, setHistory] = useState<Run[]>([]);
+  const last = history.at(-1);
+  const nextVersion = (last?.document.version ?? 0) + 1;
+  const [previous, setPrevious] = useState<PreviousRun>();
 
   const readPdf = async (file: File) => {
     setError(undefined);
@@ -46,7 +52,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
       const { text } = await extractPdfText(file, (page, pages) =>
         setStage({ kind: "reading", fileName: file.name, page, pages }),
       );
-      const doc = buildDocument(text, { title: titleFromFilename(file.name) });
+      const doc = buildDocument(text, { title: last?.document.title ?? titleFromFilename(file.name), version: nextVersion });
       if (doc.paragraphs.length === 0) throw new PdfReadError("We found no paragraphs in that PDF.", "no-text");
       setStage({ kind: "preview", doc, source: file.name });
     } catch (err) {
@@ -57,7 +63,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
 
   const readPaste = () => {
     setError(undefined);
-    const doc = buildDocument(pasteText, { title: pasteTitle });
+    const doc = buildDocument(pasteText, { title: pasteTitle || last?.document.title, version: nextVersion });
     if (doc.paragraphs.length === 0) {
       setError("Paste some text first.");
       return;
@@ -73,7 +79,15 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
         assessors={context.assessors}
         context={context.reviewContext ?? { projectName: context.project.name }}
         document={stage.doc}
-        onUpload={() => setStage({ kind: "input" })}
+        runNumber={history.length + 1}
+        previous={previous}
+        onUpload={(current) => {
+          setHistory((h) => [...h, current]);
+          setPrevious(toPreviousRun(current));
+          setPasteText("");
+          setError(undefined);
+          setStage({ kind: "input" });
+        }}
       />
     );
   }
@@ -83,19 +97,23 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
       <header className="flex h-topbar shrink-0 items-center gap-6 bg-white px-8">
         <Logo />
         <div className="h-7 w-px bg-grey-100" />
-        <Label tone="ink">{context.project.name}  /  Upload document</Label>
+        <Label tone="ink">
+          {context.project.name}  /  {last ? `Upload version ${nextVersion}` : "Upload document"}
+        </Label>
       </header>
 
       <main className="mx-auto flex w-full max-w-sheet flex-col gap-6 px-6 py-12">
         <div>
-          <Label tone="accent">Step 1 · Your document</Label>
+          <Label tone="accent">{last ? `Run ${history.length + 1} · Version ${nextVersion}` : "Step 1 · Your document"}</Label>
           <h1 className="mt-2 font-display text-display font-semibold tracking-display text-ink">
-            {stage.kind === "preview" ? "Check the paragraphs" : "What should the board read?"}
+            {stage.kind === "preview" ? "Check the paragraphs" : last ? "Upload the new version" : "What should the board read?"}
           </h1>
           <p className="mt-2 text-body text-grey-700">
             {stage.kind === "preview"
               ? "Every paragraph gets a number so the board can point at it. Go back if the split looks wrong."
-              : "Upload a PDF or paste your text. It stays in your browser; we only number the paragraphs."}
+              : last
+                ? `The board gets its comments and fix list from version ${last.document.version}, and says what improved, what is still weak and what was ignored.`
+                : "Upload a PDF or paste your text. It stays in your browser; we only number the paragraphs."}
           </p>
         </div>
 
@@ -164,6 +182,7 @@ export function IntakeScreen({ context }: { context: IntakeContext }) {
             onTitle={(title) => setStage({ ...stage, doc: { ...stage.doc, title } })}
             onBack={() => setStage({ kind: "input" })}
             onStart={() => setStage({ kind: "review", doc: stage.doc })}
+            startLabel={last ? `Start run ${history.length + 1}` : "Start review"}
           />
         )}
       </main>
@@ -178,7 +197,9 @@ function Preview({
   onTitle,
   onBack,
   onStart,
+  startLabel,
 }: {
+  startLabel: string;
   doc: Document;
   source: string;
   onTitle: (title: string) => void;
@@ -216,7 +237,7 @@ function Preview({
           Back
         </Button>
         <Button variant="create" onClick={onStart}>
-          Start review
+          {startLabel}
         </Button>
       </div>
     </Card>

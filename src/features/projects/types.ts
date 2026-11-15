@@ -33,4 +33,6 @@ export type ProjectDraft = {
   ownWeakSpots: string; // free text, one per line
   markScheme?: { source: string; criteria: Criterion[] };
   boardIds: string[];
+  /** "written": no live Q&A afterwards, so the board writes its questions plus what to add or cut. */
+  qaMode?: "live" | "written";
 };

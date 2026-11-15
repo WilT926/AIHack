@@ -72,6 +72,10 @@ export type Run = {
   fixList: FixItem[];
   questions: Question[];
   sinceLastTime?: { improved: string[]; stillWeak: string[]; ignored: string[] };
+  /** Written-questions mode: what to add or cut (step 2.5, "if time"). */
+  addOrCut?: { add: string[]; cut: string[] };
+  /** The run this one was compared against. */
+  previousNumber?: number;
 };
 
 /** Live progress of a run, driven by useLiveReview (step 2.3). */
@@ -92,4 +96,7 @@ export type ReviewView = {
   assessors: Assessor[];
   run: Run;
   live?: LiveState;
+  /** Marking criteria comments may be tagged with (step 2.5). */
+  criteria?: { id: string; name: string; weight: number }[];
+  qaMode?: "live" | "written";
 };

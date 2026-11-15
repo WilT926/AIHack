@@ -7,7 +7,7 @@ const doc = buildDocument("First paragraph here.\n\nSecond paragraph here.\n\nTh
 describe("sanitizeAssessorOutput", () => {
   it("keeps valid comments and gives them ids", () => {
     const comments = sanitizeAssessorOutput(
-      { comments: [{ paragraphIds: ["p2"], kind: "critique", text: "Too thin." }] },
+      { comments: [{ paragraphIds: ["p2"], kind: "critique", text: "Too thin.", criterionId: null }] },
       doc,
       "sceptic",
     );
@@ -18,9 +18,9 @@ describe("sanitizeAssessorOutput", () => {
     const comments = sanitizeAssessorOutput(
       {
         comments: [
-          { paragraphIds: ["p9"], kind: "critique", text: "Nowhere." },
-          { paragraphIds: ["p1"], kind: "praise", text: "   " },
-          { paragraphIds: ["P3", "p9", "p3"], kind: "question", text: "Why?" },
+          { paragraphIds: ["p9"], kind: "critique", text: "Nowhere.", criterionId: null },
+          { paragraphIds: ["p1"], kind: "praise", text: "   ", criterionId: null },
+          { paragraphIds: ["P3", "p9", "p3"], kind: "question", text: "Why?", criterionId: null },
         ],
       },
       doc,
@@ -31,7 +31,7 @@ describe("sanitizeAssessorOutput", () => {
   });
 
   it("caps the number of comments", () => {
-    const many = Array.from({ length: 20 }, () => ({ paragraphIds: ["p1"], kind: "praise" as const, text: "Good." }));
+    const many = Array.from({ length: 20 }, () => ({ paragraphIds: ["p1"], kind: "praise" as const, text: "Good.", criterionId: null }));
     expect(sanitizeAssessorOutput({ comments: many }, doc, "a")).toHaveLength(LIMITS.commentsPerAssessor);
   });
 });
@@ -56,6 +56,8 @@ describe("sanitizeDeliberation", () => {
           { assessorId: "patel", text: "How many would you need?" },
           { assessorId: "ghost", text: "Boo?" },
         ],
+        sinceLastTime: { improved: ["Power calculation added."], stillWeak: [], ignored: [] },
+        addOrCut: { add: ["A limitations paragraph."], cut: [] },
       },
       doc,
       board,
@@ -70,5 +72,51 @@ describe("sanitizeDeliberation", () => {
       [2, ["osei"], []],
     ]);
     expect(questions).toEqual([{ assessorId: "patel", text: "How many would you need?" }]);
+  });
+
+  const base = { agreements: [], splits: [], fixList: [], questions: [] };
+
+  it("keeps since-last-time only when there was a previous run, and add/cut only in written mode", () => {
+    const output = {
+      ...base,
+      sinceLastTime: { improved: ["Power calculation added."], stillWeak: ["Referral bias."], ignored: [] },
+      addOrCut: { add: ["Limitations."], cut: ["The second results table."] },
+    };
+    const plain = sanitizeDeliberation(output, doc, board, 3);
+    expect(plain.sinceLastTime).toBeUndefined();
+    expect(plain.addOrCut).toBeUndefined();
+    const full = sanitizeDeliberation(output, doc, board, 3, { hasPrevious: true, written: true });
+    expect(full.sinceLastTime).toEqual({ improved: ["Power calculation added."], stillWeak: ["Referral bias."], ignored: [] });
+    expect(full.addOrCut).toEqual({ add: ["Limitations."], cut: ["The second results table."] });
+  });
+
+  it("drops empty since-last-time and add/cut blocks", () => {
+    const out = sanitizeDeliberation(
+      { ...base, sinceLastTime: { improved: [" "], stillWeak: [], ignored: [] }, addOrCut: { add: [], cut: [] } },
+      doc,
+      board,
+      3,
+      { hasPrevious: true, written: true },
+    );
+    expect(out.sinceLastTime).toBeUndefined();
+    expect(out.addOrCut).toBeUndefined();
+  });
+});
+
+describe("criterion tags", () => {
+  it("keeps a tag only when it names a real criterion", () => {
+    const comments = sanitizeAssessorOutput(
+      {
+        comments: [
+          { paragraphIds: ["p1"], kind: "critique", text: "Thin.", criterionId: "originality" },
+          { paragraphIds: ["p2"], kind: "critique", text: "Vague.", criterionId: "made-up" },
+        ],
+      },
+      doc,
+      "a",
+      ["originality", "presentation"],
+    );
+    expect(comments[0].criterionId).toBe("originality");
+    expect(comments[1].criterionId).toBeUndefined();
   });
 });

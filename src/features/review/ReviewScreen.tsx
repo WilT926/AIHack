@@ -13,6 +13,7 @@ import { BoardLiveCard, EmptyState, FailedCard } from "./components/StatusCards"
 import { FeedbackTab } from "./components/RailTabs";
 import { ExitBubble } from "./ui/ExitBubble";
 import { CommentFilters } from "./components/CommentFilters";
+import { SinceLastTimeCard } from "./components/SinceLastTimeCard";
 
 /** §10: two tabs across the top, Comments and Feedback report. */
 type RailTab = "comments" | "report";
@@ -47,6 +48,7 @@ export function ReviewScreen({
   const commentEls = useRef(new Map<string, HTMLElement>());
 
   const assessors = useMemo(() => indexAssessors(view.assessors), [view.assessors]);
+  const criterionNames = useMemo(() => new Map((view.criteria ?? []).map((c) => [c.id, c.name])), [view.criteria]);
   const boardMembers = useMemo(
     () => board.assessorIds.map((id) => assessors.get(id)).filter((a): a is Assessor => Boolean(a)),
     [board.assessorIds, assessors],
@@ -179,6 +181,10 @@ export function ReviewScreen({
                   />
                 )}
 
+                {run.sinceLastTime && run.previousNumber && (
+                  <SinceLastTimeCard since={run.sinceLastTime} previousNumber={run.previousNumber} />
+                )}
+
                 {headlineSplit && (
                   <div className="mb-1">
                     <DeliberationCard
@@ -236,6 +242,7 @@ export function ReviewScreen({
                     comment={c}
                     assessor={assessors.get(c.assessorId)}
                     paragraphLabels={c.paragraphIds.map((id) => ({ id, label: paragraphLabel(doc, id) }))}
+                    criterionName={c.criterionId ? criterionNames.get(c.criterionId) : undefined}
                     selected={selectedCommentIds.has(c.id)}
                     onShowInText={() => c.paragraphIds[0] && showParagraph(c.paragraphIds[0], c.id)}
                     onShowParagraph={(pid) => showParagraph(pid, c.id)}
@@ -267,6 +274,9 @@ export function ReviewScreen({
 
             {tab === "report" && (
               <FeedbackTab
+                run={run}
+                projectName={view.project.name}
+                written={view.qaMode === "written"}
                 deliberation={run.deliberation}
                 fixList={run.fixList}
                 questions={run.questions}

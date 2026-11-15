@@ -1,7 +1,7 @@
 "use client";
 
 import type { Assessor } from "../../review/types";
-import type { Criterion, ProjectDraft, TemplateId } from "../types";
+import type { ProjectDraft, TemplateId } from "../types";
 import { GRADED_OPTIONS, TEMPLATES, getTemplate } from "../templates";
 import { allWeakSpots } from "../context";
 import { cn } from "../../review/ui/cn";
@@ -15,6 +15,7 @@ import { Card } from "../../review/ui/Card";
 import { SelectCard } from "../../review/ui/SelectCard";
 import { TemplateIcon } from "./TemplateIcon";
 import { RoundTable } from "./RoundTable";
+import { MarkSchemeEditor } from "./MarkSchemeEditor";
 
 function pick(ids: string[], assessors: Map<string, Assessor>): Assessor[] {
   return ids.map((id) => assessors.get(id)).filter((a): a is Assessor => Boolean(a));
@@ -133,62 +134,33 @@ export function BriefStep({ draft, onChange }: { draft: ProjectDraft; onChange: 
             rows={3}
           />
         </div>
+        <div>
+          <FieldLabel>After the review</FieldLabel>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["live", "Live Q&A with the board"],
+                ["written", "Written questions only"],
+              ] as const
+            ).map(([mode, label]) => {
+              const on = (draft.qaMode ?? "live") === mode;
+              return (
+                <Chip key={mode} active={on} onClick={() => onChange({ ...draft, qaMode: mode })}>
+                  {label}
+                </Chip>
+              );
+            })}
+          </div>
+          <Label className="mt-2 block">
+            {draft.qaMode === "written"
+              ? "No live questions: the board writes its questions and says what to add or cut."
+              : "The board asks its questions aloud after reading."}
+          </Label>
+        </div>
       </div>
 
-      <MarkSchemePanel draft={draft} />
+      <MarkSchemeEditor value={draft.markScheme} onChange={(markScheme) => onChange({ ...draft, markScheme })} />
     </div>
-  );
-}
-
-function MarkSchemePanel({ draft }: { draft: ProjectDraft }) {
-  const criteria = draft.markScheme?.criteria ?? [];
-  const max = Math.max(1, ...criteria.map((c) => c.weight));
-  const heaviest = criteria.reduce<Criterion | undefined>((b, c) => (!b || c.weight > b.weight ? c : b), undefined);
-  const lightest = criteria.reduce<Criterion | undefined>((b, c) => (!b || c.weight < b.weight ? c : b), undefined);
-  const top = heaviest?.id;
-
-  return (
-    <aside className="self-start rounded-sheet bg-grey-50 p-7" aria-label="Mark scheme">
-      <Label tone="ink" className="block">Mark scheme</Label>
-      <Label className="block">Optional · board marks against it</Label>
-
-      {criteria.length === 0 ? (
-        <p className="mt-6 rounded-card border-2 border-dashed border-grey-250 px-5 py-8 text-center text-body text-grey-700">
-          No mark scheme yet. The board will use the brief and what&apos;s graded.
-        </p>
-      ) : (
-        <>
-          <div className="mt-5 flex items-center gap-3 rounded-card-sm border-line border-ink bg-white px-5 py-4">
-            <TemplateIcon name="document" />
-            <div className="flex flex-col">
-              <span className="font-display text-h3 font-semibold tracking-h3 text-ink">{draft.markScheme?.source}</span>
-              <Label>
-                {criteria.length} criteria · {criteria.reduce((n, c) => n + c.weight, 0)}%
-              </Label>
-            </div>
-          </div>
-          <ul className="mt-5 flex flex-col gap-4">
-            {criteria.map((c) => (
-              <li key={c.id}>
-                <div className="flex items-baseline justify-between text-body text-ink">
-                  <span>{c.name}</span>
-                  <span className="font-mono text-label">{c.weight}%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 rounded-full bg-grey-100">
-                  <div className={cn("h-full rounded-full", c.id === top ? "bg-orange" : "bg-ink")} style={{ width: `${(c.weight / max) * 100}%` }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          {heaviest && lightest && heaviest !== lightest && (
-            <p className="mt-5 text-body text-grey-700">
-              The board will weight its comments by these. {heaviest.name} gets the most attention, {lightest.name.toLowerCase()} the
-              least.
-            </p>
-          )}
-        </>
-      )}
-    </aside>
   );
 }
 
@@ -259,7 +231,8 @@ export function StartStep({ draft, assessors }: { draft: ProjectDraft; assessors
     ["Brief", draft.brief],
     ["What's graded", draft.graded.length ? draft.graded.join(" · ") : "Not set"],
     ["Weak spots", weakSpots.length ? weakSpots.join(" · ") : "None flagged"],
-    ["Mark scheme", draft.markScheme ? `${draft.markScheme.source} · ${draft.markScheme.criteria.length} criteria` : "None"],
+    ["Mark scheme", draft.markScheme?.criteria.length ? `${draft.markScheme.source} · ${draft.markScheme.criteria.length} criteria` : "None"],
+    ["After the review", draft.qaMode === "written" ? "Written questions, plus what to add or cut" : "Live Q&A with the board"],
   ];
 
   return (

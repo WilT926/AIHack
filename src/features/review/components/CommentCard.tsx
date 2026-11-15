@@ -22,12 +22,14 @@ export const CommentCard = forwardRef<
     comment: Comment;
     assessor?: Assessor;
     paragraphLabels: { id: string; label: string }[];
+    /** The marking criterion this comment is tagged with (step 2.5). */
+    criterionName?: string;
     selected: boolean;
     onShowInText: () => void;
     onShowParagraph: (paragraphId: string) => void;
     onDone: () => void;
   }
->(function CommentCard({ comment, assessor, paragraphLabels, selected, onShowInText, onShowParagraph, onDone }, ref) {
+>(function CommentCard({ comment, assessor, paragraphLabels, criterionName, selected, onShowInText, onShowParagraph, onDone }, ref) {
   const name = assessor?.name ?? "Unknown assessor";
 
   return (
@@ -49,6 +51,14 @@ export const CommentCard = forwardRef<
       </div>
 
       <p className="mt-3.5 text-body text-grey-900">{comment.text}</p>
+
+      {criterionName && (
+        <div className="mt-3">
+          <Pill variant="quiet" title="Marking criterion">
+            {criterionName}
+          </Pill>
+        </div>
+      )}
 
       <div className="mt-4 flex items-center gap-3 text-grey-500">
         <TextButton onClick={onDone}>Mark done</TextButton>

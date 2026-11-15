@@ -1,6 +1,6 @@
 # Lane 2: report review, document intake, project setup
 
-Steps 2.1–2.4 from the Lane 2 brief. Everything lives in Lane 2 folders; the
+Steps 2.1–2.5 from the Lane 2 brief, plus the two "if time" items (written-questions mode, copy the fix list). Everything lives in Lane 2 folders; the
 few root files it needed are listed under "Shared changes" so Lane 1 can merge
 them with the foundation.
 
@@ -8,11 +8,12 @@ them with the foundation.
 
 | Route | What it is |
 |---|---|
-| `/projects/new` | 2.4 project setup: template → brief + weak spots → board → start, then upload and a live review |
+| `/projects/new` | 2.4 project setup: template → brief + weak spots + mark scheme → board → start, then upload and a live review; "Upload v2" starts run 2 |
 | `/review/new` | 2.2 upload a PDF or paste text, preview the numbered paragraphs, then a live review (sample project) |
 | `/review` | 2.1 the review screen on sample data (`fixtures/review-sample.ts`) |
 | `POST /review/api/assessor` | 2.3 one assessor reads the document and returns comments |
-| `POST /review/api/deliberate` | 2.3 the board compares notes: agreements, splits, fix list, likely questions |
+| `POST /review/api/deliberate` | 2.3 the board compares notes: agreements, splits, fix list, likely questions; on run 2+ also "since last time", in written mode also add/cut |
+| `POST /review/api/markscheme` | 2.5 a photographed mark scheme → weighted criteria (PDF and text are parsed in the browser) |
 
 ## Running it
 
@@ -37,6 +38,13 @@ npm test        # splitter, PDF layout, reply checking, project context
 3. Comments appear assessor by assessor; a failed assessor gets a Retry.
 4. When everyone has finished or failed, the deliberation runs once.
 
+## Mark scheme and second run (2.5)
+
+- **Mark scheme**: upload a PDF, text file or photo, or paste it (`projects/components/MarkSchemeEditor.tsx`). `src/lib/documents/markScheme.ts` turns text into criteria ("Method 30%", "Results: 30 marks"); photos go to Claude. Names and weights are editable, shown as bars, and scaled to 100. Every assessor gets the criteria, tags each comment with one (`criterionId`, dropped if it isn't a real criterion) and spends attention by weight.
+- **Second run**: "Upload v2" on the review screen keeps run 1 and starts the intake for version 2. The engine gets each assessor's earlier comments (with the start of the paragraph they were about, since paragraph numbers change) and the earlier fix list (`engine/previous.ts`). Assessors say which points are fixed, partly fixed or ignored; the deliberation returns "since last time", shown at the top of the rail.
+- **Written-questions mode** (brief step, "After the review"): questions are for the text, and the report adds "What to add or cut".
+- **Copy fix list**: Feedback report → "Copy fix list" copies clean numbered text (`fixListText`).
+
 The engine sits behind `reviewAsAssessor` and `deliberate` in `engine/run.ts`, so Lane 1's engine (step 1.2) can replace it without touching the screen.
 
 ## Temporary stand-ins (swap when the shared versions land)
@@ -59,7 +67,8 @@ Follows `design/DESIGN_SYSTEM.md` and uses the shared foundation directly:
 ## Not done yet
 
 - Nothing is saved (no database yet): reopening a review re-runs it; refreshing project setup loses it.
-- Mark-scheme upload and editing, and the second run ("Run again", hidden until then): step 2.5.
+- Run history lives in the page only: reopening loses earlier runs until `src/lib/data` stores them.
+- The full feedback report (2.3b) stays off behind `features.feedbackReport`.
 - The pitch template goes to report review; it should also offer Lane 1's `/pitch` once that exists.
 
 ## Shared changes outside Lane 2 folders

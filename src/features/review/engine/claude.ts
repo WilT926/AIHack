@@ -24,7 +24,7 @@ function getClient(): Anthropic {
 /** One structured call: returns the parsed, schema-valid output or throws EngineError. */
 export async function callStructured<S extends z.ZodType>(options: {
   system: string;
-  user: string;
+  user: string | Anthropic.Beta.BetaContentBlockParam[];
   schema: S;
   maxTokens: number;
   signal?: AbortSignal;

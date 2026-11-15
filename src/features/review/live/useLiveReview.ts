@@ -9,17 +9,27 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Assessor, Comment, Deliberation, Document, FixItem, LiveState, Question, Run } from "../types";
-import type { ReviewContext } from "../engine/schemas";
+import type { PreviousRun, ReviewContext } from "../engine/schemas";
+import { previousFor } from "../engine/previous";
 
 type AssessorStatus = { state: "reading" } | { state: "done" } | { state: "failed"; message: string };
 
 type DeliberationState =
   | { state: "waiting" }
   | { state: "running" }
-  | { state: "done"; deliberation: Deliberation; fixList: FixItem[]; questions: Question[] }
+  | ({ state: "done" } & DeliberationReply)
   | { state: "failed"; message: string };
 
-type Inputs = { context: ReviewContext; document: Document; assessors: Assessor[] };
+type DeliberationReply = {
+  deliberation: Deliberation;
+  fixList: FixItem[];
+  questions: Question[];
+  sinceLastTime?: Run["sinceLastTime"];
+  addOrCut?: Run["addOrCut"];
+};
+
+/** previous: the last run on an earlier version, so the board can say what changed (step 2.5). */
+type Inputs = { context: ReviewContext; document: Document; assessors: Assessor[]; previous?: PreviousRun };
 
 async function postJson<T>(url: string, body: unknown, signal: AbortSignal): Promise<T> {
   let res: Response;
@@ -43,6 +53,7 @@ export function useLiveReview({
   context,
   document,
   assessors,
+  previous,
   runId,
   runNumber,
 }: Inputs & { runId: string; runNumber: number }): {
@@ -51,7 +62,7 @@ export function useLiveReview({
   retryAssessor: (id: string) => void;
   retryDeliberation: () => void;
 } {
-  const [inputs] = useState<Inputs>(() => ({ context, document, assessors }));
+  const [inputs] = useState<Inputs>(() => ({ context, document, assessors, previous }));
   const [statuses, setStatuses] = useState<Record<string, AssessorStatus>>(() =>
     Object.fromEntries(inputs.assessors.map((a) => [a.id, { state: "reading" } as AssessorStatus])),
   );
@@ -68,7 +79,7 @@ export function useLiveReview({
       try {
         const data = await postJson<{ comments: Comment[] }>(
           "/review/api/assessor",
-          { context: inputs.context, document: inputs.document, assessor },
+          { context: inputs.context, document: inputs.document, assessor, previous: previousFor(inputs.previous, assessor.id) },
           s,
         );
         setComments((prev) => ({ ...prev, [assessor.id]: data.comments }));
@@ -102,13 +113,14 @@ export function useLiveReview({
     const done = inputs.assessors.filter((a) => statuses[a.id]?.state === "done");
     setDelib({ state: "running" });
     try {
-      const data = await postJson<{ deliberation: Deliberation; fixList: FixItem[]; questions: Question[] }>(
+      const data = await postJson<DeliberationReply>(
         "/review/api/deliberate",
         {
           context: inputs.context,
           document: inputs.document,
           assessors: done,
           comments: done.flatMap((a) => comments[a.id] ?? []),
+          previous: inputs.previous,
         },
         s,
       );
@@ -154,6 +166,9 @@ export function useLiveReview({
     deliberation: delib.state === "done" ? delib.deliberation : undefined,
     fixList: delib.state === "done" ? delib.fixList : [],
     questions: delib.state === "done" ? delib.questions : [],
+    ...(delib.state === "done" && delib.sinceLastTime ? { sinceLastTime: delib.sinceLastTime } : {}),
+    ...(delib.state === "done" && delib.addOrCut ? { addOrCut: delib.addOrCut } : {}),
+    ...(inputs.previous ? { previousNumber: inputs.previous.number } : {}),
   };
 
   return { run, live, retryAssessor, retryDeliberation: () => void runDeliberation() };

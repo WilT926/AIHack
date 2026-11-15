@@ -37,7 +37,23 @@ describe("toReviewContext", () => {
     expect(ctx.projectName).toBe("AI Hackathon pitch");
     expect(ctx.graded).toEqual(["Idea & originality", "The demo", "Presentation skills"]);
     expect(ctx.weakSpots).toEqual(["Business model", "Q&A unclear"]);
-    expect(ctx.markScheme).toContain("Originality (30%)");
+    expect(ctx.markScheme).toContain("Source:");
+    expect(ctx.criteria?.find((c) => c.id === "originality")?.weight).toBe(30);
+    expect(ctx.criteria?.reduce((n, c) => n + c.weight, 0)).toBe(100);
+    expect(ctx.qaMode).toBeUndefined();
+  });
+
+  it("drops unnamed criteria, rescales the rest and passes written mode", () => {
+    const base = draftFromTemplate("hackathon-pitch");
+    const d = {
+      ...base,
+      qaMode: "written" as const,
+      markScheme: { source: "Pasted", criteria: [{ id: "a", name: "Method", weight: 30 }, { id: "b", name: "  ", weight: 50 }, { id: "c", name: "Results", weight: 10 }] },
+    };
+    const ctx = toReviewContext(d);
+    expect(ctx.qaMode).toBe("written");
+    expect(ctx.criteria).toEqual([{ id: "a", name: "Method", weight: 75 }, { id: "c", name: "Results", weight: 25 }]);
+    expect(reviewContextSchema.safeParse(ctx).success).toBe(true);
   });
 
   it("leaves out empty fields", () => {

@@ -12,7 +12,13 @@ export const LIMITS = {
   fixes: 5,
   questionsPerAssessor: 2,
   shortText: 400,
+  sinceLastTimeItems: 4,
+  addOrCutItems: 4,
 };
+
+function cleanList(items: string[] | undefined, max: number): string[] {
+  return (items ?? []).map((t) => clean(t, LIMITS.shortText)).filter(Boolean).slice(0, max);
+}
 
 function clean(text: string, max: number): string {
   return text.replace(/\s+/g, " ").trim().slice(0, max);
@@ -27,15 +33,28 @@ function validAssessorIds(ids: string[], known: Set<string>): string[] {
   return [...new Set(ids)].filter((id) => known.has(id));
 }
 
-/** Keep comments that point at real paragraphs and have text. */
-export function sanitizeAssessorOutput(output: AssessorOutput, doc: Document, assessorId: string): Comment[] {
+/** Keep comments that point at real paragraphs and have text. A criterion tag is kept only if it names a real criterion. */
+export function sanitizeAssessorOutput(
+  output: AssessorOutput,
+  doc: Document,
+  assessorId: string,
+  criterionIds: string[] = [],
+): Comment[] {
   const comments: Comment[] = [];
   for (const c of output.comments) {
     const paragraphIds = validParagraphIds(c.paragraphIds, doc);
     const text = clean(c.text, LIMITS.commentText);
     if (paragraphIds.length === 0 || !text) continue;
     if (!["critique", "question", "praise"].includes(c.kind)) continue;
-    comments.push({ id: `${assessorId}-${comments.length + 1}`, assessorId, paragraphIds, kind: c.kind, text });
+    const criterionId = c.criterionId && criterionIds.includes(c.criterionId) ? c.criterionId : undefined;
+    comments.push({
+      id: `${assessorId}-${comments.length + 1}`,
+      assessorId,
+      paragraphIds,
+      kind: c.kind,
+      text,
+      ...(criterionId ? { criterionId } : {}),
+    });
     if (comments.length >= LIMITS.commentsPerAssessor) break;
   }
   return comments;
@@ -46,7 +65,14 @@ export function sanitizeDeliberation(
   doc: Document,
   assessorIds: string[],
   seconds: number,
-): { deliberation: Deliberation; fixList: FixItem[]; questions: Question[] } {
+  options: { hasPrevious?: boolean; written?: boolean } = {},
+): {
+  deliberation: Deliberation;
+  fixList: FixItem[];
+  questions: Question[];
+  sinceLastTime?: { improved: string[]; stillWeak: string[]; ignored: string[] };
+  addOrCut?: { add: string[]; cut: string[] };
+} {
   const known = new Set(assessorIds);
 
   const agreements = output.agreements
@@ -91,5 +117,25 @@ export function sanitizeDeliberation(
     questions.push({ assessorId: q.assessorId, text });
   }
 
-  return { deliberation: { seconds, agreements, splits }, fixList, questions };
+  // "Since last time" only when there was a run to compare with; add/cut only in written mode.
+  const since = options.hasPrevious
+    ? {
+        improved: cleanList(output.sinceLastTime?.improved, LIMITS.sinceLastTimeItems),
+        stillWeak: cleanList(output.sinceLastTime?.stillWeak, LIMITS.sinceLastTimeItems),
+        ignored: cleanList(output.sinceLastTime?.ignored, LIMITS.sinceLastTimeItems),
+      }
+    : undefined;
+  const sinceLastTime = since && since.improved.length + since.stillWeak.length + since.ignored.length > 0 ? since : undefined;
+  const advice = options.written
+    ? { add: cleanList(output.addOrCut?.add, LIMITS.addOrCutItems), cut: cleanList(output.addOrCut?.cut, LIMITS.addOrCutItems) }
+    : undefined;
+  const addOrCut = advice && advice.add.length + advice.cut.length > 0 ? advice : undefined;
+
+  return {
+    deliberation: { seconds, agreements, splits },
+    fixList,
+    questions,
+    ...(sinceLastTime ? { sinceLastTime } : {}),
+    ...(addOrCut ? { addOrCut } : {}),
+  };
 }
