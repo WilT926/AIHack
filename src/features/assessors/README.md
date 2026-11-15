@@ -12,8 +12,12 @@ at 20,000 characters. Real lecturer notes must never be committed to this repo.
 
 Hand check: copy Module Lead, rename it, pick avatar 100, add a lecture note,
 edit its tag and text, delete it, then paste a transcript. Reopen the profile and
-check the saved notes. Browser interaction remains unverified from this CLI;
-server actions and HTTP-rendered pages are checked.
+check the saved notes. Playwright MCP browser verification passed at 1440×900: copying, choosing
+avatar 100 and four-dot harshness, adding a lecture note, editing its source
+and text, deleting it, and saving/reopening a pasted lecture transcript.
+The copy dialog was corrected to stay centred and scroll inside the viewport.
+Gallery, profile and dialog screenshots were inspected against the mono
+labels, pen avatars, dot levels and single orange highlight in §9.
 
 Real Claude evidence: `fixtures/engine/real-note-intervention.json`. It uses only
 an invented timetable-search report, invented assessor identity and the requested

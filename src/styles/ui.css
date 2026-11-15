@@ -193,6 +193,7 @@
 .ui-modal {
   width: min(560px, calc(100vw - 32px)); border: var(--line); border-radius: var(--radius-sheet); padding: var(--space-6);
   background: var(--paper); color: var(--ink);
+  inset: 0; margin: auto; max-height: calc(100dvh - var(--space-8)); overflow-y: auto;
 }
 .ui-modal[open] { animation: ui-pop 0.3s var(--ease-spring); }
 .ui-modal::backdrop { background: var(--scrim); }
