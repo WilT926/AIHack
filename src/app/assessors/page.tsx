@@ -1,49 +1,30 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Avatar, DotRating, Label, Spinner } from "@/components/ui";
+import { Avatar, Button, Card, DotRating, Label, Spinner } from "@/components/ui";
 import { PageFrame } from "@/components/ui/PageFrame";
+import { CopyAssessor } from "@/features/assessors/CopyAssessor";
 import { assessorNotes, assessors, dataSource } from "@/lib/data";
 
-// Page shell (step 1.1): lists the assessors from the database. Lane 3 builds
-// the real gallery, profiles and notes here (step 3.3).
-async function AssessorList() {
+async function AssessorGallery() {
   await connection();
-  const sample = dataSource() !== "database";
   const [list, notes] = await Promise.all([assessors.list(), assessorNotes.list()]);
-  if (list.length === 0) return <p className="ui-empty">No assessors yet. Run npm run db:seed to add the presets.</p>;
-  return (
-    <>
-      {sample && <Label tone="orange">Sample data: the database is not configured</Label>}
-      <ul className="shell-grid">
-        {list.map((a) => {
-          const n = notes.filter((x) => x.assessorId === a.id).length;
-          return (
-            <li key={a.id} className="ui-card shell-card">
-              <Avatar avatar={a.avatar} size="2xl" />
-              <span className="shell-card__name">{a.name}</span>
-              <span className="shell-card__sub">
-                {a.role} · {a.field}
-              </span>
-              <span className="shell-card__meta">
-                <DotRating value={a.harshness} max={5} label="Harshness" />
-                <Label size="sm">
-                  {n} {n === 1 ? "note" : "notes"}
-                </Label>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </>
-  );
+  const fields = [...new Set(list.map((a) => a.field || "General"))].sort();
+  return <div className="as-page">
+    {dataSource() !== "database" && <Label tone="orange">Temporary data · saved until the server restarts</Label>}
+    <p className="as-quiet">Invented AI assessors, shaped by the notes you give them about your own markers.</p>
+    <Card dashed className="as-create"><div><h2>New assessor</h2><p className="as-quiet">Copy someone, rename them, then add what your marker looks for.</p></div><CopyAssessor assessors={list} /></Card>
+    <div className="as-gallery">{fields.map((field) => <section key={field} className="as-group" aria-label={field}>
+      <h2 className="ui-label">{field}</h2>
+      {list.filter((a) => (a.field || "General") === field).map((a) => <Card key={a.id} className="as-card">
+        <Avatar avatar={a.avatar} size="2xl" />
+        <h3>{a.name}</h3><Label size="sm">{a.role}</Label>
+        <p className="as-card__focus">{a.focusAreas.join(" · ") || "General feedback"}</p>
+        <div className="as-choices"><DotRating value={a.harshness} max={5} label="Harshness" /><Label size="sm">{notes.filter((n) => n.assessorId === a.id).length} notes</Label></div>
+        <Button variant="secondary" size="sm" href={`/assessors/${a.id}`}>View profile and notes</Button>
+      </Card>)}
+    </section>)}</div>
+  </div>;
 }
-
 export default function AssessorsPage() {
-  return (
-    <PageFrame title="Assessors" active="assessors">
-      <Suspense fallback={<Spinner label="Fetching the board" />}>
-        <AssessorList />
-      </Suspense>
-    </PageFrame>
-  );
+  return <PageFrame title="Assessors" active="assessors"><Suspense fallback={<Spinner label="Fetching the board" />}><AssessorGallery /></Suspense></PageFrame>;
 }
