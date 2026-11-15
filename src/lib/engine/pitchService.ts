@@ -19,6 +19,8 @@ import {
   type PitchContext,
 } from "./pitch";
 import { replySource } from "./service";
+import { attemptFromPitch, memoryForBoard, sinceLastTime, stillOpen } from "./memory";
+import { recordAttempt } from "./memoryStore";
 import {
   assessmentReplySchema,
   checkAssessment,
@@ -50,6 +52,11 @@ async function loadSession(sessionId: string): Promise<PitchSession> {
   return s;
 }
 
+/** Everything the pitch calls are built from, including the board's memory of earlier attempts. */
+export async function pitchContextFor(sessionId: string): Promise<PitchContext> {
+  return loadContext(await loadSession(sessionId));
+}
+
 async function loadContext(s: PitchSession): Promise<PitchContext> {
   const project = await projects.get(s.projectId);
   if (!project) throw new EngineError("That project no longer exists.", "invalid_reply", false);
@@ -59,6 +66,8 @@ async function loadContext(s: PitchSession): Promise<PitchContext> {
   const [members, notes] = await Promise.all([Promise.all(board.assessorIds.map((id) => assessors.get(id))), assessorNotes.list()]);
   return {
     project,
+    memory: memoryForBoard(project.memory, s.id),
+    lastOpen: stillOpen(project.memory, s.id),
     transcript: s.transcript,
     board: members
       .filter((a) => a !== null)
@@ -178,6 +187,7 @@ export async function takeAnswer(sessionId: string, answer: string): Promise<Tur
         judge: { name: judge?.name ?? "A judge", role: judge?.role ?? "", field: judge?.field ?? "" },
         plannedQuestion: plannedText,
         transcriptExcerpt: s.transcript.slice(0, 6000),
+        memory: ctx.memory,
         history: turns.map((t) => ({ text: t.text, answer: t.answer })),
       });
       try {
@@ -245,14 +255,24 @@ export async function finishQandA(sessionId: string): Promise<PitchSession> {
       )
     ).output;
   }
-  const report = checkPitchReport(reply, {
+  const checked = checkPitchReport(reply, {
     boardIds: ctx.board.map((b) => b.id),
     spoken: [s.transcript, ...qa.flatMap((q) => [q.answer, q.followUpAnswer ?? ""])],
     questionIds: qa.map((q) => q.id),
     lengthSeconds,
     wordsPerMinute: wpm,
   });
-  // A pause is always handed to a human, whatever the report call wrote.
-  const withEscalations = { ...report, escalations: [...s.qa.escalations, ...report.escalations] };
-  return pitchSessions.save({ ...s, status: "done", report: withEscalations, replySource: source === "sample" ? "sample" : s.replySource });
+  const project = await projects.get(s.projectId);
+  const memory = project?.memory ?? { attempts: [] };
+  const report = {
+    ...checked,
+    // A pause is always handed to a human, whatever the report call wrote.
+    escalations: [...s.qa.escalations, ...checked.escalations],
+    // Improved and raised again from the board, still open from code.
+    sinceLastTime: sinceLastTime(memory, s.id, reply.sinceLastTime),
+  };
+  const saved = await pitchSessions.save({ ...s, status: "done", report, replySource: source === "sample" ? "sample" : s.replySource });
+  // The session has ended: the board remembers it.
+  await recordAttempt(s.projectId, attemptFromPitch(saved));
+  return saved;
 }

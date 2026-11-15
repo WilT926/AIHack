@@ -47,5 +47,11 @@ export const deliberationReplySchema = z.object({
     likelyQuestions: z.array(z.object({ assessorId: z.string(), question: z.string() })),
     escalations: z.array(z.object({ reason: z.string(), whoToAsk: z.string() })),
   }),
+  sinceLastTime: z
+    .object({
+      improved: z.array(z.string()).describe("Points from earlier attempts that are now fixed."),
+      raisedAgain: z.array(z.string()).describe("Points from earlier attempts that the board raised again this time."),
+    })
+    .describe("Compare with the board's memory. Empty lists if there is no earlier attempt."),
 });
 export type DeliberationReply = z.infer<typeof deliberationReplySchema>;

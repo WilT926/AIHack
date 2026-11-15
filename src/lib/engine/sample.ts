@@ -8,19 +8,36 @@ import type { SharedContext } from "./prompts";
 const firstWords = (text: string, n: number) => text.split(/\s+/).slice(0, n).join(" ");
 
 /** A sample reply for one assessor, pointing at real paragraphs of this document. */
-export function sampleAssessorReply(context: SharedContext, assessor: { id: string; name: string; field: string }, seed = 0): AssessorReply {
+export function sampleAssessorReply(
+  context: SharedContext,
+  assessor: { id: string; name: string; field: string },
+  seed = 0,
+  /** This assessor's memory of earlier attempts, if any: one sample comment refers back to it. */
+  earlier?: string | null,
+): AssessorReply {
   const paras = context.document.paragraphs.filter((p) => p.type !== "heading" && p.text.trim());
   const picks = paras.filter((_, i) => (i + seed) % 3 === 0).slice(0, 3);
   const severities = ["major", "minor", "praise"] as const;
+  const recalled = earlier?.match(/^- (?:Major|Minor) \(p\d+\): (.+)$/m)?.[1];
+  const memoryComment = recalled && paras[0]
+    ? [{
+        paragraphId: paras[0].id,
+        quote: "",
+        category: "Sample · Since last time",
+        severity: "minor",
+        text: `Sample comment (no Claude call was made). Last time I raised: "${recalled}" Has this been fixed?`,
+        suggestion: "Sample suggestion: say what changed since the last attempt.",
+      }]
+    : [];
   return {
-    comments: picks.map((p, i) => ({
+    comments: [...memoryComment, ...picks.map((p, i) => ({
       paragraphId: p.id,
       quote: firstWords(p.text, 4),
       category: `Sample · ${assessor.field || "General"}`,
       severity: severities[i % 3],
       text: `Sample comment (no Claude call was made). ${assessor.name} would look closely at this paragraph from the point of view of ${assessor.field || "their field"}.`,
       suggestion: severities[i % 3] === "praise" ? "" : "Sample suggestion: this is placeholder text until the engine has an API key.",
-    })),
+    }))],
   };
 }
 
@@ -52,5 +69,6 @@ export function sampleDeliberationReply(
       likelyQuestions: board.slice(0, 2).map((b) => ({ assessorId: b.id, question: `Sample question from ${b.name}?` })),
       escalations: [],
     },
+    sinceLastTime: { improved: ["Sample: a point from last time now looks fixed."], raisedAgain: ["Sample: one point from last time came up again."] },
   };
 }

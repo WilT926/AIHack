@@ -141,6 +141,8 @@ export function deliberationPrompt(input: {
   context: SharedContext;
   board: { id: string; name: string; role: string; field: string }[];
   results: { assessorId: string; comments: { paragraphId: string; quote?: string | null; category: string; severity: string; text: string; suggestion: string }[] }[];
+  /** The board's memory of earlier attempts, if any. */
+  memory?: string | null;
 }): { system: { rules: string; context: string }; user: string } {
   const board = input.board.map((a) => `- ${a.id}: ${a.name}, ${a.role} (${a.field})`).join("\n");
   const comments = input.results
@@ -153,7 +155,11 @@ export function deliberationPrompt(input: {
     .join("\n\n");
   return {
     system: { rules: DELIBERATION_RULES, context: sharedContextLayer(input.context) },
-    user: `<board>\n${board}\n</board>\n\n${comments}\n\nDeliberate as the board and write the feedback report.`,
+    user: `<board>\n${board}\n</board>\n\n${
+      input.memory
+        ? `<board_memory>\nWhat the board said on earlier attempts.\n${input.memory}\n</board_memory>\n\n`
+        : "<board_memory>This is the first attempt; leave sinceLastTime empty.</board_memory>\n\n"
+    }${comments}\n\nDeliberate as the board and write the feedback report. In sinceLastTime, list which earlier points are now fixed and which the board raised again.`,
   };
 }
 

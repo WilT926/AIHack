@@ -75,4 +75,5 @@ export const sampleDeliberationReply = {
     ],
     escalations: [{ reason: "Whether the ethics approval covers home use is outside the board's fields.", whoToAsk: "Your supervisor or the ethics panel" }],
   },
+  sinceLastTime: { improved: [], raisedAgain: [] },
 };

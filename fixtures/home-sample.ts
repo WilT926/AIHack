@@ -12,6 +12,7 @@ import type {
   Review,
   Workspace,
 } from "../src/lib/schemas";
+import { attemptFromPitch, attemptFromReview, withAttempt } from "../src/lib/engine/memory";
 
 const preset = (a: Omit<Assessor, "isPreset" | "personality"> & { personality?: string }): Assessor => ({
   personality: "",
@@ -49,7 +50,7 @@ export const sampleBoards: Board[] = [
 
 const brief = (what: string, topic: string, graded: string[], goal: string) => ({ what, topic, graded, goal });
 
-export const sampleProjects: Project[] = [
+const projectsBase: Omit<Project, "memory">[] = [
   {
     id: "proj-mt",
     title: "Master's Thesis",
@@ -254,6 +255,16 @@ export const samplePitchSessions: PitchSession[] = [
     report: null,
   },
 ];
+
+/** Each project's board memory, built from its finished sample sessions. */
+export const sampleProjects: Project[] = projectsBase.map((p) => {
+  const title = (docId: string) => sampleDocuments.find((d) => d.id === docId)?.title ?? "Report";
+  const attempts = [
+    ...sampleReviews.filter((r) => r.projectId === p.id && r.status === "done").map((r) => attemptFromReview(r, title(r.documentId))),
+    ...samplePitchSessions.filter((s) => s.projectId === p.id && s.status === "done").map(attemptFromPitch),
+  ];
+  return { ...p, memory: attempts.reduce(withAttempt, { attempts: [] }) };
+});
 
 export const sampleWorkspace: Workspace = {
   profile: {

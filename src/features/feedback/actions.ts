@@ -3,6 +3,7 @@
 // Ticks on the feedback report's actions, saved with the report.
 import { z } from "zod";
 import { pitchSessions, reviews } from "@/lib/data";
+import { recordActionDone } from "@/lib/engine/memoryStore";
 
 const input = z.object({
   kind: z.enum(["review", "pitch"]),
@@ -19,9 +20,15 @@ export async function setActionDone(raw: z.input<typeof input>): Promise<void> {
   });
   if (v.kind === "review") {
     const r = await reviews.get(v.id);
-    if (r?.report) await reviews.save({ ...r, report: mark(r.report) });
+    if (r?.report) {
+      await reviews.save({ ...r, report: mark(r.report) });
+      await recordActionDone(r.projectId, r.id, v.actionId, v.done);
+    }
   } else {
     const s = await pitchSessions.get(v.id);
-    if (s?.report) await pitchSessions.save({ ...s, report: mark(s.report) });
+    if (s?.report) {
+      await pitchSessions.save({ ...s, report: mark(s.report) });
+      await recordActionDone(s.projectId, s.id, v.actionId, v.done);
+    }
   }
 }
