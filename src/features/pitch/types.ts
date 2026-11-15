@@ -12,6 +12,8 @@ export type PitchSeat = {
   /** Listening loop for the board row while the student presents (sits beside idle.mp4). */
   listenClip?: string | null;
   talkingClip?: string | null;
+  /** Synthesia interactive avatar for the live call (only when LIVE_AVATAR=1). */
+  interactiveId?: string | null;
   /** Picks a distinct browser voice when ElevenLabs is off. */
   voiceIndex: number;
 };
@@ -32,6 +34,8 @@ export type PitchSetupData = {
   sampleReplies: boolean;
   /** True when the ElevenLabs route is switched on and has a key. */
   elevenLabs: boolean;
+  /** True when LIVE_AVATAR=1 and LiveKit is set up: the board can speak as live avatars. */
+  liveAvatar: boolean;
   /** The student's initials, for their tile when the camera is off. */
   initials: string;
 };
