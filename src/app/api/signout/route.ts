@@ -1,8 +1,8 @@
 // Sign out: clear the demo "signed in" cookie and go to the landing page.
-import { NextResponse } from "next/server";
-
-export function GET(req: Request) {
-  const res = NextResponse.redirect(new URL("/welcome", req.url));
-  res.cookies.delete("panel_signed_in");
-  return res;
+// A relative redirect, so it works behind Docker and any host name.
+export function GET() {
+  return new Response(null, {
+    status: 307,
+    headers: { Location: "/welcome", "Set-Cookie": "panel_signed_in=; Path=/; Max-Age=0; SameSite=Lax" },
+  });
 }
