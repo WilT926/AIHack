@@ -26,7 +26,8 @@ export function useGlide(ref: RefObject<HTMLElement | null>, key: string) {
             { translate: `${dx}px ${dy}px`, scale: `${sx} 1` },
             { translate: "0px 0px", scale: "1 1" },
           ],
-          { duration: 480, easing: "cubic-bezier(.3, 1.25, .45, 1)" },
+          // Slow and smooth, with no overshoot.
+          { duration: 720, easing: "cubic-bezier(.22, .8, .24, 1)" },
         );
       }
     }

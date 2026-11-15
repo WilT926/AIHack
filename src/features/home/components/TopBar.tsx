@@ -9,9 +9,9 @@ import { MenuItem, MenuSection } from "@/components/ui/Popover";
 import type { FloorAssessor, FloorFilter, FloorModel, FloorTable } from "../model";
 
 export const STATUS_FILTERS: [Exclude<FloorFilter, "all">, string][] = [
-  ["live", "In session"],
-  ["open", "Actions open"],
-  ["new", "Not started"],
+  ["unreviewed", "Unreviewed feedback"],
+  ["recent", "Reviewed this week"],
+  ["never", "Not reviewed yet"],
 ];
 
 const statusIcon = <i className="ui-ico-status" aria-hidden />;
@@ -116,7 +116,7 @@ export function TopBar({
           filterCount={segments.length}
           filterMenu={
             <>
-              <MenuSection title="Tables">
+              <MenuSection title="Last reviewed">
                 <StatusOptions filter={filter} onFilter={onFilter} />
               </MenuSection>
               <MenuSection title="Assessors">

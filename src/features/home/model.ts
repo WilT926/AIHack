@@ -6,7 +6,8 @@ import type { BoardMemory, FeedbackReport, Workspace } from "@/lib/schemas";
 import { MAX_TABLES } from "@/styles/floor";
 
 export type SessionState = "done" | "live" | "ready" | "deadline";
-export type FloorFilter = "all" | "live" | "open" | "new";
+/** Floor filters, by review state (never by session state). */
+export type FloorFilter = "all" | "unreviewed" | "recent" | "never";
 
 export type FloorSession = {
   id: string;
@@ -61,6 +62,8 @@ export type FloorTable = {
   line: string;
   /** The board this table seats (editable from the side panel). */
   boardId: string | null;
+  /** Editable details (Edit details in the side panel). */
+  details: { title: string; what: string; topic: string; deadline: string; template: "masters-report" | "lab-report" | "pitch" };
   /** Reports only: one dot per assessor; true when all their comments are marked reviewed. */
   dots: { assessorId: string; reviewed: boolean }[];
   /** Side panel header: "Last reviewed …" / "Not reviewed yet", even while a session runs. */
@@ -106,6 +109,8 @@ export type FloorModel = {
   assessors: FloorAssessor[];
   desk: { docs: DeskDoc[]; reports: DeskReport[]; reviewHref?: string };
   openActions: number;
+  /** Saved boards, for a new table's "choose a board". */
+  boards: { id: string; name: string; assessorIds: string[] }[];
   initialFocus: number;
   newProjectHref: string;
   /** True when the floor shows the sample fixture instead of the database. */
@@ -177,7 +182,10 @@ export function buildFloor(ws: Workspace): FloorModel {
   const boardById = new Map(ws.boards.map((b) => [b.id, b]));
   const docById = new Map(ws.documents.map((d) => [d.id, d]));
 
-  const projects = [...ws.projects].sort((a, b) => a.createdAt.localeCompare(b.createdAt)).slice(0, MAX_TABLES);
+  const projects = [...ws.projects]
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, MAX_TABLES)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   const tables: FloorTable[] = projects.map((p) => {
     const code = projectCode(p.title);
@@ -232,7 +240,7 @@ export function buildFloor(ws: Workspace): FloorModel {
           finishedAt: s.endedAt ?? s.startedAt ?? s.createdAt,
           sample: s.replySource === "sample",
         })),
-    ].sort((a, b) => a.at.localeCompare(b.at));
+    ].sort((a, b) => a.at.localeCompare(b.at)).filter((s) => s.state === "done");
 
     const sessions: FloorSession[] = raw.map((s) => {
       const type = s.kind === "review" ? "Report review" : "Presentation practice";
@@ -272,9 +280,7 @@ export function buildFloor(ws: Workspace): FloorModel {
     const latestDone = [...raw].reverse().find((s) => s.state === "done" && s.report);
     const latestReport = latestDone?.report ?? null;
     const latestDocs = [...raw].reverse();
-    const liveSession = raw.find((s) => s.state === "live");
-    const live = !!liveSession;
-    const anyRun = raw.some((s) => s.state !== "ready");
+    const live = false;
 
     const docs: FloorDoc[] = ws.documents
       .filter((d) => d.projectId === p.id)
@@ -316,16 +322,14 @@ export function buildFloor(ws: Workspace): FloorModel {
     const summary = isPitch
       ? finished.length === 0
         ? "No practice runs yet"
-        : `${finished.length} practice ${finished.length === 1 ? "run" : "runs"}${raw.some((s) => s.state === "ready") ? " · 1 ready to run" : ""}`
+        : `${finished.length} practice ${finished.length === 1 ? "run" : "runs"}`
       : docsCount === 0
         ? "No documents uploaded yet"
         : `${docsCount} ${docsCount === 1 ? "document" : "documents"} · ${notReviewed === 0 ? "all reviewed" : `${notReviewed} not reviewed yet`}`;
 
     const seen = p.viewedAt ? Date.parse(p.viewedAt) : 0;
     const fresh = finished.filter((s) => s.finishedAt && Date.parse(s.finishedAt) > seen);
-    const updates = live
-      ? `${liveSession.kind === "review" ? "The board is reviewing" : "A practice is running"} now`
-      : fresh.length
+    const updates = fresh.length
         ? `New feedback from the board · ${fresh.length} ${isPitch ? (fresh.length === 1 ? "practice" : "practices") : fresh.length === 1 ? "review" : "reviews"} since you last looked`
         : null;
 
@@ -341,43 +345,23 @@ export function buildFloor(ws: Workspace): FloorModel {
       .map((a) => ({ id: a.id, what: a.what, by: a.raisedBy.map(nameOf).join(", "), done: a.done }))
       .sort((a, b) => Number(a.done) - Number(b.done));
 
-    let status: string, short: string;
-    if (live) {
-      status = `● IN SESSION · ${liveSession.kind === "review" ? "REVIEW" : "Q&A"}`;
-      short = "IN SESSION";
-    } else if (raw.some((s) => s.state === "ready")) {
-      status = "READY TO RUN";
-      short = "READY";
-    } else if (latestDone) {
-      status = `LAST SESSION · ${dateLabel(latestDone.at)}`;
-      short = ago(latestDone.at).toUpperCase();
-    } else {
-      status = "NOT STARTED";
-      short = "NOT STARTED";
-    }
-
-    // Under the name: when it was last reviewed (or practised).
+    // Under the name, and on small tables: when it was last reviewed (or practised).
     const lastWhen = latestDone ? ago(latestDone.at) : "";
-    const line = live
-      ? `${liveSession.kind === "review" ? "Being reviewed" : "In practice"} now`
-      : latestDone
-        ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}`
-        : `Not ${isPitch ? "practised" : "reviewed"} yet`;
+    const line = latestDone ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}` : `Not ${isPitch ? "practised" : "reviewed"} yet`;
+    const status = line.toUpperCase();
+    const short = latestDone ? lastWhen.toUpperCase() : "NOT YET";
 
     let cta: FloorTable["cta"];
-    if (liveSession) {
-      // A session in progress runs in the tab that started it; there is
-      // nothing to rejoin from here, so no "Take your seat".
-    } else if (isPitch) {
+    if (isPitch) {
       if (features.pitch) cta = { label: "Practise a presentation", href: `/pitch?project=${p.id}`, tone: "ink" };
     } else if (features.review) {
       cta = { label: "Review a report", href: `/review/new?project=${p.id}`, tone: "ink" };
     }
 
     const tags: FloorFilter[] = ["all"];
-    if (live) tags.push("live");
-    if (openActions > 0) tags.push("open");
-    if (!anyRun) tags.push("new");
+    if (!isPitch && openActions > 0) tags.push("unreviewed");
+    if (latestDone && Date.now() - Date.parse(latestDone.at) < 7 * 86_400_000) tags.push("recent");
+    if (!latestDone) tags.push("never");
 
     return {
       id: p.id,
@@ -393,6 +377,7 @@ export function buildFloor(ws: Workspace): FloorModel {
       seats,
       docs,
       boardId: p.boardId ?? null,
+      details: { title: p.title, what: p.brief.what, topic: p.brief.topic, deadline: p.deadline ? p.deadline.slice(0, 10) : "", template: p.template },
       lastReviewed: latestDone ? `Last ${isPitch ? "practised" : "reviewed"} ${lastWhen}` : `Not ${isPitch ? "practised" : "reviewed"} yet`,
       dots,
       summary,
@@ -431,12 +416,9 @@ export function buildFloor(ws: Workspace): FloorModel {
       .map((s) => ({ id: s.id, projectId: t.id, title: `${s.note.startsWith("Sample replies") ? "Sample · " : ""}${s.type}: ${s.title === s.type ? t.name : s.title}`, code: t.code, date: s.date, state: s.state, href: s.reportHref })),
   );
 
-  const liveIdx = tables.findIndex((t) => t.live);
-  let initialFocus = liveIdx;
-  if (initialFocus < 0) {
-    const recent = [...projects].map((p, i) => ({ i, u: p.updatedAt })).sort((a, b) => b.u.localeCompare(a.u))[0];
-    initialFocus = recent ? recent.i : 0;
-  }
+  // Open on the most recently updated table (a new table, straight after it is made).
+  const recent = [...projects].map((p, i) => ({ i, u: p.updatedAt })).sort((a, b) => b.u.localeCompare(a.u))[0];
+  const initialFocus = recent ? recent.i : 0;
 
   const levelLabel = { UG: "Undergraduate", PGT: "PGT", PGR: "PGR" }[ws.profile.level];
 
@@ -446,6 +428,7 @@ export function buildFloor(ws: Workspace): FloorModel {
     assessors,
     desk: { docs: deskDocs, reports: deskReports, reviewHref: features.review ? "/review/new" : undefined },
     openActions: tables.reduce((n, t) => n + t.openActions, 0),
+    boards: ws.boards.map((b) => ({ id: b.id, name: b.name, assessorIds: b.assessorIds })),
     initialFocus,
     newProjectHref: "/projects/new",
   };

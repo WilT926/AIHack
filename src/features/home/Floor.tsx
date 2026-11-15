@@ -16,6 +16,7 @@ import { AssessorsSheet } from "./components/AssessorsSheet";
 import { DeskSheet } from "./components/DeskSheet";
 import { Dock, type PlusState } from "./components/Dock";
 import { CommandPalette } from "./components/CommandPalette";
+import { NewTablePanel } from "./components/NewTablePanel";
 import { markTableViewed } from "./actions";
 
 export type Sheet = null | "desk" | "assessors";
@@ -35,15 +36,14 @@ const serverSize = () => "";
  * scaled to fill the main area left of it, between the top bar and the dock.
  * `center` is the main area's middle, where the search pill and the dock sit.
  */
-function fit(size: string, panelContent: number) {
+function fit(size: string) {
   if (!size) return { scale: 0, x: 0, y: 0, panel: PANEL.width, panelK: 1, panelH: PANEL.height, center: 0 };
   const [w, h] = size.split("x").map(Number);
   const room = h - PANEL.top - PANEL.bottom;
   const baseK = Math.max(PANEL.minScale, Math.min(PANEL.maxScale, w / 1440, room / PANEL.height));
-  /** Shortest design height: scaled by baseK it reaches PANEL.bottom from the window's bottom edge. */
+  /** The panel is a fixed box: scaled by baseK it ends PANEL.bottom above the window's bottom edge; content scrolls inside it. */
+  const panelK = baseK;
   const panelH = Math.round(room / baseK);
-  /** When the content is taller than that, scale a little further so all of it fits: no scrollbar, nothing cut off. */
-  const panelK = panelContent > panelH ? room / panelContent : baseK;
   const panel = Math.round(PANEL.width * panelK);
   const left = CHROME.gutter;
   const right = w - CHROME.gutter - panel - PANEL.gap;
@@ -77,20 +77,7 @@ const serverReduced = () => false;
 export function Floor({ model }: { model: FloorModel }) {
   const n = model.tables.length;
   const size = useSyncExternalStore(subscribeResize, readSize, serverSize);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [panelContent, setPanelContent] = useState(0);
-  const { scale, x: stageX, y: stageY, panelK, panelH, center } = fit(size, panelContent);
-
-  // The side panel's natural height (unscaled), so it can be scaled to fit whole.
-  useEffect(() => {
-    const aside = panelRef.current?.querySelector<HTMLElement>(".fl-panel");
-    if (!aside) return;
-    const measure = () => setPanelContent(aside.offsetHeight);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(aside);
-    return () => ro.disconnect();
-  }, []);
+  const { scale, x: stageX, y: stageY, panelK, panelH, center } = fit(size);
   const reduced = useSyncExternalStore(subscribeReduced, readReduced, serverReduced);
 
   const [focus, setFocus] = useState(() => Math.min(model.initialFocus, Math.max(0, n - 1)));
@@ -104,6 +91,8 @@ export function Floor({ model }: { model: FloorModel }) {
   const [carIdx, setCarIdx] = useState(0);
   const [plus, setPlus] = useState<PlusState>("closed");
   const [palette, setPalette] = useState(false);
+  /** New table: a blank table and a blank, editable panel (not the "+" menu). */
+  const [creating, setCreating] = useState(false);
   const [quoteTick, setQuoteTick] = useState(0);
   const [quotePaused, setQuotePaused] = useState(false);
 
@@ -124,6 +113,7 @@ export function Floor({ model }: { model: FloorModel }) {
       if (i === focusRef.current && !animRef.current) return;
       focusRef.current = i;
       setFocus(i);
+      setCreating(false);
       setAllDeskTables(false);
       setQuoteTick(0);
       setQuotePaused(false);
@@ -284,9 +274,11 @@ export function Floor({ model }: { model: FloorModel }) {
               setPlus("closed");
             } else focusTable(i);
           }}
+          creating={creating}
           onNewTable={() => {
             setSheet(null);
-            setPlus((p) => (p === "closed" ? "menu" : "closed"));
+            setPlus("closed");
+            setCreating((c) => !c);
           }}
         />
 
@@ -312,7 +304,10 @@ export function Floor({ model }: { model: FloorModel }) {
 
 
       </div>
-      <div ref={panelRef} className="fl-panel-slot">
+      <div className="fl-panel-slot">
+      {creating ? (
+        <NewTablePanel assessors={model.assessors} boards={model.boards} onCancel={() => setCreating(false)} />
+      ) : (
       <SidePanel
         key={table?.id ?? "none"}
         table={table}
@@ -331,6 +326,7 @@ export function Floor({ model }: { model: FloorModel }) {
           } else openAssessor(id);
         }}
       />
+      )}
       </div>
       {palette && (
           <CommandPalette

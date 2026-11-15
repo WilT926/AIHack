@@ -81,12 +81,14 @@
 /* Laid out at its design size and scaled as one piece from the top-right corner,
    so the layout inside is the original's at any window size. */
 .fl-panel {
-  position: fixed; right: var(--gutter); top: 104px; width: 358px; min-height: var(--panel-h, 768px); z-index: 25; box-sizing: border-box;
+  position: fixed; right: var(--gutter); top: 104px; width: 358px; height: var(--panel-h, 768px); z-index: 25; box-sizing: border-box;
   transform: scale(var(--panel-k, 1)); transform-origin: top right;
   background: var(--paper); border: var(--line); border-radius: var(--radius-sheet); padding: 24px;
-  display: flex; flex-direction: column; gap: 18px; overflow: hidden;
-  /* Grows to its content; Floor.tsx scales it so the whole of it fits the window (no scrollbar, nothing cut off). */
+  display: flex; flex-direction: column; gap: 18px; overflow-x: hidden; overflow-y: auto;
+  /* A fixed box that never passes the bottom of the screen; when the content grows (e.g. editing the board) it scrolls inside, with no visible bar. */
+  scrollbar-width: none;
 }
+.fl-panel::-webkit-scrollbar { display: none; }
 .fl-panel-slot { display: contents; }
 .fl-panel > * { flex-shrink: 0; }
 .fl-panel__top { display: flex; justify-content: space-between; align-items: center; }
@@ -338,3 +340,25 @@ a.fl-list__row:hover { background: var(--grey-50); }
 }
 .fl-add-list__item:hover { border-color: var(--ink); }
 .fl-add-list__name { font: 600 13px/1.2 var(--font-body); }
+
+/* New table being set up: the dashed circle becomes the blank table. */
+.fl-new-table[data-active="true"] { border: var(--line); border-style: solid; background: var(--orange-halo); }
+.fl-new-table[data-active="true"] .fl-new-table__plus { transform: rotate(45deg); }
+.fl-new-table__plus { transition: transform 0.45s var(--ease-plus); }
+
+/* Table details form, board picker, edit-details button */
+.fl-details { display: flex; flex-direction: column; gap: var(--space-3); }
+.fl-details .ui-input, .fl-details .ui-textarea { font-size: 13px; }
+.fl-details .ui-textarea { min-height: 72px; }
+.fl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fl-pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; max-height: 196px; overflow-y: auto; scrollbar-width: none; }
+.fl-pick::-webkit-scrollbar { display: none; }
+.fl-pick__item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: var(--radius-row);
+  border: var(--line-width) solid transparent; background: transparent; cursor: pointer;
+}
+.fl-pick__item[aria-pressed="true"] { border-color: var(--ink); background: var(--orange-halo); }
+.fl-pick__item[data-static] { cursor: default; }
+.fl-pick__name { font: 600 11px/1.2 var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.fl-panel__footer { align-items: center; }
+.fl-panel__edit { flex: none; margin-left: auto; }

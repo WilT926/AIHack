@@ -36,7 +36,7 @@ export function TopBar({
 
   return (
     <header className="relative flex h-topbar shrink-0 items-center gap-6 bg-white px-8">
-      <Logo />
+      <Logo href="/" />
       <div className="h-8 w-px bg-grey-100" />
       <div className="flex min-w-0 flex-col gap-0.5">
         <Label tone="ink" className="truncate">

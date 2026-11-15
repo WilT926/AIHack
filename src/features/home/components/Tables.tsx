@@ -30,6 +30,7 @@ export function Tables({
   fadeKey,
   onFocus,
   onNewTable,
+  creating = false,
   onQuotePause,
   deskOpen,
 }: {
@@ -43,6 +44,8 @@ export function Tables({
   fadeKey: number;
   onFocus: (i: number) => void;
   onNewTable: () => void;
+  /** A new table is being set up in the side panel. */
+  creating?: boolean;
   onQuotePause: (paused: boolean) => void;
   deskOpen: boolean;
 }) {
@@ -69,7 +72,7 @@ export function Tables({
           aria-expanded={focused ? deskOpen : undefined}
           aria-controls={focused ? "floor-desk" : undefined}
           title={focused ? "Open the documents and feedback on this table" : undefined}
-          aria-label={`${t.name} · ${t.status.replace("● ", "")}`}
+          aria-label={`${t.name} · ${t.line}`}
           onClick={() => onFocus(i)}
           style={{
             left: g.x - g.r,
@@ -81,7 +84,6 @@ export function Tables({
           }}
         >
           <span className="fl-table__content" style={{ width: TABLE_R.focus * 2 - COMPACT.padFull * 2, marginTop: -detail * COMPACT.titleLift, transform: `translate(-50%, -50%) scale(${g.r / TABLE_R.focus})` }}>
-            {t.live && <span className="fl-table__status" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.status}</span>}
             <span className="fl-table__name">{t.name}</span>
             <span className="fl-table__line" style={{ opacity: detail }} aria-hidden={detail === 0}>{t.line}</span>
             <span className="fl-table__short" style={{ opacity: 1 - detail }} aria-hidden={detail === 1}>{t.short}</span>
@@ -129,12 +131,12 @@ export function Tables({
 
   return (
     <div className="fl-layer" key={fadeKey} data-fade={fadeKey > 0}>
-      <button type="button" className="fl-new-table" onClick={onNewTable} aria-label="New table">
+      <button type="button" className="fl-new-table" data-active={creating} aria-pressed={creating} onClick={onNewTable} aria-label="New table">
         <span className="fl-new-table__plus" aria-hidden>
           +
         </span>
-        <span className="fl-new-table__title">New table</span>
-        <span className="fl-new-table__sub">report or presentation</span>
+        <span className="fl-new-table__title">{creating ? "Untitled table" : "New table"}</span>
+        <span className="fl-new-table__sub">{creating ? "set it up on the right" : "report or presentation"}</span>
       </button>
 
       {tables.length === 0 && <div className="fl-empty-floor">Your floor is empty. Start a table for your first report or presentation.</div>}

@@ -7,9 +7,10 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, DotRating, Label } from "@/components/ui";
+import { Avatar, Button, DotRating, IconButton, Label } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
-import { saveBoardSeats } from "../actions";
+import { saveBoardSeats, updateTableDetails } from "../actions";
+import { TableDetailsForm, type TableDetails } from "./TableDetailsForm";
 import type { FloorAssessor, FloorTable } from "../model";
 
 export function SidePanel({
@@ -36,6 +37,7 @@ export function SidePanel({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [detailsDraft, setDetailsDraft] = useState<TableDetails | null>(null);
   const [draft, setDraft] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +81,40 @@ export function SidePanel({
       setEditing(false);
       router.refresh();
     });
+
+  const saveDetails = () =>
+    start(async () => {
+      if (!detailsDraft) return;
+      const res = await updateTableDetails(table.id, detailsDraft);
+      if (!res.ok) return setError(res.error);
+      setDetailsDraft(null);
+      setError(null);
+      router.refresh();
+    });
+
+  if (detailsDraft) {
+    return (
+      <aside className="fl-panel" aria-label={`${table.name}: edit details`}>
+        <div className="fl-panel__top">
+          <Label tone="orange">Edit details</Label>
+        </div>
+        <TableDetailsForm value={detailsDraft} onChange={setDetailsDraft} idPrefix="edit" />
+        {error && (
+          <p className="ps-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="fl-panel__footer">
+          <Button variant="secondary" size="lg" onClick={() => setDetailsDraft(null)} disabled={pending}>
+            Cancel
+          </Button>
+          <Button variant="create" size="lg" block onClick={saveDetails} disabled={pending || !detailsDraft.title.trim()}>
+            {pending ? "Saving…" : "Save details"}
+          </Button>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="fl-panel" aria-label={`${table.name}, focused table`}>
@@ -240,9 +276,14 @@ export function SidePanel({
             </Button>
           </>
         ) : (
-          <Button variant="secondary" size="lg" block={!table.cta} onClick={startEditing} disabled={!table.boardId}>
-            Edit board
-          </Button>
+          <>
+            <Button variant="secondary" size="lg" block={!table.cta} onClick={startEditing} disabled={!table.boardId}>
+              Edit board
+            </Button>
+            <IconButton label="Edit name and description" className="fl-panel__edit" onClick={() => setDetailsDraft({ ...table.details })}>
+              ✎
+            </IconButton>
+          </>
         )}
       </div>
 

@@ -11,7 +11,8 @@ import type { PitchSession } from "@/lib/schemas";
 import { boardQuestions, endQandA, finishPitch, lastSavedTranscript, saveTranscript, startPitchSession } from "./actions";
 import type { Phase, PitchSetupData } from "./types";
 import { SessionFrame } from "./components/SessionFrame";
-import { Setup, type SetupValue } from "./components/Setup";
+import { boardSeats, PITCH_ASSESSORS, SCRATCH, Setup, type SetupValue } from "./components/Setup";
+import { boardForPitch } from "./boardActions";
 import { Listening } from "./components/Listening";
 import { TypedTranscript } from "./components/TypedTranscript";
 import { Conferring } from "./components/Conferring";
@@ -30,6 +31,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const [setup, setSetup] = useState<SetupValue>({
     projectId: initialProject?.id ?? null,
     boardId: initialProject?.boardId ?? data.boards[0]?.id ?? null,
+    customIds: [],
     questionCount: data.defaultQuestionCount,
     mode: data.defaultMode,
     capture: "live",
@@ -46,8 +48,15 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
   const sessionRef = useRef<PitchSession | null>(null);
   const finishingRef = useRef(false);
 
-  const board = data.boards.find((b) => b.id === setup.boardId);
-  const seats = board?.seats ?? [];
+  const seats = boardSeats(data, setup);
+
+  /** A saved board's id; for "Start from scratch" or "Pitch assessors", make the board now. */
+  const realBoardId = useCallback(async (): Promise<string | null> => {
+    if (setup.boardId !== SCRATCH && setup.boardId !== PITCH_ASSESSORS) return setup.boardId;
+    const res = await boardForPitch(setup.boardId === SCRATCH ? "My board" : "Pitch assessors", seats.map((s) => s.id));
+    if (!res.ok) throw new Error(res.error);
+    return res.boardId;
+  }, [setup.boardId, seats]);
   const live = joinTranscript(rec.finalText, rec.interim);
   const seconds = rec.startedAt && now ? Math.max(0, (now - Date.parse(rec.startedAt)) / 1000) : 0;
 
@@ -98,7 +107,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       rec.reset();
       const s = await startPitchSession({
         projectId: setup.projectId,
-        boardId: setup.boardId,
+        boardId: await realBoardId(),
         questionCount: setup.questionCount,
         mode: setup.mode,
         conditions: setup.conditions,
@@ -114,7 +123,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     } finally {
       setBusy(false);
     }
-  }, [setup, canListen, rec]);
+  }, [setup, canListen, rec, realBoardId]);
 
   // ---------- Finish (button or "thank you") ----------
 
@@ -201,7 +210,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
       if (!s) {
         s = await startPitchSession({
           projectId: setup.projectId,
-          boardId: setup.boardId,
+          boardId: await realBoardId(),
           questionCount: setup.questionCount,
           mode: setup.mode,
           conditions: setup.conditions,
@@ -219,7 +228,7 @@ export function PitchFlow({ data }: { data: PitchSetupData }) {
     } finally {
       setBusy(false);
     }
-  }, [setup, typedText, typedLength, confer]);
+  }, [setup, typedText, typedLength, confer, realBoardId]);
 
   // Hidden control: Ctrl/⌘ + Shift + L loads the last saved transcript.
   const loadLast = useCallback(async () => {

@@ -19,6 +19,10 @@ export type PitchProject = { id: string; title: string; code: string; isPitch: b
 export type PitchSetupData = {
   projects: PitchProject[];
   boards: PitchBoard[];
+  /** Everyone who can sit on a board (for "Start from scratch" and "Pitch assessors"). */
+  assessors: PitchSeat[];
+  /** Each assessor's role, e.g. "Investor". */
+  roles?: Record<string, string>;
   initialProjectId: string | null;
   defaultQuestionCount: number;
   defaultMode: "spoken" | "text";

@@ -10,7 +10,9 @@ import { buildFloor } from "@/features/home/model";
 async function FloorFromData() {
   await connection();
   const { workspace, sample } = await loadWorkspace();
-  return <Floor model={{ ...buildFloor(workspace), sample }} />;
+  const model = buildFloor(workspace);
+  // A new or removed table remounts the floor, so it opens on the newest table.
+  return <Floor key={model.tables.map((t) => t.id).join("|")} model={{ ...model, sample }} />;
 }
 
 export default function HomePage() {

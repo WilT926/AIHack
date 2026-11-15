@@ -122,7 +122,7 @@
 .ui-nav__goo .ui-nav__goo-bridge { left: calc(var(--nav-h) / 2); right: calc(var(--nav-h) / 2); top: calc(var(--nav-h) / 4); width: auto; height: calc(var(--nav-h) / 2); border-radius: 0; }
 .ui-nav__active {
   position: absolute; top: 6px; width: calc(var(--nav-h) - 12px); height: calc(var(--nav-h) - 12px); border-radius: var(--radius-round); background: var(--paper);
-  transition: left 0.55s var(--ease-dock); pointer-events: none;
+  transition: left 0.7s cubic-bezier(.22, .8, .24, 1); pointer-events: none;
 }
 .ui-nav__list { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
 .ui-nav__slot { position: absolute; top: 0; }

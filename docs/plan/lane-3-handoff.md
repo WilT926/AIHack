@@ -47,6 +47,16 @@ Read `CLAUDE.md`, `docs/plan/README.md` and `docs/plan/lane-3.md` first. Lane 3 
   - **Suggested actions**;
   - **Edit board** → minus on each person, an orange "+" to add (centred when alone on a row), **Confirm** saves the board to the database.
 - **Mock data** in `fixtures/home-sample.ts`: comments with reviewed states, two scored practice runs, last-viewed dates.
+- **No session states on the floor:** only finished sessions are shown, so there's no "ready", "in session" or "being reviewed now" anywhere. Filters are by review state: Unreviewed feedback, Reviewed this week, Not reviewed yet.
+- **Side panel** is a fixed box (never past the bottom of the screen); its content scrolls inside with no visible bar.
+- **Slower, smoother** dock and search glide between pages (720ms, no overshoot).
+- **New table** (dashed circle):
+  - opens a blank, editable panel: name, type, description, topic, deadline, and a board (a saved one, or start from scratch);
+  - **Create table** saves the project and board (`createTable` in `src/features/home/actions.ts`), and the floor opens on it;
+  - each table has an **✎ Edit details** button, bottom right (`updateTableDetails`).
+  - The floor shows the **4 most recently updated** tables, so a new one bumps the oldest off.
+- **Panel room setup** (Lane 1 screen): "Type" instead of "Table", with board options **Start from scratch** (pick assessors) and **Pitch assessors**. These boards are created when the session starts (`src/features/pitch/boardActions.ts`).
+- **Logo** links to the floor on every page except sign-in (`Logo href`; also in Lane 2's review and project-setup headers).
 
 ### Changes in Lane 1 folders (tell Lane 1)
 - `src/lib/schemas`: `Project.viewedAt` (optional).

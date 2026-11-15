@@ -2,9 +2,18 @@ import { Button, Chip, Label, Tabs } from "@/components/ui";
 import type { PitchSetupData } from "../types";
 import { BoardRow } from "./BoardRow";
 
+/** Board choices that are made on the spot rather than saved boards. */
+export const SCRATCH = "__scratch";
+export const PITCH_ASSESSORS = "__pitch";
+/** The preset judges, by their roles. */
+export const PITCH_ROLES = ["Technical Judge", "Education Lead", "Investor", "Design Judge"];
+
 export type SetupValue = {
   projectId: string | null;
+  /** A saved board's id, or SCRATCH / PITCH_ASSESSORS. */
   boardId: string | null;
+  /** Start from scratch: who the student picked. */
+  customIds: string[];
   questionCount: number;
   mode: "spoken" | "text";
   capture: "live" | "typed";
@@ -31,6 +40,7 @@ export function Setup({
   onStart: () => void;
 }) {
   const board = data.boards.find((b) => b.id === value.boardId);
+  const seats = boardSeats(data, value);
   const capture = canListen ? value.capture : "typed";
   const projects = [...data.projects].sort((a, b) => Number(b.isPitch) - Number(a.isPitch));
 
@@ -48,7 +58,7 @@ export function Setup({
       ) : (
         <>
           <div className="ps-field">
-            <Label>Table</Label>
+            <Label>Type</Label>
             <div className="ps-chips">
               {projects.map((p) => (
                 <Chip
@@ -65,13 +75,32 @@ export function Setup({
           <div className="ps-field">
             <Label>Board</Label>
             <div className="ps-chips">
+              <Chip active={value.boardId === SCRATCH} onClick={() => onChange({ ...value, boardId: SCRATCH })}>
+                Start from scratch
+              </Chip>
+              <Chip active={value.boardId === PITCH_ASSESSORS} onClick={() => onChange({ ...value, boardId: PITCH_ASSESSORS })}>
+                Pitch assessors · {pitchAssessors(data).length}
+              </Chip>
               {data.boards.map((b) => (
                 <Chip key={b.id} active={b.id === value.boardId} onClick={() => onChange({ ...value, boardId: b.id })}>
                   {b.name} · {b.seats.length}
                 </Chip>
               ))}
             </div>
-            {board && <BoardRow seats={board.seats} />}
+            {value.boardId === SCRATCH ? (
+              <div className="ps-chips" role="group" aria-label="Choose who sits on the board">
+                {data.assessors.map((a) => {
+                  const on = value.customIds.includes(a.id);
+                  return (
+                    <Chip key={a.id} active={on} onClick={() => onChange({ ...value, customIds: on ? value.customIds.filter((x) => x !== a.id) : [...value.customIds, a.id] })}>
+                      {a.name}
+                    </Chip>
+                  );
+                })}
+              </div>
+            ) : null}
+            {seats.length > 0 && <BoardRow seats={seats} />}
+            {board === undefined && value.boardId === SCRATCH && seats.length === 0 && <p className="ps-note">Choose who sits on your board.</p>}
           </div>
 
           <div className="ps-row">
@@ -138,7 +167,7 @@ export function Setup({
           )}
 
           <div className="ps-actions">
-            <Button variant="create" size="lg" disabled={!value.projectId || !value.boardId || busy} onClick={onStart}>
+            <Button variant="create" size="lg" disabled={!value.projectId || seats.length === 0 || busy} onClick={onStart}>
               {capture === "live" ? "Start presenting" : "Continue"}
             </Button>
           </div>
@@ -146,4 +175,19 @@ export function Setup({
       )}
     </section>
   );
+}
+
+/** The preset pitch judges, by role. */
+export function pitchAssessors(data: PitchSetupData) {
+  return data.assessors.filter((a) => PITCH_ROLES.includes(roleOf(data, a.id)));
+}
+function roleOf(data: PitchSetupData, id: string): string {
+  return data.roles?.[id] ?? "";
+}
+
+/** Who sits on the chosen board: a saved board, the pitch assessors, or the student's own picks. */
+export function boardSeats(data: PitchSetupData, value: SetupValue) {
+  if (value.boardId === PITCH_ASSESSORS) return pitchAssessors(data);
+  if (value.boardId === SCRATCH) return value.customIds.map((id) => data.assessors.find((a) => a.id === id)).filter((a) => a !== undefined);
+  return data.boards.find((b) => b.id === value.boardId)?.seats ?? [];
 }

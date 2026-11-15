@@ -99,7 +99,7 @@ export function ProjectSetup({ presets, sampleReplies }: { presets: Assessor[]; 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <header className="grid h-topbar shrink-0 grid-cols-centred items-center bg-white px-8">
-        <Logo />
+        <Logo href="/" />
         <Stepper current={current.steps} />
         <Link
           href="/"

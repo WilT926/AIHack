@@ -11,7 +11,20 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
   const [p, b, a, profile] = await Promise.all([projects.list(), boards.list(), assessors.list(), getProfile()]);
   const voiceIndex = new Map(a.map((x, i) => [x.id, i]));
   const byId = new Map(a.map((x) => [x.id, x]));
+  const seat = (s: (typeof a)[number]) => ({
+    id: s.id,
+    name: s.name,
+    short: shortName(s.name),
+    field: s.field,
+    avatar: s.avatar,
+    portrait: s.portrait,
+    idleClip: s.idleClip,
+    talkingClip: s.talkingClip,
+    voiceIndex: voiceIndex.get(s.id) ?? 0,
+  });
   return {
+    assessors: a.map(seat),
+    roles: Object.fromEntries(a.map((x) => [x.id, x.role])),
     projects: p.map((x) => ({ id: x.id, title: x.title, code: projectCode(x.title), isPitch: x.template === "pitch", boardId: x.boardId ?? null })),
     boards: b.map((x) => ({
       id: x.id,
