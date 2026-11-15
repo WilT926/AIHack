@@ -3,15 +3,15 @@
 // animation.
 import { useState } from "react";
 import { Avatar } from "@/components/ui";
-import { COMPACT, DIM_OPACITY, TABLE_R } from "@/styles/floor";
-import { isFull, paperBox, questionExcerpt, quoteAnchor, rimDots, seatBoxes, toPoint, type Point, type Polar } from "../geometry";
+import { COMPACT, DIM_OPACITY, NEW_TABLE, TABLE_R } from "@/styles/floor";
+import { isFull, paperBox, questionExcerpt, quoteAnchor, rimDots, seatBoxes, spreadX, toPoint, type Point, type Polar } from "../geometry";
 import type { FloorTable } from "../model";
 
 /** Drag type for an assessor card dragged from the sheet onto a panel. */
 export const SEAT_DRAG_TYPE = "application/x-panel-assessor";
 
 /** The likely question cycling beside the seat of the assessor who would ask it. */
-function speechBubble(tables: FloorTable[], points: Point[], focus: number, anim: boolean, tick: number) {
+function speechBubble(tables: FloorTable[], points: Point[], focus: number, anim: boolean, tick: number, spread: number) {
   const t = tables[focus];
   const g = points[focus];
   if (!t || !g || anim || !isFull(g.r) || t.questions.length === 0) return null;
@@ -20,7 +20,7 @@ function speechBubble(tables: FloorTable[], points: Point[], focus: number, anim
   if (k < 0) return null;
   const seat = seatBoxes(g, t.seats.length)[k];
   const neighbors = tables.flatMap((table, i) => seatBoxes(points[i], table.seats.length));
-  return { ...quoteAnchor(seat, points, focus, neighbors), text: questionExcerpt(q.text), fullText: q.text, name: t.seats[k].name, key: `${t.id}-${tick}` };
+  return { ...quoteAnchor(seat, points, focus, neighbors, spread), text: questionExcerpt(q.text), fullText: q.text, name: t.seats[k].name, key: `${t.id}-${tick}` };
 }
 
 export function Tables({
@@ -33,6 +33,7 @@ export function Tables({
   quoteTick,
   fadeKey,
   onFocus,
+  spread = 1,
   onSeat,
   onNewTable,
   onQuotePause,
@@ -47,6 +48,8 @@ export function Tables({
   quoteTick: number;
   fadeKey: number;
   onFocus: (i: number) => void;
+  /** Sideways spread on wide windows (1 = the design layout). */
+  spread?: number;
   /** Seat a dragged assessor on panel i (only when boards can be edited). */
   onSeat?: (i: number, assessorId: string) => void;
   onNewTable: () => void;
@@ -54,8 +57,8 @@ export function Tables({
   deskOpen: boolean;
 }) {
   const [dropIdx, setDropIdx] = useState<number | null>(null);
-  const points = cur.map(toPoint);
-  const quote = speechBubble(tables, points, focus, anim, quoteTick);
+  const points = cur.map((c) => toPoint(c, spread));
+  const quote = speechBubble(tables, points, focus, anim, quoteTick, spread);
 
   const layers = tables.map((t, i) => {
     const g = points[i];
@@ -152,7 +155,7 @@ export function Tables({
 
   return (
     <div className="fl-layer" key={fadeKey} data-fade={fadeKey > 0}>
-      <button type="button" className="fl-new-table" onClick={onNewTable} aria-label="New panel">
+      <button type="button" className="fl-new-table" style={{ left: spreadX(NEW_TABLE.cx, spread) - NEW_TABLE.r }} onClick={onNewTable} aria-label="New panel">
         <span className="fl-new-table__plus" aria-hidden>
           +
         </span>

@@ -18,6 +18,8 @@ const startInput = z.object({
   capture: z.enum(["live", "typed"]),
   conditions: z.enum(["coaching", "exam"]).default("coaching"),
   startedAt: iso.nullish(),
+  /** Optional slides or notes, as text. */
+  slides: z.string().max(20000).nullish(),
 });
 
 /** Create a session for this project. Live sessions start listening at once. */
@@ -40,6 +42,7 @@ export async function startPitchSession(input: z.input<typeof startInput>): Prom
       boardId: v.boardId && v.boardId !== project.boardId ? v.boardId : null,
       capture: v.capture,
       conditions: v.conditions,
+      slides: v.slides?.trim() ? v.slides.trim() : null,
     },
     questions: [],
     report: null,

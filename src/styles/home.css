@@ -131,7 +131,8 @@
 .fl-doc__title { flex: 1; font: 500 13px/1.3 var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fl-doc__count { font: 600 11px/1 var(--font-mono); color: var(--grey-500); }
 .fl-doc__count[data-open="true"] { color: var(--orange); }
-.fl-panel__footer { margin-top: auto; display: flex; gap: 8px; }
+.fl-panel__footer { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.fl-panel__starts { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
 /* ---------- Sheets (Assessors, Desk) ---------- */
 .fl-sheet {

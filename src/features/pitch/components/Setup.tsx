@@ -1,6 +1,7 @@
 import { Button, Chip, Label, Tabs } from "@/components/ui";
 import type { PitchSetupData } from "../types";
 import { BoardRow } from "./BoardRow";
+import { SlidesCard } from "./SlidesCard";
 
 export type SetupValue = {
   projectId: string | null;
@@ -9,6 +10,10 @@ export type SetupValue = {
   mode: "spoken" | "text";
   capture: "live" | "typed";
   conditions: "coaching" | "exam";
+  /** Optional slides or notes, as text; null when none were added. */
+  slides: string | null;
+  /** The student chose to go without slides or notes. */
+  slidesSkipped: boolean;
 };
 
 const COUNTS = ["1", "2", "3", "4", "5"] as const;
@@ -121,6 +126,13 @@ export function Setup({
               />
             </div>
           </div>
+
+          <SlidesCard
+            slides={value.slides}
+            skipped={value.slidesSkipped}
+            onSlides={(slides) => onChange({ ...value, slides, slidesSkipped: false })}
+            onSkip={(slidesSkipped) => onChange({ ...value, slidesSkipped })}
+          />
 
           <p className="ps-note">
             {value.conditions === "exam"

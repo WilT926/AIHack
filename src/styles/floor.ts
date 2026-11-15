@@ -74,7 +74,14 @@ export const QUOTE = {
 /** The dashed "New table" circle: centre and radius. */
 export const NEW_TABLE = { cx: 850, cy: 640, r: 78 } as const;
 
-/** The floor's usable area; the side panel starts at x 1056. */
+/**
+ * Wide windows: the floor spreads sideways by up to this factor (table centres
+ * and the "New panel" circle move apart; sizes stay the same), keeping
+ * `marginShare` of the width free as margins either side.
+ */
+export const SPREAD = { max: 1.4, marginShare: 0.1 } as const;
+
+/** The floor's usable area at spread 1; the side panel starts at x 1056. */
 export const FLOOR_BOUNDS = { left: 16, top: 96, right: 1040, bottom: 800 } as const;
 
 export const COMPACT = {

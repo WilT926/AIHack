@@ -140,3 +140,9 @@
   .ps-tile { transition: none; }
 }
 .ps-tile__mode { margin-top: 2px; }
+
+/* Optional slides or notes before presenting. */
+.ps-slides { display: flex; flex-direction: column; gap: var(--space-4); }
+.ps-slides__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.ps-slides__text { display: flex; flex-direction: column; gap: var(--space-1); }
+.ps-slides__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
