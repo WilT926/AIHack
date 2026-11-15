@@ -63,7 +63,7 @@ export const features = {
    */
   pitchPreview: false,
   /** Feedback report screen (Lane 2, step 2.3b). */
-  feedbackReport: false,
+  feedbackReport: true,
   /** Seat and unseat assessors from the floor (Lane 3, step 3.4). */
   editBoards: false,
   /** New assessor: copy one, rename, adjust (Lane 3, step 3.3). */

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { ReplySource } from "@/lib/schemas";
 import { setActionDone } from "@/features/feedback/actions";
 import type { Assessor, Document, ReviewView } from "../types";
@@ -27,12 +28,14 @@ export function LiveReview({
   replySource: ReplySource;
   onUpload?: () => void;
 }) {
+  const doneIds = useRef(new Set<string>());
   const { review, live, retryAssessor, retryDeliberation } = useLiveReview({
     projectId: project.id,
     documentId,
     reviewId,
     assessorIds: board.assessorIds,
     replySource,
+    doneCommentIds: () => [...doneIds.current],
   });
 
   return (
@@ -41,7 +44,10 @@ export function LiveReview({
       onUpload={onUpload}
       onRetryAssessor={retryAssessor}
       onRetryDeliberation={retryDeliberation}
-      onCommentDone={(commentId) => void markCommentDone(reviewId, commentId)}
+      onCommentDone={(commentId) => {
+        doneIds.current.add(commentId);
+        void markCommentDone(reviewId, commentId);
+      }}
       onActionDone={(actionId, done) => void setActionDone({ kind: "review", id: reviewId, actionId, done })}
     />
   );

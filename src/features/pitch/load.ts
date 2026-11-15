@@ -1,6 +1,6 @@
 import "server-only";
 import { defaults, features } from "@/config";
-import { assessors, boards, dataSource, getProfile, projects } from "@/lib/data";
+import { assessors, boards, dataSource, getProfile, pitchSessions, projects } from "@/lib/data";
 import { replySource } from "@/lib/engine/service";
 import { hasElevenLabs } from "@/lib/voice/elevenlabs";
 import { projectCode, shortName } from "@/features/home/model";
@@ -45,4 +45,19 @@ export async function loadPitchSetup(initialProjectId: string | null): Promise<P
       .slice(0, 2)
       .toUpperCase(),
   };
+}
+
+/** A finished pitch session's report, for reopening from the floor or the desk. */
+export async function loadPitchReport(sessionId: string) {
+  const session = await pitchSessions.get(sessionId);
+  if (!session?.report) return null;
+  const project = await projects.get(session.projectId);
+  const boardId = session.settings.boardId ?? project?.boardId;
+  const [board, people] = await Promise.all([boardId ? boards.get(boardId) : null, assessors.list()]);
+  const byId = new Map(people.map((a) => [a.id, a]));
+  const seats = (board?.assessorIds ?? [])
+    .map((id) => byId.get(id))
+    .filter((a) => a !== undefined)
+    .map((a) => ({ id: a.id, name: a.name, avatar: a.avatar }));
+  return { session, seats, projectName: project?.title ?? "Presentation", sample: dataSource() !== "database" };
 }

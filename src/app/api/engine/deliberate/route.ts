@@ -30,6 +30,7 @@ const body = z.object({
     )
     .min(1)
     .max(12),
+  doneCommentIds: z.array(z.string().min(1).max(100)).max(200).default([]),
 });
 
 export async function POST(req: Request) {

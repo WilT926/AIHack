@@ -20,7 +20,15 @@ type DeliberationState =
   | { state: "done"; deliberation: Deliberation | null; report: FeedbackReport | null; comments: Comment[]; replySource: ReplySource }
   | { state: "failed"; message: string };
 
-type Inputs = { projectId: string; documentId: string; reviewId: string; assessorIds: string[]; replySource: ReplySource };
+type Inputs = {
+  projectId: string;
+  documentId: string;
+  reviewId: string;
+  assessorIds: string[];
+  replySource: ReplySource;
+  /** Comments marked done so far, sent with the deliberation so they are kept. */
+  doneCommentIds: () => string[];
+};
 
 type AssessorReply = { assessorId: string; status: "done" | "failed"; comments?: Comment[]; error?: string; replySource: ReplySource };
 
@@ -96,6 +104,7 @@ export function useLiveReview(start: Inputs): {
             replySource: replies[id]?.replySource ?? inputs.replySource,
             comments: replies[id]?.comments ?? [],
           })),
+          doneCommentIds: inputs.doneCommentIds(),
         },
         s,
       );

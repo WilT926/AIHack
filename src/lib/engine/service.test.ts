@@ -1,5 +1,6 @@
 // The engine service with no API key: sample replies, clearly marked.
 import { beforeEach, describe, expect, it } from "vitest";
+import { reviews } from "@/lib/data";
 import { deliberateAndSave, replySource, reviewWithAssessor } from "./service";
 
 describe("engine service without a key (sample replies)", () => {
@@ -34,5 +35,19 @@ describe("engine service without a key (sample replies)", () => {
 
   it("refuses a document from another project", async () => {
     await expect(reviewWithAssessor({ projectId: "proj-lr", documentId: "doc-mt-ch3", assessorId: "sceptic" })).rejects.toThrow(/does not belong/);
+  });
+
+  it("keeps comments marked done during the run, and ticks across a second deliberation", async () => {
+    const r = await reviewWithAssessor({ projectId: "proj-mt", documentId: "doc-mt-ch3", assessorId: "sceptic" });
+    if (r.status !== "done") throw new Error("expected done");
+    const results = [{ assessorId: "sceptic", status: "done" as const, replySource: "sample" as const, comments: r.comments }];
+    const first = await deliberateAndSave({ projectId: "proj-mt", documentId: "doc-mt-ch3", reviewId: "rev-keep", results, doneCommentIds: [r.comments[0].id] });
+    expect(first.assessorResults[0].comments[0].done).toBe(true);
+    // The student ticks an action, then a retry deliberates again.
+    const ticked = first.report!.actions[0];
+    await reviews.save({ ...first, report: { ...first.report!, actions: first.report!.actions.map((a) => (a.id === ticked.id ? { ...a, done: true } : a)) } });
+    const second = await deliberateAndSave({ projectId: "proj-mt", documentId: "doc-mt-ch3", reviewId: "rev-keep", results });
+    expect(second.report!.actions.find((a) => a.what === ticked.what)?.done).toBe(true);
+    expect(second.assessorResults[0].comments[0].done).toBe(true);
   });
 });

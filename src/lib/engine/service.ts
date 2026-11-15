@@ -75,6 +75,8 @@ export async function deliberateAndSave(input: {
   documentId: string;
   reviewId?: string | null;
   results: FinishedResult[];
+  /** Comments the student marked done while the review was still running. */
+  doneCommentIds?: string[];
 }): Promise<Review> {
   const source = requireSource();
   const { context } = await loadContext(input.projectId, input.documentId);
@@ -102,15 +104,31 @@ export async function deliberateAndSave(input: {
     outcome = await runDeliberation({ context, board, results: finished }, { call: callClaude, log: logCall });
   }
 
+  // Keep what the student already marked done: comments marked during the
+  // run, and anything saved on an earlier deliberation of this review (a
+  // retry deliberates again). Actions are matched by their wording.
+  const previous = input.reviewId ? await reviews.get(input.reviewId) : null;
+  const doneComments = new Set([
+    ...(input.doneCommentIds ?? []),
+    ...(previous?.assessorResults.flatMap((a) => a.comments.filter((c) => c.done).map((c) => c.id)) ?? []),
+  ]);
+  const key = (t: string) => t.trim().toLowerCase().replace(/\s+/g, " ");
+  const doneActions = new Set(previous?.report?.actions.filter((a) => a.done).map((a) => key(a.what)) ?? []);
+  const report = { ...outcome.report, actions: outcome.report.actions.map((a) => ({ ...a, done: a.done || doneActions.has(key(a.what)) })) };
+
   return reviews.save({
     id: input.reviewId || crypto.randomUUID(),
     projectId: input.projectId,
     documentId: input.documentId,
-    createdAt: new Date().toISOString(),
+    createdAt: previous?.createdAt ?? new Date().toISOString(),
     status: "done",
-    assessorResults: results.map((r) => ({ assessorId: r.assessorId, status: r.status, comments: r.comments })),
+    assessorResults: results.map((r) => ({
+      assessorId: r.assessorId,
+      status: r.status,
+      comments: r.comments.map((c) => (doneComments.has(c.id) ? { ...c, done: true } : c)),
+    })),
     deliberation: outcome.deliberation,
-    report: outcome.report,
+    report,
     replySource: anySample ? "sample" : "claude",
   });
 }

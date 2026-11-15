@@ -234,8 +234,8 @@ export function buildFloor(ws: Workspace): FloorModel {
 
     let cta: FloorTable["cta"];
     if (liveSession) {
-      const href = liveSession.kind === "review" ? `/review?review=${liveSession.id}` : `/pitch?session=${liveSession.id}`;
-      if (liveSession.kind === "review" ? features.review : features.pitch) cta = { label: "Take your seat", href, tone: "orange" };
+      // A session in progress runs in the tab that started it; there is
+      // nothing to rejoin from here, so no "Take your seat".
     } else if (isPitch) {
       if (features.pitch) cta = { label: "Practise a presentation", href: `/pitch?project=${p.id}`, tone: "ink" };
     } else if (features.review) {
